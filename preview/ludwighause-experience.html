@@ -404,7 +404,6 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   <div class="rail-track">
     <div class="rail-fill" id="rail-fill"></div>
     <span class="rail-tick" style="top:0%">2 340</span>
-    <span class="rail-tick" style="top:50%">1 640</span>
     <span class="rail-tick" style="top:100%">940</span>
   </div>
 </aside>
@@ -413,116 +412,76 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 
 <!-- =========================== KOMPONENS: Hero ============================ -->
 <section class="band hero wrap" id="hero">
-  <div class="hero-top">
+  <div class="hero-top" data-parallax="-0.06">
     <span class="chip"><i class="dot"></i> Nyitva &nbsp;<b>08:30 – 16:15</b></span>
     <span class="chip">Hó a hegyen <b>82 cm</b></span>
-    <span class="chip">Friss hó 24 ó <b>12 cm</b></span>
-    <span class="chip"><i class="dot dot--warn"></i> Felvonók <b>5 / 6</b></span>
   </div>
 
-  <p class="eyebrow">Ausztria &middot; Salzburg tartomány</p>
+  <div data-parallax="-0.14">
+    <p class="eyebrow">Ausztria &middot; 940 – 2 340 m</p>
+    <h1 id="hero-title">
+      <span class="l"><i>Ezernégyszáz méter</i></span>
+      <span class="l"><i>lefelé, <em>egy nyom</em> alatt.</i></span>
+    </h1>
+  </div>
 
-  <h1 id="hero-title">
-    <span class="l"><i>Ezernégyszáz méter</i></span>
-    <span class="l"><i>lefelé, <em>egy nyom</em> alatt.</i></span>
-  </h1>
-
-  <div class="hero-foot">
-    <div>
-      <p class="lede" style="margin-top:1.2rem">
-        A völgyállomástól a gerincig: hat felvonó, tizenegy pálya és egy vendégház,
-        ahol a hólapát az ajtó mellett áll. Görgess — és emelkedj velünk.
-      </p>
-      <div class="hero-ctas" style="margin-top:1.6rem">
-        <a class="btn" href="#jegyek" data-magnetic>Jegyek és bérletek</a>
-        <a class="btn btn--ghost" href="#hohelyzet" data-magnetic>Mai hóhelyzet</a>
-      </div>
+  <div class="hero-foot" data-parallax="-0.22">
+    <div class="hero-ctas">
+      <a class="btn" href="#jegyek" data-magnetic>Jegyek</a>
+      <a class="btn btn--ghost" href="#hohelyzet" data-magnetic>Mai hóhelyzet</a>
     </div>
     <div class="ascent">
-      <span><b class="mono">940</b><br>völgy</span>
+      <span><b class="mono">940</b></span>
       <span class="ascent-bar"></span>
-      <span><b class="mono">2 340</b><br>csúcs</span>
+      <span><b class="mono">2 340</b></span>
     </div>
   </div>
 
-  <div class="scroll-hint"><i></i> Görgetés = emelkedés</div>
+  <div class="scroll-hint" data-parallax="-0.3"><i></i> Görgetés = emelkedés</div>
 </section>
 
 <!-- ====================== KOMPONENS: LiveConditions ====================== -->
 <section class="band wrap" id="hohelyzet">
-  <div class="head rise">
+  <div class="head rise" data-parallax="0.07">
     <p class="eyebrow">01 &middot; Hóhelyzet</p>
-    <h2>Ma reggel 07:40-kor<br>a hegy ezt mutatta.</h2>
-    <p class="lede">Minden érték egy adatforrásból jön, és a fejlécben látható státusszal együtt frissül.</p>
+    <h2>Ma reggel 07:40.</h2>
   </div>
 
   <dl class="gauges rise">
-    <div class="gauge">
-      <dt>Hó — hegy</dt><dd class="mono">82<u>cm</u></dd>
-      <div class="meter"><i style="width:68%"></i></div>
-      <span class="sub">Poros, előkészített</span>
-    </div>
-    <div class="gauge">
-      <dt>Hó — völgy</dt><dd class="mono">41<u>cm</u></dd>
-      <div class="meter"><i style="width:34%"></i></div>
-      <span class="sub">Géppel havazott alap</span>
-    </div>
-    <div class="gauge">
-      <dt>Hőmérséklet</dt><dd class="mono">−4<u>°C</u></dd>
-      <span class="sub">Gerincen −9 °C</span>
-    </div>
-    <div class="gauge">
-      <dt>Szél</dt><dd class="mono">14<u>km/h</u></dd>
-      <span class="sub">Északnyugati</span>
-    </div>
-    <div class="gauge">
-      <dt>Friss hó 72 ó</dt><dd class="mono">24<u>cm</u></dd>
-      <span class="sub">24 ó: 12 cm &middot; 48 ó: 18 cm</span>
-    </div>
-    <div class="gauge">
-      <dt>Nyitott pálya</dt><dd class="mono">8<u>/ 11</u></dd>
-      <div class="meter"><i style="width:73%"></i></div>
-      <span class="sub">5 felvonó üzemel a 6-ból</span>
-    </div>
+    <div class="gauge"><dt>Hó — hegy</dt><dd class="mono">82<u>cm</u></dd><div class="meter"><i style="width:68%"></i></div></div>
+    <div class="gauge"><dt>Hó — völgy</dt><dd class="mono">41<u>cm</u></dd><div class="meter"><i style="width:34%"></i></div></div>
+    <div class="gauge"><dt>Hőmérséklet</dt><dd class="mono">&minus;4<u>°C</u></dd><span class="sub">Gerincen &minus;9 °C</span></div>
+    <div class="gauge"><dt>Nyitott pálya</dt><dd class="mono">8<u>/ 11</u></dd><div class="meter"><i style="width:73%"></i></div></div>
   </dl>
 
   <div class="report">
-    <ul class="forecast rise">
-      <li><span class="day">Ma</span><span class="txt">Havazás, korlátozott látótávolság a gerincen</span><span class="temps mono">−3° <span>/ −7°</span></span></li>
-      <li><span class="day">Holnap</span><span class="txt">Felszakadozó felhőzet, gyenge szél</span><span class="temps mono">−2° <span>/ −8°</span></span></li>
-      <li><span class="day">Harmadnap</span><span class="txt">Napos, hideg reggel, kiváló láthatóság</span><span class="temps mono">−1° <span>/ −11°</span></span></li>
-      <li><span class="day">Negyednap</span><span class="txt">Fátyolfelhők, délután érkező front</span><span class="temps mono">0° <span>/ −6°</span></span></li>
+    <ul class="forecast rise" data-parallax="0.05">
+      <li><span class="day">Ma</span><span class="txt">Havazás, gerincen párás</span><span class="temps mono">&minus;3° <span>/ &minus;7°</span></span></li>
+      <li><span class="day">Holnap</span><span class="txt">Felszakadozó felhőzet</span><span class="temps mono">&minus;2° <span>/ &minus;8°</span></span></li>
+      <li><span class="day">Szerda</span><span class="txt">Napos, kiváló láthatóság</span><span class="temps mono">&minus;1° <span>/ &minus;11°</span></span></li>
     </ul>
-    <div class="panel avalanche rise">
+    <div class="panel avalanche rise" data-parallax="0.12">
       <p class="eyebrow" style="color:var(--warn)">Lavinaveszély</p>
-      <div>
-        <div class="ava-scale">
-          <i data-n="1" data-on="true"></i><i data-n="2" data-on="true"></i><i data-n="3"></i><i data-n="4"></i><i data-n="5"></i>
-        </div>
+      <div class="ava-scale">
+        <i data-n="1" data-on="true"></i><i data-n="2" data-on="true"></i><i data-n="3"></i><i data-n="4"></i><i data-n="5"></i>
       </div>
-      <p style="margin-top:1rem;font-size:.86rem;color:var(--fg-soft)">
-        <b style="color:var(--fg)">2 — mérsékelt</b> az európai ötfokozatú skálán.
-        Jelzett pályán kívül a gerinc északi oldalán fokozott figyelem javasolt.
-      </p>
+      <p class="ava-txt"><b>2 — mérsékelt</b> az ötfokozatú skálán.</p>
     </div>
   </div>
-
-  <div class="demo-note"><b>Demó</b><span>A hóadatok, előrejelzés és lavinafokozat bemutató értékek. Éles üzemben ezek a mezők API-ból frissülnek — a komponensek változtatás nélkül fogadják.</span></div>
 </section>
 
 <!-- ========================== KOMPONENS: Pistes ========================== -->
 <section class="band wrap" id="palyak">
-  <div class="head rise">
+  <div class="head rise" data-parallax="0.07">
     <p class="eyebrow">02 &middot; Pályák</p>
-    <h2>Tizenegy pálya,<br>három nehézségi fokozat.</h2>
-    <p class="lede">Európai jelölés: kék = könnyű, piros = közepes, fekete = nehéz. A kártyák a mai állapotot mutatják.</p>
+    <h2>Tizenegy pálya,<br>három fokozat.</h2>
   </div>
 
   <div class="piste-grid rise" id="piste-grid"></div>
 
-  <div class="panel profile-wrap rise">
+  <div class="panel profile-wrap rise" data-parallax="0.06">
     <div class="profile-head">
-      <h3>Magassági szelvény — a hat fő levezetés</h3>
+      <h3>Magassági szelvény</h3>
       <div class="profile-legend">
         <span><i style="background:var(--piste-blue)"></i> Kék</span>
         <span><i style="background:var(--piste-red)"></i> Piros</span>
@@ -535,9 +494,9 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 
 <!-- ========================== KOMPONENS: Lifts =========================== -->
 <section class="band wrap" id="felvonok">
-  <div class="head rise">
+  <div class="head rise" data-parallax="0.07">
     <p class="eyebrow">03 &middot; Felvonók</p>
-    <h2>Mi jár most,<br>és meddig.</h2>
+    <h2>Mi jár most.</h2>
   </div>
   <div class="scroll-x rise">
     <table class="lift-table">
@@ -545,36 +504,32 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <tbody id="lift-body"></tbody>
     </table>
   </div>
-  <div class="demo-note"><b>Demó</b><span>A nyitvatartás és a státuszok bemutató értékek. A táblázat adat-agnosztikus: egy tömböt vár, a forrás bármi lehet.</span></div>
 </section>
 
 <!-- ========================= KOMPONENS: Gallery ========================== -->
 <section class="band wrap" id="galeria">
-  <div class="head rise">
+  <div class="head rise" data-parallax="0.07">
     <p class="eyebrow">04 &middot; A hegy három arca</p>
     <h2>Reggel, délben,<br>reflektorfényben.</h2>
   </div>
   <div class="strips rise">
-    <figure class="strip"><canvas data-scape="dawn"></canvas><figcaption><b>Első nyom</b><small>08:30 &middot; Völgyállomás</small></figcaption></figure>
-    <figure class="strip"><canvas data-scape="day"></canvas><figcaption><b>Gerincpanoráma</b><small>12:10 &middot; 2 340 m</small></figcaption></figure>
-    <figure class="strip"><canvas data-scape="night"></canvas><figcaption><b>Esti síelés</b><small>18:00 – 21:00 &middot; B felvonó</small></figcaption></figure>
+    <figure class="strip" data-parallax="0.16"><canvas data-scape="dawn"></canvas><figcaption><b>Első nyom</b><small>08:30 &middot; Völgyállomás</small></figcaption></figure>
+    <figure class="strip" data-parallax="-0.05"><canvas data-scape="day"></canvas><figcaption><b>Gerincpanoráma</b><small>12:10 &middot; 2 340 m</small></figcaption></figure>
+    <figure class="strip" data-parallax="0.22"><canvas data-scape="night"></canvas><figcaption><b>Esti síelés</b><small>18:00 – 21:00</small></figcaption></figure>
   </div>
-  <div class="demo-note"><b>Kép</b><span>A három vizuál generatív (canvas) helyőrző, hogy a demó egyetlen fájl maradjon. Emergentben ezek a blokkok fotóra cserélhetők a képarány megtartásával.</span></div>
 </section>
 
 <!-- ========================= KOMPONENS: Tickets ========================== -->
 <section class="band wrap" id="jegyek">
-  <div class="head rise">
+  <div class="head rise" data-parallax="0.07">
     <p class="eyebrow">05 &middot; Jegyek</p>
-    <h2>Számold ki,<br>mikor éri meg a bérlet.</h2>
-    <p class="lede">Nem listát adunk, hanem választ: állítsd be, hány napot síelnél a szezonban.</p>
+    <h2>Mikor éri meg<br>a bérlet?</h2>
   </div>
 
   <div class="ticket-layout">
-    <div class="tickets rise" id="ticket-list"></div>
+    <div class="tickets rise" id="ticket-list" data-parallax="0.05"></div>
 
-    <div class="panel calc rise">
-      <h3>Bérletkalkulátor</h3>
+    <div class="panel calc rise" data-parallax="0.13">
       <div class="seg" role="group" aria-label="Korosztály">
         <button type="button" data-age="child" aria-pressed="false">Gyermek</button>
         <button type="button" data-age="youth" aria-pressed="false">Ifjúsági</button>
@@ -583,44 +538,38 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       </div>
       <div>
         <div class="calc-row">
-          <label for="days">Síelt napok a szezonban</label>
+          <label for="days">Síelt napok</label>
           <output id="days-out" class="mono" for="days">9</output>
         </div>
         <input id="days" type="range" min="1" max="30" step="1" value="9">
       </div>
       <div class="calc-result">
-        <div id="res-day"><span>Napijegyekkel</span><b class="mono" id="sum-day">468 €</b></div>
+        <div id="res-day"><span>Napijeggyel</span><b class="mono" id="sum-day">468 €</b></div>
         <div id="res-season"><span>Szezonbérlettel</span><b class="mono" id="sum-season">420 €</b></div>
       </div>
       <p class="calc-verdict" id="verdict"></p>
       <a class="btn btn--lamp" href="#vendeghaz" data-magnetic>Bérletet váltok</a>
     </div>
   </div>
-
-  <div class="demo-note"><b>Demó árak</b><span>Az összegek bemutató értékek a kalkulátor működéséhez. Az éles árlista egyetlen adatfájlban cserélhető — a komponensek nem módosulnak.</span></div>
 </section>
 
 <!-- ===================== KOMPONENS: Guesthouse / CTA ===================== -->
 <section class="band wrap" id="vendeghaz">
   <div class="house">
-    <div class="rise">
+    <div class="rise" data-parallax="0.08">
       <p class="eyebrow">06 &middot; Vendégház</p>
-      <h2 style="font-size:var(--step-3);margin-top:1rem">Teljes ház,<br>a felvonó tövében.</h2>
-      <p class="lede" style="margin-top:1.1rem">
-        A Ludwighause egyben bérelhető: saját konyha, kandalló, síszárító és
-        egy teraszra nyíló ajtó, amin át kilépve már a pálya alján állsz.
-      </p>
+      <h2>Teljes ház,<br>a felvonó tövében.</h2>
       <div class="house-figs">
         <div><b class="mono">24</b><small>Férőhely</small></div>
         <div><b class="mono">7</b><small>Hálószoba</small></div>
-        <div><b class="mono">120<span style="font-size:.55em"> m</span></b><small>A felvonótól</small></div>
+        <div><b class="mono">120 m</b><small>A felvonótól</small></div>
       </div>
-      <div class="hero-ctas" style="margin-top:1.8rem">
+      <div class="hero-ctas">
         <a class="btn" href="#vendeghaz" data-magnetic>Ajánlatot kérek</a>
         <a class="btn btn--ghost" href="#hohelyzet" data-magnetic>Szabad időpontok</a>
       </div>
     </div>
-    <div class="rise"><canvas id="house-canvas" aria-label="A vendégház és a felvonó vázlatos éjszakai látképe"></canvas></div>
+    <div class="rise" data-parallax="-0.1"><canvas id="house-canvas" aria-label="A vendégház és a felvonó vázlatos éjszakai látképe"></canvas></div>
   </div>
 </section>
 
@@ -628,24 +577,21 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 <footer class="foot wrap">
   <div class="foot-grid">
     <div>
-      <a class="brand" href="#top" style="margin-bottom:.9rem">
+      <a class="brand" href="#top">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M2 20h20L14.5 5.5 11 12l-2.2-3.4L2 20Z" fill="#43B4BB"/>
           <path d="M14.5 5.5 11 12l1.8 2.8L16.2 9l-1.7-3.5Z" fill="#E9F1F7"/>
         </svg>
-        <span>Ludwighause<small>Sípálya &amp; Vendégház</small></span>
+        <span>Ludwighause<small>940 – 2 340 m</small></span>
       </a>
-      <p style="font-size:.85rem;color:var(--fg-soft);max-width:34ch">
-        Völgyállomás 940 m &middot; Gerinc 2 340 m<br>Salzburg tartomány, Ausztria
-      </p>
     </div>
-    <div><h4>A hegy</h4><ul><li><a href="#hohelyzet">Hójelentés</a></li><li><a href="#palyak">Pályatérkép</a></li><li><a href="#felvonok">Felvonók</a></li><li><a href="#galeria">Webkamerák</a></li></ul></div>
-    <div><h4>Tervezés</h4><ul><li><a href="#jegyek">Jegyek és bérletek</a></li><li><a href="#jegyek">Síiskola</a></li><li><a href="#vendeghaz">Szállás</a></li><li><a href="#vendeghaz">Csoportoknak</a></li></ul></div>
-    <div><h4>Kapcsolat</h4><ul><li><a href="#top">Megközelítés</a></li><li><a href="#top">GYIK</a></li><li><a href="#top">Kapcsolat</a></li></ul></div>
+    <div><h4>A hegy</h4><ul><li><a href="#hohelyzet">Hójelentés</a></li><li><a href="#palyak">Pályák</a></li><li><a href="#felvonok">Felvonók</a></li></ul></div>
+    <div><h4>Tervezés</h4><ul><li><a href="#jegyek">Jegyek</a></li><li><a href="#vendeghaz">Szállás</a></li><li><a href="#vendeghaz">Csoportoknak</a></li></ul></div>
+    <div><h4>Kapcsolat</h4><ul><li><a href="#top">Megközelítés</a></li><li><a href="#top">GYIK</a></li><li><a href="#top">Írok</a></li></ul></div>
   </div>
   <div class="foot-bottom">
-    <span>© 2026 Ludwighause — demó felület</span>
-    <span>HU &middot; DE &middot; EN</span>
+    <span>© 2026 Ludwighause</span>
+    <span>Demó adatok &middot; HU / DE / EN</span>
   </div>
 </footer>
 </main>
@@ -729,8 +675,8 @@ function ramp(stops, p){
 }
 const SKY_TOP    = [[0,'#07120F'],[.45,'#0C2038'],[.78,'#4E7396'],[1,'#93B3CC']];
 const SKY_BOTTOM = [[0,'#0E2540'],[.45,'#2A4E73'],[.78,'#A9C4D8'],[1,'#E9F1F7']];
-const RIDGE_DARK = ['#12283F','#0D1F32','#081522','#040C14'];
-const RIDGE_LITE = ['#BACEDE','#93AFC7','#6C8CAA','#44627E'];
+const RIDGE_DARK = ['#12283F','#0D1F32','#081522','#040C14','#020609'];
+const RIDGE_LITE = ['#BACEDE','#93AFC7','#6C8CAA','#44627E','#2C4760'];
 
 const tickers = [];
 const onTick = fn => tickers.push(fn);
@@ -816,7 +762,8 @@ window.addEventListener('pointermove', e => {
       { pts: ridge(9137, 6, 1.05), base:.52, speed:.06, amp:.55 },
       { pts: ridge(4421, 6, .92),  base:.64, speed:.13, amp:.72 },
       { pts: ridge(7788, 7, .78),  base:.78, speed:.24, amp:.90 },
-      { pts: ridge(1553, 7, .62),  base:.94, speed:.40, amp:1.05 },
+      { pts: ridge(1553, 7, .62),  base:.94, speed:.42, amp:1.05 },
+      { pts: ridge(2909, 7, .48),  base:1.16, speed:.66, amp:1.25 },
     ];
 
     const count = clamp(Math.round(W*H/16000), 26, 110);
@@ -960,16 +907,12 @@ window.addEventListener('pointermove', e => {
     <article class="panel piste" data-status="${p.status}">
       <div class="piste-top">
         <span class="grade"><i style="background:${GRADE[p.grade].color}"></i>${GRADE[p.grade].label}</span>
-        <span class="status-pill" style="color:${p.status==='open'?'var(--ok)':'var(--stop)'}">
-          ${p.status==='open'?'Nyitva':'Zárva'}
-        </span>
+        <span class="status-pill" style="color:${p.status==='open'?'var(--ok)':'var(--stop)'}">${p.status==='open'?'Nyitva':'Zárva'}</span>
       </div>
       <h3>${p.name}<span>${p.sub}</span></h3>
-      <div class="piste-flags">${p.flags.map(f=>`<span class="flag">${f}</span>`).join('')}</div>
       <div class="piste-figs">
         <div><b class="mono">${p.len.toLocaleString('hu-HU')} m</b><small>Hossz</small></div>
-        <div><b class="mono">${p.vert} m</b><small>Szintkülönbség</small></div>
-        <div><b class="mono">${p.bottom.toLocaleString('hu-HU')}–${p.top.toLocaleString('hu-HU')}</b><small>Magasság</small></div>
+        <div><b class="mono">${p.vert} m</b><small>Szint</small></div>
       </div>
     </article>`).join('');
 
@@ -1147,7 +1090,6 @@ window.addEventListener('pointermove', e => {
       <div class="ticket" data-best="${t.id==='season'}">
         <b>${t.name}</b>
         <span class="price mono">${fmt(t.price[age])}${t.perDay?'<u> / nap</u>':''}</span>
-        <p>${t.desc}</p>
       </div>`).join('');
   }
 
@@ -1266,6 +1208,42 @@ window.addEventListener('pointermove', e => {
 })();
 
 /* --------------------------------------------------------------------------
+   13b. KOMPONENS: Parallax — mélységrétegek a görgetésben
+   Minden [data-parallax] elem a saját sebességén mozog, amikor a nézetben van.
+   Egyetlen tick, transform-only, layoutot nem érint.
+   -------------------------------------------------------------------------- */
+(function Parallax(){
+  const nodes = [...document.querySelectorAll('[data-parallax]')].map(el => ({
+    el, k: parseFloat(el.dataset.parallax) || 0, live: false, cur: 0,
+  }));
+  if (!nodes.length) return;
+
+  if ('IntersectionObserver' in window){
+    const io = new IntersectionObserver(es => {
+      es.forEach(e => { const n = nodes.find(n => n.el === e.target); if (n) n.live = e.isIntersecting; });
+    }, { rootMargin: '20% 0px 20% 0px' });
+    nodes.forEach(n => io.observe(n.el));
+  } else nodes.forEach(n => n.live = true);
+
+  onTick(s => {
+    if (!s.motion){
+      nodes.forEach(n => { if (n.cur !== 0){ n.cur = 0; n.el.style.transform = ''; } });
+      return;
+    }
+    const mid = s.h / 2;
+    for (const n of nodes){
+      if (!n.live) continue;
+      const r = n.el.getBoundingClientRect();
+      const d = (r.top + r.height / 2 - mid) / s.h;   // -1..1 a nézet közepéhez képest
+      const y = d * n.k * 130;
+      if (Math.abs(y - n.cur) < .12) continue;
+      n.cur = y;
+      n.el.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+    }
+  });
+})();
+
+/* --------------------------------------------------------------------------
    14. Indítás
    -------------------------------------------------------------------------- */
 measure(); paint();
@@ -1276,3 +1254,85 @@ reduced.addEventListener('change', e => {
 });
 })();
 </script>
+
+<style>
+/* ============================================================================
+   FINOMÍTÁS — kevesebb elem, több levegő, mélyebb parallax
+   ========================================================================= */
+section.band{ padding-block:clamp(6rem, 17vh, 12rem); }
+section.band + section.band{ border-top:0; }
+.wrap{ max-width:1180px; }
+
+.head{ gap:1.4rem; margin-bottom:clamp(3rem, 8vh, 5.5rem); }
+.head h2{ font-size:clamp(2.4rem, 1.6rem + 3.4vw, 4.6rem); letter-spacing:-.035em; line-height:.98; }
+.eyebrow{ letter-spacing:.22em; }
+.lede{ font-size:var(--step-1); }
+
+/* Hero — nagyobb csend a blokkok között */
+.hero{ min-height:min(100vh,940px); gap:0; }
+.hero h1{ margin-block:clamp(2rem,6vh,3.4rem) 0; letter-spacing:-.04em; }
+.hero-foot{ margin-top:clamp(2.4rem,6vh,3.6rem); align-items:center; }
+.hero-ctas{ gap:.8rem; }
+.scroll-hint{ margin-top:clamp(2.4rem,6vh,4rem); }
+.ascent{ gap:1.1rem; }
+.ascent b{ font-size:1rem; }
+.hero-top{ gap:.6rem; }
+
+/* Műszerfal — négy érték, nagyobb számok */
+.gauges{ grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); border-radius:18px; }
+.gauge{ padding:1.6rem 1.5rem 1.45rem; gap:.5rem; }
+.gauge dd{ font-size:clamp(2rem,4.2vw,2.9rem); }
+.gauge dt{ letter-spacing:.18em; }
+
+.report{ grid-template-columns:1.25fr .75fr; gap:2.5rem; margin-top:2.5rem; }
+.forecast li{ padding:1.05rem 0; }
+.avalanche{ padding:1.6rem; gap:1.1rem; }
+.ava-scale i{ height:30px; }
+.ava-txt{ margin-top:1.1rem; font-size:.88rem; color:var(--fg-soft); }
+.ava-txt b{ color:var(--fg); }
+
+/* Pályakártyák — letisztult, két adat */
+.piste-grid{ gap:1.15rem; }
+.piste{ padding:1.5rem; min-height:190px; gap:1.2rem; border-radius:18px; }
+.piste h3{ font-size:clamp(1.35rem,2vw,1.7rem); }
+.piste-figs{ gap:2rem; }
+.piste-figs b{ font-size:1.15rem; }
+
+.profile-wrap{ margin-top:2.5rem; padding:1.5rem 1.5rem .9rem; border-radius:18px; }
+#profile{ height:210px; }
+
+/* Felvonók */
+.lift-table td{ padding-block:1.05rem; }
+
+/* Galéria — a három sáv külön mélységben úszik */
+.strips{ gap:1.15rem; align-items:start; }
+.strip{ border-radius:18px; }
+.strip:nth-child(2){ margin-top:clamp(1rem,5vw,3.5rem); }
+
+/* Jegyek */
+.tickets{ border-radius:18px; }
+.ticket{ padding:1.35rem 1.5rem; grid-template-columns:1fr auto; }
+.ticket b{ font-size:1.05rem; font-weight:700; }
+.ticket .price{ grid-row:1; font-size:1.5rem; }
+.calc{ padding:1.7rem; gap:1.5rem; border-radius:18px; }
+.ticket-layout{ gap:2rem; }
+.calc-verdict{ font-size:.88rem; line-height:1.55; }
+
+/* Vendégház */
+.house{ gap:clamp(2.5rem,6vw,4.5rem); }
+.house h2{ font-size:clamp(2.2rem,1.5rem + 2.6vw,3.6rem); margin-top:1.4rem; letter-spacing:-.035em; }
+.house-figs{ margin-top:2.5rem; gap:1.5rem; }
+.house-figs b{ font-size:1.7rem; }
+.hero-ctas{ margin-top:2.2rem; }
+#house-canvas{ height:clamp(280px,34vw,400px); border-radius:18px; }
+
+/* Lábléc */
+.hero-foot .hero-ctas{ margin-top:0; }
+.foot{ padding-block:4rem 3.5rem; }
+.foot-grid{ gap:2.5rem; }
+.foot-bottom{ margin-top:3.5rem; }
+
+/* Parallax elemek — a transformot a JS írja, itt csak a réteg készül elő */
+[data-parallax]{ will-change:transform; }
+@media (prefers-reduced-motion:reduce){ [data-parallax]{ transform:none !important; } }
+</style>
