@@ -1,0 +1,10 @@
+{
+  "name": "Síközpont — hóhelyzet, jegyek és szállás",
+  "short_name": "Síközpont",
+  "description": "Aktuális hóhelyzet, pályák és felvonók állapota, jegyárak és teljes ház szállás.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7FAFC",
+  "theme_color": "#0E2540",
+  "icons": []
+}
