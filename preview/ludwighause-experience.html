@@ -1,0 +1,1278 @@
+<title>Ludwighause 2340</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<style>
+/* ============================================================================
+   LUDWIGHAUSE — ÉLMÉNYOLDAL
+   Design token réteg. Emergent-portoláskor ez a blokk kerül a globális stíluslapba.
+   A lap egy szándékosan egységes vizuális világ: a paletta nem a néző
+   témájától, hanem a MAGASSÁGTÓL függ (völgy -> gerinc -> csúcs).
+   Ezért minden szín explicit; a body háttere is token, sosem öröklött.
+   ========================================================================= */
+:root{
+  /* Alap paletta */
+  --pine:      #0A1614;   /* völgy: fenyves éjszaka */
+  --deep:      #0E2540;   /* gerinc: kék óra */
+  --ink:       #08182B;   /* legmélyebb kék, szövegszín világos sávon */
+  --whiteout:  #E9F1F7;   /* csúcs: felhő felett */
+  --glacier:   #43B4BB;   /* akcentus — gleccser türkiz */
+  --lamp:      #F2A65A;   /* meleg kunyhófény — CSAK a völgysávban */
+
+  /* Sípálya-jelölés (szemantikus, NEM akcentus) */
+  --piste-blue:  #3C8FDD;
+  --piste-red:   #DC4F63;
+  --piste-black: #C8D3DE;
+
+  /* Státusz */
+  --ok:    #46C08A;
+  --warn:  #E8A33D;
+  --stop:  #E06A78;
+
+  /* Futó (scroll által vezérelt) értékek — JS írja */
+  --sky-top:    #0A1614;
+  --sky-bottom: #0E2540;
+  --fg:         #E9F1F7;
+  --fg-soft:    rgba(233,241,247,.66);
+  --fg-faint:   rgba(233,241,247,.34);
+  --rule:       rgba(233,241,247,.14);
+  --panel:      rgba(233,241,247,.05);
+  --panel-edge: rgba(233,241,247,.12);
+
+  /* Tipográfia */
+  --display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+  --body:    'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:    'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --step--1: clamp(.75rem, .72rem + .15vw, .82rem);
+  --step-0:  clamp(1rem, .96rem + .2vw, 1.08rem);
+  --step-1:  clamp(1.2rem, 1.1rem + .5vw, 1.5rem);
+  --step-2:  clamp(1.5rem, 1.3rem + 1vw, 2.1rem);
+  --step-3:  clamp(2rem, 1.6rem + 2vw, 3.2rem);
+  --step-4:  clamp(2.8rem, 1.9rem + 4.4vw, 6.4rem);
+
+  --gutter: clamp(1rem, 4vw, 3.5rem);
+  --maxw: 1240px;
+  --ease: cubic-bezier(.22,1,.36,1);
+
+  color-scheme: dark;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--fg);
+  font-family:var(--body);
+  font-size:var(--step-0);
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:color .6s linear;
+}
+
+h1,h2,h3{ font-family:var(--display); font-weight:800; line-height:1.02; letter-spacing:-.022em; text-wrap:balance; margin:0; }
+p{ margin:0; text-wrap:pretty; }
+a{ color:inherit; }
+
+.mono{ font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+
+:focus-visible{
+  outline:2px solid var(--glacier);
+  outline-offset:3px;
+  border-radius:6px;
+}
+
+/* --- Háttérrétegek ------------------------------------------------------- */
+#sky{
+  position:fixed; inset:0; z-index:-3;
+  background:linear-gradient(178deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+  transition:background .25s linear;
+}
+#scene{ position:fixed; inset:0; z-index:-2; width:100%; height:100%; display:block; }
+#grain{
+  position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.22;
+  background-image:radial-gradient(circle at 1px 1px, rgba(255,255,255,.28) .5px, transparent 0);
+  background-size:3px 3px;
+  mix-blend-mode:overlay;
+}
+
+/* --- Elrendezés ---------------------------------------------------------- */
+.wrap{ width:100%; max-width:var(--maxw); margin-inline:auto; padding-inline:var(--gutter); }
+
+section.band{ position:relative; padding-block:clamp(4.5rem,11vh,8.5rem); }
+section.band + section.band{ border-top:1px solid var(--rule); }
+
+.eyebrow{
+  font-family:var(--mono); font-size:var(--step--1); letter-spacing:.16em;
+  text-transform:uppercase; color:var(--glacier); display:flex; align-items:center; gap:.7rem;
+}
+.eyebrow::before{ content:''; width:26px; height:1px; background:currentColor; flex:none; }
+
+.lede{ color:var(--fg-soft); max-width:60ch; font-size:var(--step-1); line-height:1.5; }
+
+.head{ display:flex; flex-direction:column; gap:1rem; margin-bottom:clamp(2rem,5vh,3.5rem); }
+.head h2{ font-size:var(--step-3); }
+
+/* --- Műszerfal-stílusú felület ------------------------------------------- */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--panel-edge);
+  border-radius:14px;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+</style>
+<style>
+/* ============================================================================
+   KOMPONENSEK — mindegyik blokk 1:1 egy React komponensnek felel meg.
+   ========================================================================= */
+
+/* --- AltitudeRail: jobb szélső magasságmérő ------------------------------ */
+.rail{
+  position:fixed; right:clamp(.5rem,1.6vw,1.4rem); top:50%; translate:0 -50%;
+  z-index:40; display:flex; flex-direction:column; align-items:flex-end; gap:.6rem;
+  pointer-events:none;
+}
+.rail-alt{ font-family:var(--mono); font-size:clamp(1.05rem,2vw,1.5rem); font-weight:700; line-height:1; }
+.rail-alt small{ font-size:.55em; font-weight:400; color:var(--fg-soft); margin-left:.25em; }
+.rail-zone{
+  font-family:var(--mono); font-size:.62rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--glacier);
+}
+.rail-track{
+  position:relative; width:2px; height:min(38vh,300px); background:var(--rule); border-radius:2px;
+  margin-right:calc(clamp(1.05rem,2vw,1.5rem) * .5);
+}
+.rail-fill{ position:absolute; left:0; top:0; width:100%; background:var(--glacier); border-radius:2px; height:0%; }
+.rail-tick{ position:absolute; right:6px; translate:0 -50%; font-family:var(--mono); font-size:.58rem; color:var(--fg-faint); white-space:nowrap; }
+@media (max-width:900px){ .rail-track{ display:none; } .rail{ top:auto; bottom:.75rem; right:.75rem; translate:0 0; flex-direction:row; align-items:baseline; gap:.5rem; } }
+
+/* --- Nav ----------------------------------------------------------------- */
+.nav{
+  position:fixed; inset-inline:0; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding:.85rem var(--gutter);
+  border-bottom:1px solid transparent;
+  transition:background .4s var(--ease), border-color .4s var(--ease), padding .4s var(--ease);
+}
+.nav[data-stuck="true"]{
+  background:color-mix(in srgb, var(--sky-top) 82%, transparent);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border-bottom-color:var(--rule);
+  padding-block:.55rem;
+}
+.brand{ display:flex; align-items:center; gap:.65rem; text-decoration:none; font-family:var(--display); font-weight:800; letter-spacing:-.03em; font-size:1.05rem; }
+.brand svg{ flex:none; }
+.brand span small{ display:block; font-family:var(--mono); font-weight:400; font-size:.56rem; letter-spacing:.2em; color:var(--fg-soft); text-transform:uppercase; }
+.nav-links{ display:flex; gap:.25rem; list-style:none; margin:0; padding:0; }
+.nav-links a{
+  text-decoration:none; font-size:.86rem; font-weight:500; padding:.45rem .7rem; border-radius:8px;
+  color:var(--fg-soft); transition:color .2s, background .2s;
+}
+.nav-links a:hover{ color:var(--fg); background:var(--panel); }
+.nav-tools{ display:flex; align-items:center; gap:.5rem; }
+@media (max-width:1000px){ .nav-links{ display:none; } }
+
+.btn{
+  display:inline-flex; align-items:center; gap:.5rem; border:0; cursor:pointer;
+  font-family:var(--body); font-weight:700; font-size:.86rem; letter-spacing:-.01em;
+  padding:.62rem 1.1rem; border-radius:999px; text-decoration:none;
+  background:var(--glacier); color:#04191B;
+  transition:transform .35s var(--ease), box-shadow .35s var(--ease), background .3s;
+  will-change:transform;
+}
+.btn:hover{ box-shadow:0 8px 30px -8px color-mix(in srgb, var(--glacier) 70%, transparent); }
+.btn--ghost{ background:transparent; color:var(--fg); border:1px solid var(--panel-edge); }
+.btn--ghost:hover{ background:var(--panel); box-shadow:none; }
+.btn--lamp{ background:var(--lamp); color:#2B1602; }
+
+.toggle-motion{
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.12em; text-transform:uppercase;
+  background:transparent; border:1px solid var(--panel-edge); color:var(--fg-soft);
+  border-radius:999px; padding:.42rem .7rem; cursor:pointer; transition:color .2s, border-color .2s;
+}
+.toggle-motion:hover{ color:var(--fg); border-color:var(--glacier); }
+
+/* --- Hero ---------------------------------------------------------------- */
+.hero{ min-height:min(96vh,880px); display:flex; flex-direction:column; justify-content:flex-end; padding-top:7rem; padding-bottom:clamp(2.5rem,7vh,5rem); }
+.hero-top{ display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:auto; }
+.chip{
+  display:inline-flex; align-items:center; gap:.45rem;
+  font-family:var(--mono); font-size:.66rem; letter-spacing:.09em; text-transform:uppercase;
+  padding:.36rem .7rem; border-radius:999px; border:1px solid var(--panel-edge); background:var(--panel);
+  color:var(--fg-soft);
+}
+.chip b{ color:var(--fg); font-weight:700; }
+.dot{ width:6px; height:6px; border-radius:50%; background:var(--ok); flex:none; box-shadow:0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent); }
+.dot--warn{ background:var(--warn); box-shadow:0 0 0 3px color-mix(in srgb, var(--warn) 22%, transparent); }
+
+.hero h1{ font-size:var(--step-4); margin-block:clamp(1.5rem,4vh,2.6rem) 0; }
+.hero h1 .l{ display:block; overflow:hidden; }
+.hero h1 .l > i{ display:block; font-style:normal; translate:0 0; }
+.hero h1 em{ font-style:normal; color:var(--glacier); }
+.hero-foot{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:2rem; margin-top:clamp(1.5rem,4vh,2.4rem); }
+.hero-ctas{ display:flex; flex-wrap:wrap; gap:.6rem; }
+
+.ascent{ display:flex; align-items:center; gap:.9rem; font-family:var(--mono); font-size:.8rem; color:var(--fg-soft); }
+.ascent b{ color:var(--fg); font-size:1.15rem; }
+.ascent-bar{ position:relative; width:clamp(60px,14vw,160px); height:1px; background:var(--rule); }
+.ascent-bar::after{ content:''; position:absolute; inset:0; background:linear-gradient(90deg,var(--lamp),var(--glacier)); }
+
+.scroll-hint{ display:flex; align-items:center; gap:.6rem; font-family:var(--mono); font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:var(--fg-faint); margin-top:2.2rem; }
+.scroll-hint i{ display:block; width:1px; height:26px; background:linear-gradient(var(--glacier), transparent); }
+
+/* --- LiveConditions: műszerfal ------------------------------------------- */
+.gauges{ display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:1px; background:var(--panel-edge); border:1px solid var(--panel-edge); border-radius:14px; overflow:hidden; }
+.gauge{ background:color-mix(in srgb, var(--sky-bottom) 62%, transparent); padding:1.2rem 1.15rem 1.05rem; display:flex; flex-direction:column; gap:.3rem; }
+.gauge dt{ font-family:var(--mono); font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); }
+.gauge dd{ margin:0; font-family:var(--mono); font-size:clamp(1.5rem,3.2vw,2.05rem); font-weight:700; line-height:1; }
+.gauge dd u{ text-decoration:none; font-size:.46em; font-weight:400; color:var(--fg-soft); margin-left:.15em; }
+.gauge .sub{ font-size:.72rem; color:var(--fg-soft); }
+.meter{ height:3px; border-radius:3px; background:var(--rule); overflow:hidden; margin-top:.45rem; }
+.meter i{ display:block; height:100%; background:var(--glacier); }
+
+.report{ display:grid; grid-template-columns:1.15fr .85fr; gap:1.5rem; margin-top:1.5rem; align-items:start; }
+@media (max-width:820px){ .report{ grid-template-columns:1fr; } }
+.forecast{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.forecast li{ display:grid; grid-template-columns:auto 1fr auto; gap:1rem; align-items:center; padding:.85rem 0; border-bottom:1px solid var(--rule); }
+.forecast li:last-child{ border-bottom:0; }
+.forecast .day{ font-family:var(--mono); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-soft); width:5.5rem; }
+.forecast .txt{ font-size:.88rem; }
+.forecast .temps{ font-family:var(--mono); font-size:.85rem; white-space:nowrap; }
+.forecast .temps span{ color:var(--fg-faint); }
+
+.avalanche{ padding:1.25rem; display:flex; flex-direction:column; gap:.8rem; }
+.ava-scale{ display:flex; gap:4px; }
+.ava-scale i{ flex:1; height:26px; border-radius:4px; background:var(--rule); position:relative; }
+.ava-scale i[data-on="true"]{ background:var(--warn); }
+.ava-scale i::after{ content:attr(data-n); position:absolute; inset-inline:0; top:calc(100% + 5px); text-align:center; font-family:var(--mono); font-size:.6rem; color:var(--fg-faint); }
+
+/* --- Pistes -------------------------------------------------------------- */
+.piste-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:1rem; perspective:1100px; }
+.piste{
+  position:relative; padding:1.25rem; display:flex; flex-direction:column; gap:.9rem; min-height:220px;
+  transform-style:preserve-3d; transition:transform .5s var(--ease), border-color .3s;
+  will-change:transform;
+}
+.piste:hover{ border-color:color-mix(in srgb, var(--glacier) 55%, transparent); }
+.piste[data-status="closed"]{ opacity:.62; }
+.piste-top{ display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+.grade{ display:inline-flex; align-items:center; gap:.45rem; font-family:var(--mono); font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-soft); }
+.grade i{ width:11px; height:11px; border-radius:50%; flex:none; }
+.piste h3{ font-size:var(--step-1); letter-spacing:-.03em; }
+.piste h3 span{ display:block; font-family:var(--mono); font-weight:400; font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--fg-faint); margin-top:.35rem; }
+.piste-figs{ margin-top:auto; display:flex; gap:1.4rem; }
+.piste-figs div{ display:flex; flex-direction:column; }
+.piste-figs b{ font-family:var(--mono); font-size:1.02rem; font-weight:700; }
+.piste-figs small{ font-family:var(--mono); font-size:.56rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); }
+.piste-flags{ display:flex; gap:.35rem; flex-wrap:wrap; }
+.flag{ font-family:var(--mono); font-size:.56rem; letter-spacing:.1em; text-transform:uppercase; padding:.2rem .45rem; border-radius:5px; border:1px solid var(--panel-edge); color:var(--fg-soft); }
+
+.profile-wrap{ margin-top:1.5rem; padding:1.1rem 1.1rem .6rem; }
+.profile-head{ display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:.75rem; margin-bottom:.4rem; }
+.profile-head h3{ font-family:var(--body); font-weight:700; font-size:.95rem; letter-spacing:0; }
+.profile-legend{ display:flex; gap:.9rem; font-family:var(--mono); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-faint); }
+.profile-legend span{ display:inline-flex; align-items:center; gap:.35rem; }
+.profile-legend i{ width:14px; height:2px; border-radius:2px; }
+#profile{ display:block; width:100%; height:190px; }
+
+/* --- Lifts --------------------------------------------------------------- */
+.lift-table{ width:100%; border-collapse:collapse; font-size:.9rem; }
+.lift-table th{ text-align:left; font-family:var(--mono); font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); font-weight:400; padding:0 1rem .7rem 0; }
+.lift-table td{ padding:.85rem 1rem .85rem 0; border-top:1px solid var(--rule); vertical-align:middle; }
+.lift-table tr td:last-child, .lift-table tr th:last-child{ padding-right:0; text-align:right; }
+.lift-name{ font-weight:700; }
+.lift-name small{ display:block; font-weight:400; font-size:.72rem; color:var(--fg-soft); }
+.status-pill{ display:inline-flex; align-items:center; gap:.42rem; font-family:var(--mono); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; padding:.28rem .6rem; border-radius:999px; border:1px solid var(--panel-edge); white-space:nowrap; }
+.scroll-x{ overflow-x:auto; }
+
+/* --- Gallery ------------------------------------------------------------- */
+.strips{ display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+@media (max-width:760px){ .strips{ grid-template-columns:1fr; } }
+.strip{ position:relative; border-radius:14px; overflow:hidden; aspect-ratio:3/4; max-width:100%; border:1px solid var(--panel-edge); }
+.strip canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+.strip figcaption{ position:absolute; inset-inline:0; bottom:0; padding:1rem; display:flex; flex-direction:column; gap:.2rem;
+  background:linear-gradient(transparent, rgba(4,10,18,.82)); }
+.strip figcaption b{ font-family:var(--display); font-size:1.05rem; letter-spacing:-.02em; color:#EAF2F8; }
+.strip figcaption small{ font-family:var(--mono); font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:rgba(234,242,248,.6); }
+
+/* --- Tickets ------------------------------------------------------------- */
+.ticket-layout{ display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:start; }
+@media (max-width:900px){ .ticket-layout{ grid-template-columns:1fr; } }
+.tickets{ display:flex; flex-direction:column; gap:1px; background:var(--panel-edge); border:1px solid var(--panel-edge); border-radius:14px; overflow:hidden; }
+.ticket{ background:color-mix(in srgb, var(--sky-bottom) 62%, transparent); padding:1.05rem 1.15rem; display:grid; grid-template-columns:1fr auto; gap:.35rem 1rem; align-items:center; }
+.ticket b{ font-size:.98rem; }
+.ticket p{ grid-column:1; font-size:.8rem; color:var(--fg-soft); }
+.ticket .price{ grid-row:1/3; font-family:var(--mono); font-size:1.4rem; font-weight:700; white-space:nowrap; }
+.ticket .price u{ text-decoration:none; font-size:.5em; font-weight:400; color:var(--fg-soft); }
+.ticket[data-best="true"]{ background:color-mix(in srgb, var(--glacier) 13%, var(--sky-bottom)); }
+
+.calc{ padding:1.35rem; display:flex; flex-direction:column; gap:1.1rem; }
+.calc h3{ font-family:var(--body); font-size:1.05rem; font-weight:700; letter-spacing:-.01em; }
+.calc-row{ display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.calc label{ font-family:var(--mono); font-size:.64rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); }
+.calc output{ font-family:var(--mono); font-size:1.5rem; font-weight:700; }
+input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:3px; border-radius:3px; background:var(--rule); outline-offset:6px; }
+input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:var(--glacier); border:3px solid var(--sky-bottom); cursor:pointer; }
+input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:var(--glacier); border:3px solid var(--sky-bottom); cursor:pointer; }
+.calc-result{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--panel-edge); border-radius:10px; overflow:hidden; }
+.calc-result div{ background:color-mix(in srgb, var(--sky-bottom) 70%, transparent); padding:.85rem; display:flex; flex-direction:column; gap:.2rem; }
+.calc-result span{ font-family:var(--mono); font-size:.58rem; letter-spacing:.13em; text-transform:uppercase; color:var(--fg-faint); }
+.calc-result b{ font-family:var(--mono); font-size:1.15rem; }
+.calc-result div[data-win="true"] b{ color:var(--glacier); }
+.calc-verdict{ font-size:.86rem; color:var(--fg-soft); }
+.calc-verdict b{ color:var(--fg); }
+.seg{ display:flex; gap:.3rem; }
+.seg button{ flex:1; font-family:var(--mono); font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; padding:.5rem .3rem; border-radius:8px; border:1px solid var(--panel-edge); background:transparent; color:var(--fg-soft); cursor:pointer; transition:.2s; }
+.seg button[aria-pressed="true"]{ background:var(--glacier); border-color:var(--glacier); color:#04191B; font-weight:700; }
+
+/* --- Booking / Guesthouse ------------------------------------------------ */
+.house{ display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; align-items:center; }
+@media (max-width:860px){ .house{ grid-template-columns:1fr; gap:1.75rem; } }
+.house-figs{ display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:1.5rem; }
+.house-figs b{ display:block; font-family:var(--mono); font-size:1.5rem; font-weight:700; line-height:1; }
+.house-figs small{ font-family:var(--mono); font-size:.56rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); }
+#house-canvas{ width:100%; height:320px; display:block; border-radius:14px; border:1px solid var(--panel-edge); max-width:100%; }
+
+/* --- Footer -------------------------------------------------------------- */
+.foot{ padding-block:3rem 3.5rem; border-top:1px solid var(--rule); }
+.foot-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:2rem; }
+@media (max-width:820px){ .foot-grid{ grid-template-columns:1fr 1fr; } }
+.foot h4{ font-family:var(--mono); font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--fg-faint); margin:0 0 .8rem; font-weight:400; }
+.foot ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.5rem; font-size:.87rem; }
+.foot a{ text-decoration:none; color:var(--fg-soft); transition:color .2s; }
+.foot a:hover{ color:var(--glacier); }
+.foot-bottom{ display:flex; flex-wrap:wrap; gap:1rem; justify-content:space-between; margin-top:2.5rem; padding-top:1.25rem; border-top:1px solid var(--rule); font-family:var(--mono); font-size:.66rem; color:var(--fg-faint); }
+
+/* --- Demó jelölés (látható jelölés) ---------------------------- */
+.demo-note{
+  display:flex; gap:.7rem; align-items:flex-start; padding:.8rem 1rem; border-radius:10px;
+  border:1px dashed var(--panel-edge); background:var(--panel);
+  font-size:.78rem; color:var(--fg-soft); margin-top:1.25rem;
+}
+.demo-note b{ color:var(--fg); font-family:var(--mono); font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; }
+
+/* --- Belépő animáció (nyugalmi állapotból indul) -------------------------- */
+.rise{ opacity:1; }
+html[data-motion="on"] .rise{ opacity:0; translate:0 18px; }
+html[data-motion="on"] .rise.in{ opacity:1; translate:0 0; transition:opacity .7s var(--ease), translate .7s var(--ease); }
+
+@media (prefers-reduced-motion:reduce){
+  html{ scroll-behavior:auto; }
+  .rise, html[data-motion="on"] .rise{ opacity:1 !important; translate:0 !important; transition:none !important; }
+  *,*::before,*::after{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}
+html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
+</style>
+
+<!-- ======================= HÁTTÉRRÉTEGEK (AlpineScene) ===================== -->
+<div id="sky"></div>
+<canvas id="scene" aria-hidden="true"></canvas>
+<div id="grain" aria-hidden="true"></div>
+
+<!-- ============================ KOMPONENS: Nav ============================ -->
+<header class="nav" id="nav" data-stuck="false">
+  <a class="brand" href="#top">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M2 20h20L14.5 5.5 11 12l-2.2-3.4L2 20Z" fill="#43B4BB"/>
+      <path d="M14.5 5.5 11 12l1.8 2.8L16.2 9l-1.7-3.5Z" fill="#E9F1F7"/>
+    </svg>
+    <span>Ludwighause<small>Sípálya &amp; Vendégház</small></span>
+  </a>
+  <nav aria-label="Fő navigáció">
+    <ul class="nav-links">
+      <li><a href="#hohelyzet">Hóhelyzet</a></li>
+      <li><a href="#palyak">Pályák</a></li>
+      <li><a href="#felvonok">Felvonók</a></li>
+      <li><a href="#jegyek">Jegyek</a></li>
+      <li><a href="#vendeghaz">Vendégház</a></li>
+    </ul>
+  </nav>
+  <div class="nav-tools">
+    <button class="toggle-motion" id="motion-toggle" type="button" aria-pressed="true">Mozgás: be</button>
+    <a class="btn" href="#jegyek">Jegyet veszek</a>
+  </div>
+</header>
+
+<!-- ====================== KOMPONENS: AltitudeRail ========================= -->
+<aside class="rail" id="rail" aria-hidden="true">
+  <div class="rail-alt mono"><span id="rail-value">940</span><small>m</small></div>
+  <div class="rail-zone" id="rail-zone">Völgyállomás</div>
+  <div class="rail-track">
+    <div class="rail-fill" id="rail-fill"></div>
+    <span class="rail-tick" style="top:0%">2 340</span>
+    <span class="rail-tick" style="top:50%">1 640</span>
+    <span class="rail-tick" style="top:100%">940</span>
+  </div>
+</aside>
+
+<main id="top">
+
+<!-- =========================== KOMPONENS: Hero ============================ -->
+<section class="band hero wrap" id="hero">
+  <div class="hero-top">
+    <span class="chip"><i class="dot"></i> Nyitva &nbsp;<b>08:30 – 16:15</b></span>
+    <span class="chip">Hó a hegyen <b>82 cm</b></span>
+    <span class="chip">Friss hó 24 ó <b>12 cm</b></span>
+    <span class="chip"><i class="dot dot--warn"></i> Felvonók <b>5 / 6</b></span>
+  </div>
+
+  <p class="eyebrow">Ausztria &middot; Salzburg tartomány</p>
+
+  <h1 id="hero-title">
+    <span class="l"><i>Ezernégyszáz méter</i></span>
+    <span class="l"><i>lefelé, <em>egy nyom</em> alatt.</i></span>
+  </h1>
+
+  <div class="hero-foot">
+    <div>
+      <p class="lede" style="margin-top:1.2rem">
+        A völgyállomástól a gerincig: hat felvonó, tizenegy pálya és egy vendégház,
+        ahol a hólapát az ajtó mellett áll. Görgess — és emelkedj velünk.
+      </p>
+      <div class="hero-ctas" style="margin-top:1.6rem">
+        <a class="btn" href="#jegyek" data-magnetic>Jegyek és bérletek</a>
+        <a class="btn btn--ghost" href="#hohelyzet" data-magnetic>Mai hóhelyzet</a>
+      </div>
+    </div>
+    <div class="ascent">
+      <span><b class="mono">940</b><br>völgy</span>
+      <span class="ascent-bar"></span>
+      <span><b class="mono">2 340</b><br>csúcs</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint"><i></i> Görgetés = emelkedés</div>
+</section>
+
+<!-- ====================== KOMPONENS: LiveConditions ====================== -->
+<section class="band wrap" id="hohelyzet">
+  <div class="head rise">
+    <p class="eyebrow">01 &middot; Hóhelyzet</p>
+    <h2>Ma reggel 07:40-kor<br>a hegy ezt mutatta.</h2>
+    <p class="lede">Minden érték egy adatforrásból jön, és a fejlécben látható státusszal együtt frissül.</p>
+  </div>
+
+  <dl class="gauges rise">
+    <div class="gauge">
+      <dt>Hó — hegy</dt><dd class="mono">82<u>cm</u></dd>
+      <div class="meter"><i style="width:68%"></i></div>
+      <span class="sub">Poros, előkészített</span>
+    </div>
+    <div class="gauge">
+      <dt>Hó — völgy</dt><dd class="mono">41<u>cm</u></dd>
+      <div class="meter"><i style="width:34%"></i></div>
+      <span class="sub">Géppel havazott alap</span>
+    </div>
+    <div class="gauge">
+      <dt>Hőmérséklet</dt><dd class="mono">−4<u>°C</u></dd>
+      <span class="sub">Gerincen −9 °C</span>
+    </div>
+    <div class="gauge">
+      <dt>Szél</dt><dd class="mono">14<u>km/h</u></dd>
+      <span class="sub">Északnyugati</span>
+    </div>
+    <div class="gauge">
+      <dt>Friss hó 72 ó</dt><dd class="mono">24<u>cm</u></dd>
+      <span class="sub">24 ó: 12 cm &middot; 48 ó: 18 cm</span>
+    </div>
+    <div class="gauge">
+      <dt>Nyitott pálya</dt><dd class="mono">8<u>/ 11</u></dd>
+      <div class="meter"><i style="width:73%"></i></div>
+      <span class="sub">5 felvonó üzemel a 6-ból</span>
+    </div>
+  </dl>
+
+  <div class="report">
+    <ul class="forecast rise">
+      <li><span class="day">Ma</span><span class="txt">Havazás, korlátozott látótávolság a gerincen</span><span class="temps mono">−3° <span>/ −7°</span></span></li>
+      <li><span class="day">Holnap</span><span class="txt">Felszakadozó felhőzet, gyenge szél</span><span class="temps mono">−2° <span>/ −8°</span></span></li>
+      <li><span class="day">Harmadnap</span><span class="txt">Napos, hideg reggel, kiváló láthatóság</span><span class="temps mono">−1° <span>/ −11°</span></span></li>
+      <li><span class="day">Negyednap</span><span class="txt">Fátyolfelhők, délután érkező front</span><span class="temps mono">0° <span>/ −6°</span></span></li>
+    </ul>
+    <div class="panel avalanche rise">
+      <p class="eyebrow" style="color:var(--warn)">Lavinaveszély</p>
+      <div>
+        <div class="ava-scale">
+          <i data-n="1" data-on="true"></i><i data-n="2" data-on="true"></i><i data-n="3"></i><i data-n="4"></i><i data-n="5"></i>
+        </div>
+      </div>
+      <p style="margin-top:1rem;font-size:.86rem;color:var(--fg-soft)">
+        <b style="color:var(--fg)">2 — mérsékelt</b> az európai ötfokozatú skálán.
+        Jelzett pályán kívül a gerinc északi oldalán fokozott figyelem javasolt.
+      </p>
+    </div>
+  </div>
+
+  <div class="demo-note"><b>Demó</b><span>A hóadatok, előrejelzés és lavinafokozat bemutató értékek. Éles üzemben ezek a mezők API-ból frissülnek — a komponensek változtatás nélkül fogadják.</span></div>
+</section>
+
+<!-- ========================== KOMPONENS: Pistes ========================== -->
+<section class="band wrap" id="palyak">
+  <div class="head rise">
+    <p class="eyebrow">02 &middot; Pályák</p>
+    <h2>Tizenegy pálya,<br>három nehézségi fokozat.</h2>
+    <p class="lede">Európai jelölés: kék = könnyű, piros = közepes, fekete = nehéz. A kártyák a mai állapotot mutatják.</p>
+  </div>
+
+  <div class="piste-grid rise" id="piste-grid"></div>
+
+  <div class="panel profile-wrap rise">
+    <div class="profile-head">
+      <h3>Magassági szelvény — a hat fő levezetés</h3>
+      <div class="profile-legend">
+        <span><i style="background:var(--piste-blue)"></i> Kék</span>
+        <span><i style="background:var(--piste-red)"></i> Piros</span>
+        <span><i style="background:var(--piste-black)"></i> Fekete</span>
+      </div>
+    </div>
+    <canvas id="profile" aria-label="A pályák magassági szelvénye 940 és 2340 méter között"></canvas>
+  </div>
+</section>
+
+<!-- ========================== KOMPONENS: Lifts =========================== -->
+<section class="band wrap" id="felvonok">
+  <div class="head rise">
+    <p class="eyebrow">03 &middot; Felvonók</p>
+    <h2>Mi jár most,<br>és meddig.</h2>
+  </div>
+  <div class="scroll-x rise">
+    <table class="lift-table">
+      <thead><tr><th>Felvonó</th><th>Típus</th><th>Nyitvatartás</th><th>Állapot</th></tr></thead>
+      <tbody id="lift-body"></tbody>
+    </table>
+  </div>
+  <div class="demo-note"><b>Demó</b><span>A nyitvatartás és a státuszok bemutató értékek. A táblázat adat-agnosztikus: egy tömböt vár, a forrás bármi lehet.</span></div>
+</section>
+
+<!-- ========================= KOMPONENS: Gallery ========================== -->
+<section class="band wrap" id="galeria">
+  <div class="head rise">
+    <p class="eyebrow">04 &middot; A hegy három arca</p>
+    <h2>Reggel, délben,<br>reflektorfényben.</h2>
+  </div>
+  <div class="strips rise">
+    <figure class="strip"><canvas data-scape="dawn"></canvas><figcaption><b>Első nyom</b><small>08:30 &middot; Völgyállomás</small></figcaption></figure>
+    <figure class="strip"><canvas data-scape="day"></canvas><figcaption><b>Gerincpanoráma</b><small>12:10 &middot; 2 340 m</small></figcaption></figure>
+    <figure class="strip"><canvas data-scape="night"></canvas><figcaption><b>Esti síelés</b><small>18:00 – 21:00 &middot; B felvonó</small></figcaption></figure>
+  </div>
+  <div class="demo-note"><b>Kép</b><span>A három vizuál generatív (canvas) helyőrző, hogy a demó egyetlen fájl maradjon. Emergentben ezek a blokkok fotóra cserélhetők a képarány megtartásával.</span></div>
+</section>
+
+<!-- ========================= KOMPONENS: Tickets ========================== -->
+<section class="band wrap" id="jegyek">
+  <div class="head rise">
+    <p class="eyebrow">05 &middot; Jegyek</p>
+    <h2>Számold ki,<br>mikor éri meg a bérlet.</h2>
+    <p class="lede">Nem listát adunk, hanem választ: állítsd be, hány napot síelnél a szezonban.</p>
+  </div>
+
+  <div class="ticket-layout">
+    <div class="tickets rise" id="ticket-list"></div>
+
+    <div class="panel calc rise">
+      <h3>Bérletkalkulátor</h3>
+      <div class="seg" role="group" aria-label="Korosztály">
+        <button type="button" data-age="child" aria-pressed="false">Gyermek</button>
+        <button type="button" data-age="youth" aria-pressed="false">Ifjúsági</button>
+        <button type="button" data-age="adult" aria-pressed="true">Felnőtt</button>
+        <button type="button" data-age="senior" aria-pressed="false">Szenior</button>
+      </div>
+      <div>
+        <div class="calc-row">
+          <label for="days">Síelt napok a szezonban</label>
+          <output id="days-out" class="mono" for="days">9</output>
+        </div>
+        <input id="days" type="range" min="1" max="30" step="1" value="9">
+      </div>
+      <div class="calc-result">
+        <div id="res-day"><span>Napijegyekkel</span><b class="mono" id="sum-day">468 €</b></div>
+        <div id="res-season"><span>Szezonbérlettel</span><b class="mono" id="sum-season">420 €</b></div>
+      </div>
+      <p class="calc-verdict" id="verdict"></p>
+      <a class="btn btn--lamp" href="#vendeghaz" data-magnetic>Bérletet váltok</a>
+    </div>
+  </div>
+
+  <div class="demo-note"><b>Demó árak</b><span>Az összegek bemutató értékek a kalkulátor működéséhez. Az éles árlista egyetlen adatfájlban cserélhető — a komponensek nem módosulnak.</span></div>
+</section>
+
+<!-- ===================== KOMPONENS: Guesthouse / CTA ===================== -->
+<section class="band wrap" id="vendeghaz">
+  <div class="house">
+    <div class="rise">
+      <p class="eyebrow">06 &middot; Vendégház</p>
+      <h2 style="font-size:var(--step-3);margin-top:1rem">Teljes ház,<br>a felvonó tövében.</h2>
+      <p class="lede" style="margin-top:1.1rem">
+        A Ludwighause egyben bérelhető: saját konyha, kandalló, síszárító és
+        egy teraszra nyíló ajtó, amin át kilépve már a pálya alján állsz.
+      </p>
+      <div class="house-figs">
+        <div><b class="mono">24</b><small>Férőhely</small></div>
+        <div><b class="mono">7</b><small>Hálószoba</small></div>
+        <div><b class="mono">120<span style="font-size:.55em"> m</span></b><small>A felvonótól</small></div>
+      </div>
+      <div class="hero-ctas" style="margin-top:1.8rem">
+        <a class="btn" href="#vendeghaz" data-magnetic>Ajánlatot kérek</a>
+        <a class="btn btn--ghost" href="#hohelyzet" data-magnetic>Szabad időpontok</a>
+      </div>
+    </div>
+    <div class="rise"><canvas id="house-canvas" aria-label="A vendégház és a felvonó vázlatos éjszakai látképe"></canvas></div>
+  </div>
+</section>
+
+<!-- ========================== KOMPONENS: Footer ========================== -->
+<footer class="foot wrap">
+  <div class="foot-grid">
+    <div>
+      <a class="brand" href="#top" style="margin-bottom:.9rem">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M2 20h20L14.5 5.5 11 12l-2.2-3.4L2 20Z" fill="#43B4BB"/>
+          <path d="M14.5 5.5 11 12l1.8 2.8L16.2 9l-1.7-3.5Z" fill="#E9F1F7"/>
+        </svg>
+        <span>Ludwighause<small>Sípálya &amp; Vendégház</small></span>
+      </a>
+      <p style="font-size:.85rem;color:var(--fg-soft);max-width:34ch">
+        Völgyállomás 940 m &middot; Gerinc 2 340 m<br>Salzburg tartomány, Ausztria
+      </p>
+    </div>
+    <div><h4>A hegy</h4><ul><li><a href="#hohelyzet">Hójelentés</a></li><li><a href="#palyak">Pályatérkép</a></li><li><a href="#felvonok">Felvonók</a></li><li><a href="#galeria">Webkamerák</a></li></ul></div>
+    <div><h4>Tervezés</h4><ul><li><a href="#jegyek">Jegyek és bérletek</a></li><li><a href="#jegyek">Síiskola</a></li><li><a href="#vendeghaz">Szállás</a></li><li><a href="#vendeghaz">Csoportoknak</a></li></ul></div>
+    <div><h4>Kapcsolat</h4><ul><li><a href="#top">Megközelítés</a></li><li><a href="#top">GYIK</a></li><li><a href="#top">Kapcsolat</a></li></ul></div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 Ludwighause — demó felület</span>
+    <span>HU &middot; DE &middot; EN</span>
+  </div>
+</footer>
+</main>
+
+<script>
+/* ============================================================================
+   LUDWIGHAUSE — élményréteg
+   Felépítés (Emergent-portoláshoz): ADAT -> MOTOR -> KOMPONENSEK.
+   Egyetlen requestAnimationFrame ciklus hajt minden mozgást.
+   ========================================================================= */
+(() => {
+'use strict';
+
+/* --------------------------------------------------------------------------
+   1. ADAT — éles üzemben ez a blokk kerül külön adatfájlba / API-ba.
+   -------------------------------------------------------------------------- */
+const RESORT = { valleyM: 940, peakM: 2340 };
+
+const ZONES = [
+  { upTo: .18, label: 'Völgyállomás' },
+  { upTo: .40, label: 'Erdőhatár' },
+  { upTo: .62, label: 'Középállomás' },
+  { upTo: .82, label: 'Gerincút' },
+  { upTo: 1.1, label: 'Csúcs — 2 340 m' },
+];
+
+const GRADE = {
+  blue:  { label: 'Kék',   color: 'var(--piste-blue)',  raw: '#3C8FDD' },
+  red:   { label: 'Piros', color: 'var(--piste-red)',   raw: '#DC4F63' },
+  black: { label: 'Fekete',color: 'var(--piste-black)', raw: '#C8D3DE' },
+};
+
+const PISTES = [
+  { id:'talweg', name:'Talweg', sub:'Völgyi levezető', grade:'blue', len:2100, vert:260, top:1200, bottom:940, status:'open', flags:['Hóágyú','Esti síelés'] },
+  { id:'familien', name:'Familienhang', sub:'Családi lejtő', grade:'blue', len:1250, vert:140, top:1080, bottom:940, status:'open', flags:['Hóágyú','Tanpálya'] },
+  { id:'panorama', name:'Panorama', sub:'Középső szakasz', grade:'red', len:2640, vert:420, top:1620, bottom:1200, status:'open', flags:['Hóágyú','Panoráma'] },
+  { id:'grat', name:'Grat', sub:'Gerincpálya', grade:'red', len:1900, vert:380, top:2000, bottom:1620, status:'open', flags:['Szélnek kitett'] },
+  { id:'nord', name:'Nordhang', sub:'Északi lejtő', grade:'black', len:1480, vert:460, top:2340, bottom:1880, status:'closed', flags:['Természetes hó'], note:'Hóviszonyok miatt zárva' },
+  { id:'renn', name:'Rennstrecke', sub:'Versenypálya', grade:'black', len:1120, vert:340, top:1960, bottom:1620, status:'open', flags:['Hóágyú','Időmérés'] },
+];
+
+const LIFTS = [
+  { name:'A — Ludwig gondola', type:'Gondola, 8 személyes', hours:'08:30 – 16:15', status:'open' },
+  { name:'B — Hochfeld', type:'Négyüléses ülőlift', hours:'09:00 – 16:00', status:'open', note:'Esti síelés 21:00-ig' },
+  { name:'C — Grat', type:'Kétüléses ülőlift', hours:'09:00 – 15:45', status:'open' },
+  { name:'D — Kinderland', type:'Tányéros felvonó', hours:'09:00 – 15:30', status:'open' },
+  { name:'E — Nordhang', type:'Vonólift', hours:'—', status:'closed', note:'Erős szél miatt áll' },
+  { name:'F — Talstation', type:'Mozgójárda', hours:'08:30 – 16:00', status:'open' },
+];
+
+const AGES = { child:'Gyermek', youth:'Ifjúsági', adult:'Felnőtt', senior:'Szenior' };
+const TICKETS = [
+  { id:'half',  name:'Félnapos jegy', desc:'Délelőtti vagy délutáni belépés.', price:{child:22,youth:30,adult:38,senior:32} },
+  { id:'day',   name:'Napijegy',      desc:'Nyitástól zárásig, minden üzemelő felvonóra.', price:{child:30,youth:42,adult:52,senior:44} },
+  { id:'multi', name:'Többnapos bérlet', desc:'Egymást követő napokra — napi árban számolva.', price:{child:27,youth:38,adult:47,senior:40}, perDay:true },
+  { id:'season',name:'Szezonbérlet',  desc:'Korlátlan síelés a teljes szezonban.', price:{child:240,youth:330,adult:420,senior:355} },
+];
+
+/* --------------------------------------------------------------------------
+   2. MOTOR — mozgásállapot, scroll, egyetlen rAF ciklus
+   -------------------------------------------------------------------------- */
+const root = document.documentElement;
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+const state = { p:0, scrollY:0, h:1, w:1, px:.5, py:.5, motion:!reduced.matches, t:0 };
+root.dataset.motion = state.motion ? 'on' : 'off';
+
+const lerp = (a,b,t) => a + (b-a)*t;
+const clamp = (v,a,b) => v<a?a:v>b?b:v;
+const smooth = (e0,e1,x) => { const t = clamp((x-e0)/(e1-e0),0,1); return t*t*(3-2*t); };
+const hex = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+const rgb = c => `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+const mixc = (a,b,t) => [lerp(a[0],b[0],t), lerp(a[1],b[1],t), lerp(a[2],b[2],t)];
+
+/** Több megállós színátmenet: [pozíció, hex] párok. */
+function ramp(stops, p){
+  for (let i=0;i<stops.length-1;i++){
+    const [p0,c0] = stops[i], [p1,c1] = stops[i+1];
+    if (p <= p1) return mixc(hex(c0), hex(c1), clamp((p-p0)/(p1-p0),0,1));
+  }
+  return hex(stops[stops.length-1][1]);
+}
+const SKY_TOP    = [[0,'#07120F'],[.45,'#0C2038'],[.78,'#4E7396'],[1,'#93B3CC']];
+const SKY_BOTTOM = [[0,'#0E2540'],[.45,'#2A4E73'],[.78,'#A9C4D8'],[1,'#E9F1F7']];
+const RIDGE_DARK = ['#12283F','#0D1F32','#081522','#040C14'];
+const RIDGE_LITE = ['#BACEDE','#93AFC7','#6C8CAA','#44627E'];
+
+const tickers = [];
+const onTick = fn => tickers.push(fn);
+
+function measure(){
+  state.h = window.innerHeight;
+  state.w = window.innerWidth;
+  const max = Math.max(1, document.body.scrollHeight - state.h);
+  state.scrollY = window.scrollY || 0;
+  state.p = clamp(state.scrollY / max, 0, 1);
+}
+
+/* Paletta a magasság függvényében — a lap saját, zárt vizuális világa. */
+function paint(){
+  const p = state.p;
+  const top = ramp(SKY_TOP, p), bot = ramp(SKY_BOTTOM, p);
+  root.style.setProperty('--sky-top', rgb(top));
+  root.style.setProperty('--sky-bottom', rgb(bot));
+
+  const light = smooth(.72, .92, p);                    // sötét -> világos váltás
+  const fg = mixc(hex('#E9F1F7'), hex('#08182B'), light);
+  const f = `${fg[0]|0},${fg[1]|0},${fg[2]|0}`;
+  root.style.setProperty('--fg', `rgb(${f})`);
+  root.style.setProperty('--fg-soft',  `rgba(${f},.66)`);
+  root.style.setProperty('--fg-faint', `rgba(${f},.36)`);
+  root.style.setProperty('--rule',     `rgba(${f},${lerp(.14,.16,light)})`);
+  root.style.setProperty('--panel',    `rgba(${f},${lerp(.05,.045,light)})`);
+  root.style.setProperty('--panel-edge',`rgba(${f},${lerp(.13,.16,light)})`);
+  root.style.setProperty('--glacier', light > .5 ? '#177880' : '#43B4BB');
+  const grain = document.getElementById('grain');
+  if (grain) grain.style.opacity = String(lerp(.22,.05,light));
+}
+
+let raf = 0, running = true;
+function frame(ts){
+  state.t = ts || 0;
+  measure();
+  paint();
+  for (let i=0;i<tickers.length;i++) tickers[i](state);
+  raf = running ? requestAnimationFrame(frame) : 0;
+}
+document.addEventListener('visibilitychange', () => {
+  running = !document.hidden;
+  if (running && !raf) raf = requestAnimationFrame(frame);
+});
+window.addEventListener('pointermove', e => {
+  state.px = e.clientX / Math.max(1, state.w);
+  state.py = e.clientY / Math.max(1, state.h);
+}, { passive:true });
+
+/* --------------------------------------------------------------------------
+   3. AlpineScene — hegygerincek + hóesés egyetlen canvason
+   -------------------------------------------------------------------------- */
+(function AlpineScene(){
+  const cv = document.getElementById('scene');
+  const ctx = cv.getContext('2d', { alpha:true });
+  let dpr = 1, W = 0, H = 0, layers = [], flakes = [];
+
+  /** Középpont-eltolásos gerincgenerálás — determinisztikus, mag alapján. */
+  function ridge(seed, points, rough){
+    let rnd = seed;
+    const rand = () => (rnd = (rnd*1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    let pts = [0, .5, 1].map((x,i) => ({ x, y: i===1 ? .45 : .85 }));
+    for (let step=0; step<points; step++){
+      const next = [pts[0]];
+      for (let i=0;i<pts.length-1;i++){
+        const a = pts[i], b = pts[i+1];
+        next.push({ x:(a.x+b.x)/2, y:(a.y+b.y)/2 + (rand()-.5)*rough/(step+1) });
+        next.push(b);
+      }
+      pts = next;
+    }
+    return pts;
+  }
+
+  function build(){
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W*dpr; cv.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    layers = [
+      { pts: ridge(9137, 6, 1.05), base:.52, speed:.06, amp:.55 },
+      { pts: ridge(4421, 6, .92),  base:.64, speed:.13, amp:.72 },
+      { pts: ridge(7788, 7, .78),  base:.78, speed:.24, amp:.90 },
+      { pts: ridge(1553, 7, .62),  base:.94, speed:.40, amp:1.05 },
+    ];
+
+    const count = clamp(Math.round(W*H/16000), 26, 110);
+    flakes = Array.from({length:count}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      r: .6 + Math.random()*1.9,
+      v: .25 + Math.random()*.85,
+      d: Math.random()*Math.PI*2,
+      o: .25 + Math.random()*.6,
+    }));
+  }
+
+  function draw(s){
+    ctx.clearRect(0,0,W,H);
+    const p = s.p;
+    const lightF = smooth(.55, .95, p);
+    const wind = (s.px - .5) * 2;
+
+    for (let i=0;i<layers.length;i++){
+      const L = layers[i];
+      const col = mixc(hex(RIDGE_DARK[i]), hex(RIDGE_LITE[i]), lightF);
+      const yOff = L.base*H + p*H*L.speed*2.6;
+      const xOff = -W*.12 + wind * (8 + i*14) * (s.motion?1:0);
+      const scale = H*.42*L.amp;
+
+      ctx.beginPath();
+      ctx.moveTo(xOff - 40, H + 60);
+      const pts = L.pts;
+      for (let j=0;j<pts.length;j++){
+        const px = xOff + pts[j].x * (W*1.24);
+        const py = yOff - (1 - pts[j].y) * scale;
+        j === 0 ? ctx.lineTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.lineTo(xOff + W*1.24 + 40, H + 60);
+      ctx.closePath();
+      ctx.fillStyle = rgb(col);
+      ctx.fill();
+
+      /* Havas gerincél — vékony világos kontúr a felső élen */
+      ctx.beginPath();
+      for (let j=0;j<pts.length;j++){
+        const px = xOff + pts[j].x * (W*1.24);
+        const py = yOff - (1 - pts[j].y) * scale;
+        j === 0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+      }
+      ctx.strokeStyle = `rgba(233,241,247,${lerp(.16,.05,lightF) * (1 - i*.18)})`;
+      ctx.lineWidth = 1.1;
+      ctx.stroke();
+    }
+
+    /* Hóesés — a csúcs fölött (a felhők felett) elfogy */
+    const snowAlpha = 1 - smooth(.58, .9, p);
+    if (snowAlpha > .01){
+      ctx.fillStyle = `rgba(255,255,255,1)`;
+      for (let i=0;i<flakes.length;i++){
+        const f = flakes[i];
+        if (s.motion){
+          f.d += .012;
+          f.y += f.v;
+          f.x += Math.sin(f.d)*.5 + wind*1.6;
+          if (f.y > H+4){ f.y = -6; f.x = Math.random()*W; }
+          if (f.x < -8) f.x = W+6; else if (f.x > W+8) f.x = -6;
+        }
+        ctx.globalAlpha = f.o * snowAlpha;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.r, 0, 6.2832);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  build();
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(build, 160); });
+  onTick(draw);
+})();
+
+/* --------------------------------------------------------------------------
+   4. KOMPONENS: AltitudeRail — a görgetés magasságként olvasva
+   -------------------------------------------------------------------------- */
+(function AltitudeRail(){
+  const val = document.getElementById('rail-value');
+  const zone = document.getElementById('rail-zone');
+  const fill = document.getElementById('rail-fill');
+  let shown = RESORT.valleyM, lastZone = '';
+  onTick(s => {
+    const target = RESORT.valleyM + (RESORT.peakM - RESORT.valleyM) * s.p;
+    shown = s.motion ? lerp(shown, target, .12) : target;
+    val.textContent = (Math.round(shown/10)*10).toLocaleString('hu-HU');
+    fill.style.height = (s.p*100).toFixed(1) + '%';
+    const z = (ZONES.find(z => s.p <= z.upTo) || ZONES[ZONES.length-1]).label;
+    if (z !== lastZone){ zone.textContent = z; lastZone = z; }
+  });
+})();
+
+/* --------------------------------------------------------------------------
+   5. KOMPONENS: Nav — tapadó állapot
+   -------------------------------------------------------------------------- */
+(function Nav(){
+  const nav = document.getElementById('nav');
+  onTick(s => { nav.dataset.stuck = String(s.scrollY > 40); });
+
+  const btn = document.getElementById('motion-toggle');
+  btn.addEventListener('click', () => {
+    state.motion = !state.motion;
+    root.dataset.motion = state.motion ? 'on' : 'off';
+    btn.setAttribute('aria-pressed', String(state.motion));
+    btn.textContent = 'Mozgás: ' + (state.motion ? 'be' : 'ki');
+    if (!state.motion) document.querySelectorAll('.rise').forEach(el => el.classList.add('in'));
+  });
+  if (!state.motion){ btn.setAttribute('aria-pressed','false'); btn.textContent = 'Mozgás: ki'; }
+})();
+
+/* --------------------------------------------------------------------------
+   6. Reveal — nyugalmi állapotból induló, egyszeri belépő animáció
+   -------------------------------------------------------------------------- */
+(function Reveal(){
+  const items = document.querySelectorAll('.rise');
+  if (!('IntersectionObserver' in window) || !state.motion){
+    items.forEach(el => el.classList.add('in')); return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e,i) => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      el.style.transitionDelay = Math.min(i*70, 210) + 'ms';
+      el.classList.add('in');
+      io.unobserve(el);
+    });
+  }, { rootMargin:'0px 0px -8% 0px', threshold:.08 });
+  items.forEach(el => io.observe(el));
+})();
+
+/* --------------------------------------------------------------------------
+   7. KOMPONENS: Pistes — kártyák + 3D dőlés
+   -------------------------------------------------------------------------- */
+(function Pistes(){
+  const grid = document.getElementById('piste-grid');
+  if (!grid) return;
+  grid.innerHTML = PISTES.map(p => `
+    <article class="panel piste" data-status="${p.status}">
+      <div class="piste-top">
+        <span class="grade"><i style="background:${GRADE[p.grade].color}"></i>${GRADE[p.grade].label}</span>
+        <span class="status-pill" style="color:${p.status==='open'?'var(--ok)':'var(--stop)'}">
+          ${p.status==='open'?'Nyitva':'Zárva'}
+        </span>
+      </div>
+      <h3>${p.name}<span>${p.sub}</span></h3>
+      <div class="piste-flags">${p.flags.map(f=>`<span class="flag">${f}</span>`).join('')}</div>
+      <div class="piste-figs">
+        <div><b class="mono">${p.len.toLocaleString('hu-HU')} m</b><small>Hossz</small></div>
+        <div><b class="mono">${p.vert} m</b><small>Szintkülönbség</small></div>
+        <div><b class="mono">${p.bottom.toLocaleString('hu-HU')}–${p.top.toLocaleString('hu-HU')}</b><small>Magasság</small></div>
+      </div>
+    </article>`).join('');
+
+  /* Dőlés: csak mutatóeszközzel és bekapcsolt mozgás mellett */
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  grid.querySelectorAll('.piste').forEach(card => {
+    card.addEventListener('pointermove', e => {
+      if (!state.motion) return;
+      const r = card.getBoundingClientRect();
+      const dx = (e.clientX - r.left)/r.width - .5;
+      const dy = (e.clientY - r.top)/r.height - .5;
+      card.style.transform = `perspective(900px) rotateX(${(-dy*5).toFixed(2)}deg) rotateY(${(dx*6).toFixed(2)}deg) translateZ(6px)`;
+      card.style.transitionDuration = '.08s';
+    });
+    card.addEventListener('pointerleave', () => {
+      card.style.transform = ''; card.style.transitionDuration = '';
+    });
+  });
+})();
+
+/* --------------------------------------------------------------------------
+   8. KOMPONENS: ElevationProfile — a hat levezetés magassági szelvénye
+   -------------------------------------------------------------------------- */
+(function ElevationProfile(){
+  const cv = document.getElementById('profile');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  let W=0,H=0,dpr=1, visible=false;
+
+  function size(){
+    dpr = Math.min(2, window.devicePixelRatio||1);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W*dpr; cv.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function fgRGBA(a){
+    const c = getComputedStyle(root).getPropertyValue('--fg').trim();
+    return c.replace('rgb(', 'rgba(').replace(')', `,${a})`);
+  }
+
+  function draw(){
+    if (!visible || !W) return;
+    const padL = 44, padR = 12, padT = 14, padB = 26;
+    const x0 = padL, x1 = W - padR, y0 = padT, y1 = H - padB;
+    ctx.clearRect(0,0,W,H);
+
+    const alt2y = a => y1 - (a - RESORT.valleyM)/(RESORT.peakM - RESORT.valleyM) * (y1-y0);
+
+    /* Rács + magasságcímkék */
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.textBaseline = 'middle';
+    for (let a = 1000; a <= 2340; a += 400){
+      const y = alt2y(a);
+      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y);
+      ctx.strokeStyle = fgRGBA(.10); ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = fgRGBA(.42);
+      ctx.textAlign = 'right';
+      ctx.fillText(a.toLocaleString('hu-HU'), x0 - 8, y);
+    }
+
+    /* Pályák: vízszintesen a hossz arányában, függőlegesen a magasság szerint */
+    const total = PISTES.reduce((s,p)=>s+p.len,0);
+    let cursor = x0 + 6;
+    const usable = (x1 - x0) - 12 - (PISTES.length-1)*10;
+    PISTES.forEach(p => {
+      const w = usable * (p.len/total);
+      const ya = alt2y(p.top), yb = alt2y(p.bottom);
+      ctx.beginPath();
+      ctx.moveTo(cursor, ya);
+      ctx.bezierCurveTo(cursor + w*.4, ya + (yb-ya)*.12, cursor + w*.6, ya + (yb-ya)*.88, cursor + w, yb);
+      ctx.strokeStyle = GRADE[p.grade].raw;
+      ctx.lineWidth = p.status === 'open' ? 2.4 : 1.4;
+      if (p.status !== 'open') ctx.setLineDash([4,4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      /* Végpont-hangsúly */
+      ctx.beginPath(); ctx.arc(cursor + w, yb, 3, 0, 6.2832);
+      ctx.fillStyle = GRADE[p.grade].raw; ctx.fill();
+      /* Név a szakasz alatt */
+      ctx.textAlign = 'center';
+      ctx.fillStyle = fgRGBA(p.status==='open' ? .62 : .32);
+      ctx.font = '9px "JetBrains Mono", monospace';
+      ctx.fillText(p.name.toUpperCase(), cursor + w/2, y1 + 14);
+      cursor += w + 10;
+    });
+  }
+
+  size(); 
+  const io = new IntersectionObserver(e => { visible = e[0].isIntersecting; if (visible) draw(); }, { threshold:.05 });
+  io.observe(cv);
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(()=>{ size(); draw(); }, 160); });
+  /* Újrarajzolás, amikor a paletta érdemben elmozdult */
+  let lastLight = -1;
+  onTick(s => { const l = Math.round(smooth(.72,.92,s.p)*12); if (l !== lastLight){ lastLight = l; draw(); } });
+})();
+
+/* --------------------------------------------------------------------------
+   9. KOMPONENS: Lifts
+   -------------------------------------------------------------------------- */
+(function Lifts(){
+  const body = document.getElementById('lift-body');
+  if (!body) return;
+  body.innerHTML = LIFTS.map(l => `
+    <tr>
+      <td class="lift-name">${l.name}${l.note?`<small>${l.note}</small>`:''}</td>
+      <td style="color:var(--fg-soft)">${l.type}</td>
+      <td class="mono">${l.hours}</td>
+      <td><span class="status-pill" style="color:${l.status==='open'?'var(--ok)':'var(--stop)'}">
+        <i class="dot${l.status==='open'?'':' dot--warn'}" style="background:currentColor;box-shadow:none"></i>
+        ${l.status==='open'?'Üzemel':'Áll'}</span></td>
+    </tr>`).join('');
+})();
+
+/* --------------------------------------------------------------------------
+   10. KOMPONENS: Gallery — generatív helyőrző látképek
+   -------------------------------------------------------------------------- */
+(function Gallery(){
+  const PRESETS = {
+    dawn:  { sky:['#1B2A3E','#E2A06A'], ridge:['#243347','#141F2E','#0A1119'], sun:'#FFD9A8', stars:0 },
+    day:   { sky:['#5B93C7','#DCEAF5'], ridge:['#88A9C4','#5E7E9C','#3B5876'], sun:'#FFFFFF', stars:0 },
+    night: { sky:['#060D18','#12263F'], ridge:['#0F1F33','#091524','#050B13'], sun:'#7FE3EA', stars:60 },
+  };
+  document.querySelectorAll('.strip canvas').forEach(cv => {
+    const P = PRESETS[cv.dataset.scape];
+    const dpr = Math.min(2, window.devicePixelRatio||1);
+    const r = cv.getBoundingClientRect();
+    const W = Math.max(200, r.width|0), H = Math.max(260, r.height|0);
+    cv.width = W*dpr; cv.height = H*dpr;
+    const c = cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
+
+    const g = c.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,P.sky[0]); g.addColorStop(1,P.sky[1]);
+    c.fillStyle = g; c.fillRect(0,0,W,H);
+
+    for (let i=0;i<P.stars;i++){
+      c.globalAlpha = .2 + Math.random()*.7;
+      c.fillStyle = '#FFFFFF';
+      c.fillRect(Math.random()*W, Math.random()*H*.55, 1.2, 1.2);
+    }
+    c.globalAlpha = 1;
+    c.beginPath(); c.arc(W*.72, H*.26, 16, 0, 6.2832);
+    c.fillStyle = P.sun; c.globalAlpha = .55; c.fill(); c.globalAlpha = 1;
+
+    P.ridge.forEach((col, li) => {
+      let rnd = 1234 + li*977;
+      const rand = () => (rnd = (rnd*1103515245+12345)&0x7fffffff)/0x7fffffff;
+      const base = H*(.5 + li*.14);
+      c.beginPath(); c.moveTo(0,H);
+      let y = base;
+      for (let x=0; x<=W; x+=Math.max(6, W/26)){
+        y += (rand()-.5) * (H*.12) * (1 - li*.2);
+        y = clamp(y, base - H*.22, base + H*.1);
+        c.lineTo(x, y);
+      }
+      c.lineTo(W,H); c.closePath();
+      c.fillStyle = col; c.fill();
+    });
+  });
+})();
+
+/* --------------------------------------------------------------------------
+   11. KOMPONENS: TicketCalculator — mikor éri meg a szezonbérlet
+   -------------------------------------------------------------------------- */
+(function TicketCalculator(){
+  const list = document.getElementById('ticket-list');
+  const range = document.getElementById('days');
+  if (!list || !range) return;
+  let age = 'adult';
+
+  const fmt = n => `${Math.round(n).toLocaleString('hu-HU')} €`;
+
+  function renderList(){
+    list.innerHTML = TICKETS.map(t => `
+      <div class="ticket" data-best="${t.id==='season'}">
+        <b>${t.name}</b>
+        <span class="price mono">${fmt(t.price[age])}${t.perDay?'<u> / nap</u>':''}</span>
+        <p>${t.desc}</p>
+      </div>`).join('');
+  }
+
+  function renderCalc(){
+    const days = +range.value;
+    const day = TICKETS.find(t=>t.id==='day').price[age];
+    const season = TICKETS.find(t=>t.id==='season').price[age];
+    const multi = TICKETS.find(t=>t.id==='multi').price[age];
+    const sumDay = days * day;
+    const breakEven = Math.floor(season/day) + 1;
+
+    document.getElementById('days-out').textContent = days;
+    document.getElementById('sum-day').textContent = fmt(sumDay);
+    document.getElementById('sum-season').textContent = fmt(season);
+    document.getElementById('res-day').dataset.win = String(sumDay < season);
+    document.getElementById('res-season').dataset.win = String(season <= sumDay);
+
+    const v = document.getElementById('verdict');
+    if (season <= sumDay){
+      v.innerHTML = `<b>A szezonbérlet ${fmt(sumDay-season)}-val kedvezőbb.</b> ${AGES[age].toLowerCase()} áron a ${breakEven}. síeléstől fordul át.`;
+    } else if (days >= 2 && days <= 7){
+      v.innerHTML = `Ennyi napra a <b>többnapos bérlet</b> a legjobb: ${fmt(days*multi)} — a napijegyeknél ${fmt(sumDay-days*multi)}-val kevesebb. A szezonbérlet a ${breakEven}. naptól éri meg.`;
+    } else {
+      v.innerHTML = `Ennyi napra a <b>napijegy</b> olcsóbb. A szezonbérlet ${AGES[age].toLowerCase()} áron a <b>${breakEven}. síeléstől</b> fordul át.`;
+    }
+  }
+
+  document.querySelectorAll('.seg button').forEach(b => {
+    b.addEventListener('click', () => {
+      age = b.dataset.age;
+      document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+      renderList(); renderCalc();
+    });
+  });
+  range.addEventListener('input', renderCalc);
+  renderList(); renderCalc();
+})();
+
+/* --------------------------------------------------------------------------
+   12. KOMPONENS: GuesthouseScene — éjszakai látkép a vendégházzal
+   -------------------------------------------------------------------------- */
+(function GuesthouseScene(){
+  const cv = document.getElementById('house-canvas');
+  if (!cv) return;
+  const c = cv.getContext('2d');
+  function draw(){
+    const dpr = Math.min(2, window.devicePixelRatio||1);
+    const W = cv.clientWidth, H = cv.clientHeight;
+    if (!W) return;
+    cv.width = W*dpr; cv.height = H*dpr; c.setTransform(dpr,0,0,dpr,0,0);
+
+    const g = c.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#060E1A'); g.addColorStop(1,'#123049');
+    c.fillStyle = g; c.fillRect(0,0,W,H);
+    for (let i=0;i<70;i++){ c.globalAlpha=.15+Math.random()*.65; c.fillStyle='#fff';
+      c.fillRect(Math.random()*W, Math.random()*H*.6, 1.1, 1.1); }
+    c.globalAlpha = 1;
+
+    /* Hegyoldal */
+    c.beginPath(); c.moveTo(0,H); c.lineTo(0,H*.62);
+    c.lineTo(W*.34,H*.30); c.lineTo(W*.58,H*.52); c.lineTo(W*.8,H*.36); c.lineTo(W,H*.58); c.lineTo(W,H);
+    c.closePath(); c.fillStyle='#0B1B2B'; c.fill();
+    c.beginPath(); c.moveTo(0,H); c.lineTo(0,H*.82); c.lineTo(W*.45,H*.70); c.lineTo(W,H*.86); c.lineTo(W,H);
+    c.closePath(); c.fillStyle='#E9F1F7'; c.globalAlpha=.9; c.fill(); c.globalAlpha=1;
+
+    /* Felvonókábel + két szék */
+    c.beginPath(); c.moveTo(W*.06,H*.66); c.lineTo(W*.94,H*.24);
+    c.strokeStyle='rgba(233,241,247,.35)'; c.lineWidth=1; c.stroke();
+    [[.3,.545],[.62,.39]].forEach(([tx,ty])=>{
+      c.beginPath(); c.moveTo(W*tx,H*ty); c.lineTo(W*tx,H*ty+12);
+      c.strokeStyle='rgba(233,241,247,.5)'; c.stroke();
+      c.fillStyle='#43B4BB'; c.fillRect(W*tx-7,H*ty+12,14,6);
+    });
+
+    /* Vendégház */
+    const hx = W*.16, hy = H*.74, hw = W*.24, hh = H*.16;
+    c.fillStyle='#0A1420'; c.fillRect(hx,hy,hw,hh);
+    c.beginPath(); c.moveTo(hx-8,hy); c.lineTo(hx+hw/2,hy-hh*.55); c.lineTo(hx+hw+8,hy);
+    c.closePath(); c.fillStyle='#E9F1F7'; c.fill();
+    c.fillStyle='#F2A65A';
+    for (let r=0;r<2;r++) for (let i=0;i<3;i++)
+      c.fillRect(hx + hw*(.14+i*.28), hy + hh*(.2+r*.42), hw*.14, hh*.22);
+    /* Fényfolt a hóban */
+    const gl = c.createRadialGradient(hx+hw/2, hy+hh, 2, hx+hw/2, hy+hh, hw*.9);
+    gl.addColorStop(0,'rgba(242,166,90,.30)'); gl.addColorStop(1,'rgba(242,166,90,0)');
+    c.fillStyle = gl; c.fillRect(hx-hw, hy, hw*3, hh*2);
+  }
+  draw();
+  let rt; window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(draw,180); });
+})();
+
+/* --------------------------------------------------------------------------
+   13. Mágneses gombok + belépő szekvencia
+   -------------------------------------------------------------------------- */
+(function Micro(){
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches){
+    document.querySelectorAll('[data-magnetic]').forEach(el => {
+      el.addEventListener('pointermove', e => {
+        if (!state.motion) return;
+        const r = el.getBoundingClientRect();
+        el.style.transform = `translate(${((e.clientX-r.left)/r.width-.5)*10}px, ${((e.clientY-r.top)/r.height-.5)*7}px)`;
+      });
+      el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+    });
+  }
+
+  const lines = document.querySelectorAll('#hero-title .l > i');
+  if (state.motion && lines.length){
+    lines.forEach((el,i) => {
+      el.animate(
+        [{ transform:'translateY(105%)' }, { transform:'translateY(0)' }],
+        { duration:900, delay:120 + i*110, easing:'cubic-bezier(.22,1,.36,1)', fill:'backwards' }
+      );
+    });
+  }
+})();
+
+/* --------------------------------------------------------------------------
+   14. Indítás
+   -------------------------------------------------------------------------- */
+measure(); paint();
+raf = requestAnimationFrame(frame);
+reduced.addEventListener('change', e => {
+  state.motion = !e.matches;
+  root.dataset.motion = state.motion ? 'on' : 'off';
+});
+})();
+</script>
