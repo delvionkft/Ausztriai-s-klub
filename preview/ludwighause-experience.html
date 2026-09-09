@@ -384,13 +384,13 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   </a>
   <nav aria-label="Fő navigáció">
     <ul class="nav-links">
-      <li><a href="#szallasunk">Szállásunk</a></li>
-      <li><a href="#szobak">Szobák</a></li>
-      <li><a href="#sipalyak">Sípályák</a></li>
-      <li><a href="#ebike">E-Bike</a></li>
-      <li><a href="#galeria">Galéria</a></li>
-      <li><a href="#arak">Árak</a></li>
-      <li><a href="#foglalas">Foglalás</a></li>
+      <li><a href="#/" data-anchor="szallasunk">Szállásunk</a></li>
+      <li><a href="#/szobak" data-route="szobak">Szobák</a></li>
+      <li><a href="#/sipalyak" data-route="sipalyak">Sípályák</a></li>
+      <li><a href="#/" data-anchor="ebike">E-Bike</a></li>
+      <li><a href="#/galeria" data-route="galeria">Galéria</a></li>
+      <li><a href="#/" data-anchor="arak">Árak</a></li>
+      <li><a href="#/" data-anchor="foglalas">Foglalás</a></li>
     </ul>
   </nav>
   <div class="nav-tools">
@@ -413,6 +413,8 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 </aside>
 
 <main id="top">
+<canvas id="storm" aria-hidden="true"></canvas>
+<div class="view is-active" data-view="home">
 
 <!-- =========================== KOMPONENS: Hero ============================ -->
 <section class="band hero wrap" id="hero">
@@ -491,7 +493,8 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     <li>Családi szoba</li><li>Kétágyas szoba</li><li>Franciaágyas szoba</li>
     <li>Ikerágyas szoba</li><li>Fürdőszoba</li>
   </ul>
-  <div class="cards rise" id="room-grid"></div>
+  <div class="cards rise" data-grid="rooms" data-limit="6"></div>
+  <div class="inline-ctas rise"><a class="btn btn--ghost" href="#/szobak" data-route="szobak" data-magnetic>Mind a 12 szoba →</a></div>
 </section>
 
 <!-- ========================= KOMPONENS: SkiAreas ========================== -->
@@ -500,7 +503,8 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     <p class="eyebrow">A környék</p>
     <h2>Három síterep,<br>egy szállásból</h2>
   </div>
-  <div class="cards cards--wide rise" id="ski-grid"></div>
+  <div class="cards cards--wide rise" data-grid="ski"></div>
+  <div class="inline-ctas rise"><a class="btn btn--ghost" href="#/sipalyak" data-route="sipalyak" data-magnetic>Sípályák részletesen →</a></div>
 </section>
 
 <!-- =========================== KOMPONENS: EBike =========================== -->
@@ -510,10 +514,10 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     <h2>E-Bike túrák<br>a hegyekben</h2>
     <p class="lede">Amikor elolvad a hó, a hegyek új arcukat mutatják. Elektromos kerékpárjainkkal kényelmesen, izzadás nélkül fedezheted fel a völgyeket, vízeséseket és panorámautakat — kezdőként és haladóként is.</p>
   </div>
-  <div class="cards cards--wide rise" id="bike-grid"></div>
+  <div class="cards cards--wide rise" data-grid="bike"></div>
   <div class="inline-ctas rise">
     <a class="btn" href="#foglalas" data-magnetic>Foglalj e-bike túrát →</a>
-    <a class="btn btn--ghost" href="#galeria" data-magnetic>A környék galériája →</a>
+    <a class="btn btn--ghost" href="#/galeria" data-route="galeria" data-magnetic>A környék galériája →</a>
   </div>
 </section>
 
@@ -536,7 +540,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     <p class="eyebrow">Ami benne van</p>
     <h2>Szolgáltatásaink</h2>
   </div>
-  <div class="cards rise" id="service-grid"></div>
+  <div class="cards rise" data-grid="services"></div>
 </section>
 
 <!-- ========================== KOMPONENS: Pricing ========================== -->
@@ -563,7 +567,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     <p class="eyebrow">136 Google vélemény alapján</p>
     <h2>Amit a vendégek<br>mondanak</h2>
   </div>
-  <div class="cards cards--wide rise" id="review-grid"></div>
+  <div class="cards cards--wide rise" data-grid="reviews"></div>
 </section>
 
 <!-- ========================= KOMPONENS: Booking =========================== -->
@@ -611,6 +615,84 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   </div>
 </section>
 
+</div><!-- /view: home -->
+
+<!-- ========================= ALOLDAL: Szobák ============================= -->
+<div class="view" data-view="szobak">
+  <section class="band subhero wrap">
+    <p class="eyebrow rise">Szobáink</p>
+    <h1 class="rise">Tizenkét szoba,<br>két emeleten.</h1>
+    <p class="lede rise">Az összkomfortos, többnyire erkélyes szobákból pazar kilátás nyílik a hegyekre. Minden szoba egyedi panorámával — Venediger vagy Wildkogel kilátással.</p>
+    <ul class="room-types rise">
+      <li>Családi szoba</li><li>Kétágyas szoba</li><li>Franciaágyas szoba</li>
+      <li>Ikerágyas szoba</li><li>Fürdőszoba</li>
+    </ul>
+  </section>
+  <section class="band band--tight wrap">
+    <div class="cards rise" data-grid="rooms"></div>
+  </section>
+  <section class="band wrap">
+    <div class="head rise"><p class="eyebrow">Minden szobában</p><h2>Ami jár hozzá.</h2></div>
+    <ul class="highlights rise">
+      <li><span aria-hidden="true">🛏️</span> Ágynemű, szappan, hajszárító minden szobában</li>
+      <li><span aria-hidden="true">🏔️</span> Venediger vagy Wildkogel panoráma, legtöbbször erkéllyel</li>
+      <li><span aria-hidden="true">📶</span> Korlátlan WiFi az egész házban</li>
+      <li><span aria-hidden="true">🎿</span> Fűtött sítároló a felszerelésnek</li>
+    </ul>
+    <div class="inline-ctas rise">
+      <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Időpontot foglalok</a>
+      <a class="btn btn--ghost" href="#/" data-anchor="arak" data-magnetic>Árak megtekintése</a>
+    </div>
+  </section>
+</div>
+
+<!-- ======================== ALOLDAL: Sípályák ============================ -->
+<div class="view" data-view="sipalyak">
+  <section class="band subhero wrap">
+    <p class="eyebrow rise">A környék</p>
+    <h1 class="rise">Három síterep,<br>egy szállásból</h1>
+    <p class="lede rise">A Ludwighaus 600 méterre van a Wildkogel sípályáktól, és onnan további két nagy síterep érhető el rövid autóúttal.</p>
+  </section>
+  <section class="band band--tight wrap">
+    <dl class="gauges rise">
+      <div class="gauge"><dd class="mono">402<u>km</u></dd><dt>Sípálya a régióban</dt></div>
+      <div class="gauge"><dd class="mono">600<u>m</u></dd><dt>Gyalog a Wildkogelig</dt></div>
+      <div class="gauge"><dd class="mono">14<u>km</u></dd><dt>Leghosszabb kivilágított szánkópálya</dt></div>
+      <div class="gauge"><dd class="mono">3.662<u>m</u></dd><dt>Großvenediger</dt></div>
+    </dl>
+  </section>
+  <section class="band wrap">
+    <div class="cards cards--wide rise" data-grid="ski"></div>
+    <div class="inline-ctas rise">
+      <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Időpontot foglalok</a>
+      <a class="btn btn--ghost" href="#/galeria" data-route="galeria" data-magnetic>Galéria →</a>
+    </div>
+  </section>
+</div>
+
+<!-- ========================= ALOLDAL: Galéria ============================ -->
+<div class="view" data-view="galeria">
+  <section class="band subhero wrap">
+    <p class="eyebrow rise">Galéria</p>
+    <h1 class="rise">A ház és<br>a környék.</h1>
+    <p class="lede rise">Hohen Tauern Nemzeti Park, több mint 300 hegycsúcs, gleccserek és vízesések — 8 km-re a Krimmler vízesés, Európa leghosszabb vízesése.</p>
+  </section>
+  <section class="band band--tight wrap">
+    <div class="strips strips--six rise">
+      <figure class="strip"><canvas data-scape="dawn"></canvas><figcaption><b>Wildkogel</b><small>600 m gyalog a háztól</small></figcaption></figure>
+      <figure class="strip"><canvas data-scape="day"></canvas><figcaption><b>Großvenediger</b><small>3.662 m</small></figcaption></figure>
+      <figure class="strip"><canvas data-scape="night"></canvas><figcaption><b>Kivilágított szánkópálya</b><small>14 km</small></figcaption></figure>
+      <figure class="strip"><canvas data-scape="day"></canvas><figcaption><b>Hohen Tauern</b><small>Nemzeti park</small></figcaption></figure>
+      <figure class="strip"><canvas data-scape="dawn"></canvas><figcaption><b>Krimmler vízesés</b><small>8 km-re a háztól</small></figcaption></figure>
+      <figure class="strip"><canvas data-scape="night"></canvas><figcaption><b>Bár &amp; Disco</b><small>A panzió pincéjében</small></figcaption></figure>
+    </div>
+    <div class="inline-ctas rise">
+      <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Időpontot foglalok</a>
+      <a class="btn btn--ghost" href="#/sipalyak" data-route="sipalyak" data-magnetic>Sípályák →</a>
+    </div>
+  </section>
+</div>
+
 <!-- ========================== KOMPONENS: Footer ========================== -->
 <footer class="foot wrap">
   <div class="foot-grid">
@@ -652,6 +734,8 @@ const SECTIONS = [
   ['galeria','Galéria'], ['szolgaltatasok','Szolgáltatások'], ['arak','Árak'],
   ['velemenyek','Vélemények'], ['foglalas','Foglalás'],
 ];
+
+const VIEW_LABELS = { home:'Ludwighaus', szobak:'Szobák', sipalyak:'Sípályák', galeria:'Galéria' };
 
 const ROOMS = [
   { no:'No.11', floor:'1. emelet', name:'Venediger panoráma', type:'Panorámás szoba, terasszal', cap:'2+1 fő' },
@@ -1011,14 +1095,23 @@ window.addEventListener('pointermove', e => {
   const zone = document.getElementById('rail-zone');
   const fill = document.getElementById('rail-fill');
   if (!zone) return;
-  const els = SECTIONS.map(([id,label]) => ({ el:document.getElementById(id), label }))
-                      .filter(x => x.el);
   let last = '';
   onTick(s => {
     fill.style.height = (s.p*100).toFixed(1) + '%';
-    let cur = els[0];
-    for (const x of els) if (x.el.getBoundingClientRect().top <= s.h*0.4) cur = x;
-    if (cur && cur.label !== last){ zone.textContent = cur.label; last = cur.label; }
+    const view = document.querySelector('.view.is-active');
+    if (!view) return;
+    if (view.dataset.view !== 'home'){
+      const label = VIEW_LABELS[view.dataset.view];
+      if (label !== last){ zone.textContent = label; last = label; }
+      return;
+    }
+    let cur = null;
+    for (const [id,label] of SECTIONS){
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top <= s.h*0.4) cur = label;
+    }
+    cur = cur || SECTIONS[0][1];
+    if (cur !== last){ zone.textContent = cur; last = cur; }
   });
 })();
 
@@ -1068,9 +1161,7 @@ window.addEventListener('pointermove', e => {
    7. KOMPONENS: Rooms — 12 szoba + a foglalási űrlap szobalistája
    -------------------------------------------------------------------------- */
 (function Rooms(){
-  const grid = document.getElementById('room-grid');
-  if (!grid) return;
-  grid.innerHTML = ROOMS.map(r => `
+  const card = r => `
     <article class="panel card">
       <div class="card-top">
         <span class="tag">${r.floor}</span>
@@ -1078,15 +1169,18 @@ window.addEventListener('pointermove', e => {
       </div>
       <h3>${r.no} — ${r.name}</h3>
       <p class="card-desc">${r.type}</p>
-    </article>`).join('');
+    </article>`;
+  document.querySelectorAll('[data-grid="rooms"]').forEach(g => {
+    const n = parseInt(g.dataset.limit || '0', 10) || ROOMS.length;
+    g.innerHTML = ROOMS.slice(0, n).map(card).join('');
+    tilt(g.querySelectorAll('.card'));
+  });
 
   const sel = document.getElementById('f-room');
   if (sel) sel.insertAdjacentHTML('beforeend', ROOMS.map(r => {
     const terrace = /terasszal/.test(r.type) ? ', terasz' : '';
     return `<option>${r.no} — ${r.name}${terrace} (${r.cap})</option>`;
   }).join(''));
-
-  tilt(grid.querySelectorAll('.card'));
 })();
 
 /* Közös 3D dőlés — csak egérrel, bekapcsolt mozgás mellett. */
@@ -1109,8 +1203,7 @@ function tilt(nodes){
    8. KOMPONENS: SkiAreas
    -------------------------------------------------------------------------- */
 (function SkiAreas(){
-  const grid = document.getElementById('ski-grid');
-  if (!grid) return;
+  document.querySelectorAll('[data-grid="ski"]').forEach(grid => {
   grid.innerHTML = SKI_AREAS.map(a => `
     <article class="panel card card--tall">
       <span class="big-fig mono">${a.km}</span>
@@ -1119,14 +1212,14 @@ function tilt(nodes){
       <span class="tag tag--foot">${a.dist}</span>
     </article>`).join('');
   tilt(grid.querySelectorAll('.card'));
+  });
 })();
 
 /* --------------------------------------------------------------------------
    9. KOMPONENS: EBike
    -------------------------------------------------------------------------- */
 (function EBike(){
-  const grid = document.getElementById('bike-grid');
-  if (!grid) return;
+  document.querySelectorAll('[data-grid="bike"]').forEach(grid => {
   grid.innerHTML = BIKE_TOURS.map(t => `
     <article class="panel card card--tall">
       <span class="tag">${t.tag}</span>
@@ -1135,44 +1228,45 @@ function tilt(nodes){
       <div class="figs">${t.figs.map(([v,l])=>`<div><b class="mono">${v}</b><small>${l}</small></div>`).join('')}</div>
     </article>`).join('');
   tilt(grid.querySelectorAll('.card'));
+  });
 })();
 
 /* --------------------------------------------------------------------------
    10. KOMPONENS: Services / Pricing / Reviews
    -------------------------------------------------------------------------- */
 (function Content(){
-  const sg = document.getElementById('service-grid');
-  if (sg) sg.innerHTML = SERVICES.map(x => `
+  document.querySelectorAll('[data-grid="services"]').forEach(sg => sg.innerHTML = SERVICES.map(x => `
     <article class="panel card card--flat">
       <span class="ico" aria-hidden="true">${x.icon}</span>
       <h3>${x.name}</h3>
       <p class="card-desc">${x.desc}</p>
-    </article>`).join('');
+    </article>`).join(''));
 
   const inc = document.getElementById('incl');
   if (inc) inc.innerHTML = INCLUDED.map(x => `<li>${x}</li>`).join('');
   const exc = document.getElementById('excl');
   if (exc) exc.innerHTML = EXCLUDED.map(x => `<li>${x}</li>`).join('');
 
-  const rg = document.getElementById('review-grid');
-  if (rg) rg.innerHTML = REVIEWS.map(r => `
+  document.querySelectorAll('[data-grid="reviews"]').forEach(rg => rg.innerHTML = REVIEWS.map(r => `
     <article class="panel card card--tall">
       <span class="stars" aria-label="${r.stars} csillag">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</span>
       <p class="quote">${r.text}</p>
       <div class="who"><b>${r.who}</b><small>${r.src}</small></div>
-    </article>`).join('');
+    </article>`).join(''));
 })();
 
 /* --------------------------------------------------------------------------
    11. KOMPONENS: Gallery — generatív helyőrző látképek
    -------------------------------------------------------------------------- */
+let renderScapes;
 (function Gallery(){
   const PRESETS = {
     dawn:  { sky:['#1B2A3E','#E2A06A'], ridge:['#243347','#141F2E','#0A1119'], sun:'#FFD9A8', stars:0 },
     day:   { sky:['#5B93C7','#DCEAF5'], ridge:['#88A9C4','#5E7E9C','#3B5876'], sun:'#FFFFFF', stars:0 },
     night: { sky:['#060D18','#12263F'], ridge:['#0F1F33','#091524','#050B13'], sun:'#7FE3EA', stars:60 },
   };
-  document.querySelectorAll('.strip canvas').forEach(cv => {
+  renderScapes = (scope) => {
+  (scope || document).querySelectorAll('.strip canvas').forEach(cv => {
     const P = PRESETS[cv.dataset.scape];
     const dpr = Math.min(2, window.devicePixelRatio||1);
     const r = cv.getBoundingClientRect();
@@ -1207,6 +1301,8 @@ function tilt(nodes){
       c.fillStyle = col; c.fill();
     });
   });
+  };
+  renderScapes();
 })();
 
 /* --------------------------------------------------------------------------
@@ -1221,6 +1317,151 @@ function tilt(nodes){
     btn.textContent = 'Köszönjük — hamarosan visszajelzünk';
     btn.disabled = true;
   });
+})();
+
+/* --------------------------------------------------------------------------
+   13a. KOMPONENS: Router + StormTransition
+   Aloldalak egyetlen dokumentumban, hash-útvonalon (#/szobak). Váltáskor egy
+   hóvihar söpör végig balról jobbra: a régi tartalmat jobbra tolja és
+   kitakarja, a takarás csúcsán cserél, majd elvonul az új oldalról.
+   Emergentben ez 1:1 egy route-átmenet — a nézetek külön oldalak lesznek.
+   -------------------------------------------------------------------------- */
+(function Router(){
+  const views = [...document.querySelectorAll('.view')];
+  const cv = document.getElementById('storm');
+  if (!views.length || !cv) return;
+  const sx = cv.getContext('2d');
+  let W = 0, H = 0, gusts = [], busy = false;
+
+  function size(){
+    const d = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W*d; cv.height = H*d; sx.setTransform(d,0,0,d,0,0);
+  }
+  size();
+  window.addEventListener('resize', size);
+
+  function seed(){
+    const n = clamp(Math.round(W*H/5400), 140, 420);
+    gusts = Array.from({length:n}, () => ({
+      x: Math.random()*W*1.5 - W*.35,
+      y: Math.random()*H,
+      r: .7 + Math.random()*2.4,
+      v: 7 + Math.random()*24,
+      dy: (Math.random()-.42)*3.4,
+      o: .3 + Math.random()*.7,
+    }));
+  }
+
+  /* A vihar: sodródó hófüggöny + balról jobbra haladó fehér fátyol. */
+  function paintStorm(q){
+    sx.clearRect(0,0,W,H);
+    const a = Math.sin(q*Math.PI);
+
+    const edge = -W*.55 + q*W*2.1;
+    const g = sx.createLinearGradient(edge - W*.95, 0, edge, 0);
+    g.addColorStop(0,   'rgba(226,238,247,0)');
+    g.addColorStop(.5,  `rgba(226,238,247,${a*.80})`);
+    g.addColorStop(1,   `rgba(248,252,255,${a*.95})`);
+    sx.fillStyle = g;
+    sx.fillRect(0,0,W,H);
+
+    sx.strokeStyle = '#FFFFFF';
+    sx.lineCap = 'round';
+    for (let i=0;i<gusts.length;i++){
+      const f = gusts[i];
+      f.x += f.v * (.6 + a*2.4);
+      f.y += f.dy;
+      if (f.x > W + 60){ f.x = -60; f.y = Math.random()*H; }
+      sx.globalAlpha = f.o * a;
+      sx.lineWidth = f.r;
+      sx.beginPath();
+      sx.moveTo(f.x, f.y);
+      sx.lineTo(f.x - f.v*(1.2 + a*3), f.y - f.dy*2.4);
+      sx.stroke();
+    }
+    sx.globalAlpha = 1;
+  }
+
+  const nameOf = () => (location.hash.replace(/^#\/?/, '') || 'home');
+  const viewEl = n => views.find(v => v.dataset.view === n) || views[0];
+
+  function apply(name){
+    views.forEach(v => v.classList.toggle('is-active', v.dataset.view === name));
+    document.querySelectorAll('[data-route]').forEach(a =>
+      a.setAttribute('aria-current', a.dataset.route === name ? 'page' : 'false'));
+    const v = viewEl(name);
+    if (renderScapes) renderScapes(v);          /* a rejtett canvasnak nem volt mérete */
+    window.scrollTo(0, 0);
+    document.title = name === 'home' ? 'Ludwighaus' : `${VIEW_LABELS[name]} — Ludwighaus`;
+  }
+
+  function go(name, anchorId){
+    if (busy) return;
+    const cur = nameOf();
+    if (name === cur){ if (anchorId) scrollToId(anchorId); return; }
+    if (location.hash !== '#/' + (name === 'home' ? '' : name))
+      history.pushState(null, '', '#/' + (name === 'home' ? '' : name));
+
+    if (!state.motion){ apply(name); if (anchorId) scrollToId(anchorId); return; }
+
+    busy = true;
+    seed();
+    cv.classList.add('on');
+    const old = viewEl(cur);
+    const t0 = performance.now(), D = 1150;
+    let swapped = false;
+
+    (function step(now){
+      const q = clamp((now - t0)/D, 0, 1);
+
+      if (!swapped){
+        const k = q/.5;
+        old.style.transform = `translate3d(${(k*16).toFixed(2)}%,0,0)`;
+        old.style.opacity = String(1 - k*.85);
+      }
+      if (q >= .5 && !swapped){
+        swapped = true;
+        old.style.transform = ''; old.style.opacity = '';
+        apply(name);
+        if (anchorId) scrollToId(anchorId, true);
+      }
+      if (swapped){
+        const k = (q - .5)/.5, nv = viewEl(name);
+        nv.style.transform = `translate3d(${(-12*(1-k)).toFixed(2)}%,0,0)`;
+        nv.style.opacity = String(Math.min(1, k*1.5));
+      }
+
+      paintStorm(q);
+
+      if (q < 1) requestAnimationFrame(step);
+      else {
+        const nv = viewEl(name);
+        nv.style.transform = ''; nv.style.opacity = '';
+        sx.clearRect(0,0,W,H);
+        cv.classList.remove('on');
+        busy = false;
+      }
+    })(t0);
+  }
+
+  function scrollToId(id, instant){
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: (instant || !state.motion) ? 'auto' : 'smooth', block:'start' });
+  }
+
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[data-route], a[data-anchor]');
+    if (!a) return;
+    e.preventDefault();
+    if (a.dataset.route) go(a.dataset.route);
+    else go('home', a.dataset.anchor);
+  });
+
+  window.addEventListener('popstate', () => { if (!busy) apply(nameOf()); });
+  window.addEventListener('hashchange', () => { if (!busy) apply(nameOf()); });
+  apply(nameOf());
 })();
 
 /* --------------------------------------------------------------------------
@@ -1460,4 +1701,39 @@ section.band + section.band{ border-top:0; }
 /* A hero középre igazított lábsora — most csak szöveg + gombok */
 .hero-foot{ display:block; }
 .hero .lede{ margin-bottom:1.8rem; }
+</style>
+<style>
+/* ============================================================================
+   NÉZETEK + HÓVIHAR-ÁTVEZETÉS
+   ========================================================================= */
+.view{ display:none; will-change:transform, opacity; }
+.view.is-active{ display:block; }
+
+#storm{
+  position:fixed; inset:0; z-index:90; width:100%; height:100%;
+  pointer-events:none; display:none;
+}
+#storm.on{ display:block; }
+
+/* Aloldali fejléc — kisebb, mint a főoldali hero, de ugyanaz a nyelv */
+.subhero{ padding-top:clamp(8rem,18vh,11rem); padding-bottom:clamp(2rem,5vh,3.5rem); display:flex; flex-direction:column; gap:1.4rem; }
+.subhero h1{ font-family:var(--display); font-weight:800; font-size:clamp(2.6rem,1.8rem + 3.8vw,5rem);
+  line-height:.98; letter-spacing:-.04em; margin:0; text-wrap:balance; }
+.subhero .lede{ max-width:58ch; }
+.subhero .room-types{ margin:.4rem 0 0; }
+
+/* Galéria aloldal — hat sáv, sakktáblás ritmusban */
+.strips--six{ grid-template-columns:repeat(3,1fr); }
+.strips--six .strip{ aspect-ratio:4/5; }
+.strips--six .strip:nth-child(2),
+.strips--six .strip:nth-child(5){ margin-top:clamp(1rem,4vw,2.75rem); }
+@media (max-width:760px){ .strips--six{ grid-template-columns:1fr 1fr; } }
+@media (max-width:460px){ .strips--six{ grid-template-columns:1fr; } .strips--six .strip{ margin-top:0 !important; } }
+
+/* Aktív menüpont */
+.nav-links a[aria-current="page"]{ color:var(--glacier); background:var(--panel); }
+
+@media (prefers-reduced-motion:reduce){
+  .view{ transform:none !important; opacity:1 !important; }
+}
 </style>
