@@ -8,6 +8,8 @@ import { ChevronDown, Menu, Phone, Snowflake, Ticket, X } from 'lucide-react';
 import { mainNavigation, routes } from '@/data/navigation';
 import { contactInfo } from '@/data/contact';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
+import { useI18n } from '@/i18n/I18nProvider';
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 import { toDialString } from '@/lib/format';
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -22,6 +24,7 @@ export function MobileNavigation() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const { t } = useI18n();
 
   useLockBodyScroll(open);
 
@@ -50,7 +53,7 @@ export function MobileNavigation() {
         className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-deep-200 text-deep-800 transition-colors hover:bg-deep-50 lg:hidden"
       >
         <Menu aria-hidden="true" className="h-5 w-5" />
-        <span className="sr-only">Menü megnyitása</span>
+        <span className="sr-only">{t('cta.menu')}</span>
       </button>
 
       {/*
@@ -63,25 +66,25 @@ export function MobileNavigation() {
         <div className="fixed inset-0 z-[70] lg:hidden">
           <button
             type="button"
-            aria-label="Menü bezárása"
+            aria-label={t('cta.close')}
             onClick={() => setOpen(false)}
             className="absolute inset-0 h-full w-full cursor-default bg-deep-950/55 backdrop-blur-sm"
           />
 
           <nav
             id="mobile-menu"
-            aria-label="Mobil főmenü"
+            aria-label={t('cta.menu')}
             className="absolute inset-y-0 right-0 flex w-[min(22rem,92vw)] animate-fade-in flex-col bg-white shadow-lift"
           >
             <div className="flex items-center justify-between border-b border-deep-100 px-4 py-3">
-              <span className="text-sm font-bold uppercase tracking-[0.14em] text-deep-500">Menü</span>
+              <span className="text-sm font-bold uppercase tracking-[0.14em] text-deep-500">{t('cta.menu')}</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-deep-200 text-deep-800 transition-colors hover:bg-deep-50"
               >
                 <X aria-hidden="true" className="h-5 w-5" />
-                <span className="sr-only">Bezárás</span>
+                <span className="sr-only">{t('cta.close')}</span>
               </button>
             </div>
 
@@ -104,7 +107,7 @@ export function MobileNavigation() {
                               active ? 'bg-deep-50 text-deep-900' : 'text-deep-800 hover:bg-deep-50',
                             )}
                           >
-                            {item.label}
+                            {item.labelKey ? t(item.labelKey) : item.label}
                             <ChevronDown
                               aria-hidden="true"
                               className={cn('h-4 w-4 text-deep-500 transition-transform', isOpenGroup && 'rotate-180')}
@@ -124,7 +127,7 @@ export function MobileNavigation() {
                                         : 'text-deep-700 hover:bg-deep-50',
                                     )}
                                   >
-                                    {child.label}
+                                    {child.labelKey ? t(child.labelKey) : child.label}
                                   </Link>
                                 </li>
                               ))}
@@ -140,7 +143,7 @@ export function MobileNavigation() {
                             pathname === item.href ? 'bg-deep-50 text-deep-900' : 'text-deep-800 hover:bg-deep-50',
                           )}
                         >
-                          {item.label}
+                          {item.labelKey ? t(item.labelKey) : item.label}
                         </Link>
                       )}
                     </li>
@@ -152,21 +155,29 @@ export function MobileNavigation() {
             <div className="space-y-2 border-t border-deep-100 bg-frost px-3 py-3">
               <Link
                 href={routes.tickets}
+                onClick={() =>
+                  // MÉRÉS 1: jegyvásárlás megkezdése
+                  trackEvent(ANALYTICS_EVENTS.beginTicketPurchase, { cta_location: 'mobile_menu' })
+                }
                 className="flex min-h-[52px] items-center justify-center gap-2 rounded-pill bg-deep-800 px-4 font-semibold text-white transition-colors hover:bg-deep-700"
               >
                 <Ticket aria-hidden="true" className="h-4 w-4" />
-                Jegyvásárlás
+                {t('cta.buyTickets')}
               </Link>
               <Link
                 href={routes.snowReport}
                 className="flex min-h-[52px] items-center justify-center gap-2 rounded-pill border border-deep-200 bg-white px-4 font-semibold text-deep-800 transition-colors hover:bg-deep-50"
               >
                 <Snowflake aria-hidden="true" className="h-4 w-4" />
-                Hójelentés
+                {t('cta.snowReport')}
               </Link>
               {contactInfo.phone ? (
                 <a
                   href={`tel:${toDialString(contactInfo.phone)}`}
+                  onClick={() =>
+                    // MÉRÉS 8: telefonhívás indítása
+                    trackEvent(ANALYTICS_EVENTS.clickPhone, { cta_location: 'mobile_menu' })
+                  }
                   className="flex min-h-[52px] items-center justify-center gap-2 rounded-pill border border-deep-200 bg-white px-4 font-semibold text-deep-800 transition-colors hover:bg-deep-50"
                 >
                   <Phone aria-hidden="true" className="h-4 w-4" />
@@ -174,7 +185,7 @@ export function MobileNavigation() {
                 </a>
               ) : null}
               <div className="flex items-center justify-between pt-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-deep-500">Nyelv</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-deep-500">{t('lang.label')}</span>
                 <LanguageSwitcher />
               </div>
             </div>

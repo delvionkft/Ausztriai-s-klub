@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, Globe } from 'lucide-react';
 import { localeLabels, siteConfig } from '@/data/site.config';
-import { useLocale } from '@/hooks/useLocale';
+import { useI18n } from '@/i18n/I18nProvider';
 import { cn } from '@/lib/cn';
 
 /**
  * NYELVVÁLASZTÓ — DE / EN / HU
- * DEMÓ: a választás elmentődik és a `<html lang>` értékét is állítja, de a
- * fordítási szótár még nincs bekötve. A felület jelenleg magyar nyelvű.
- * INTEGRÁCIÓ: i18n réteg (next-intl / react-i18next) a `useLocale` hook mögé.
+ * A választás azonnal érvényesül (`src/i18n/` szótárak), elmentődik, és a
+ * `<html lang>` értékét is állítja. Hiányzó kulcs esetén a magyar szöveg marad.
+ * A nyelvváltás mérési eseményt is küld (MÉRÉS 12).
  */
 export function LanguageSwitcher({
   variant = 'compact',
@@ -19,13 +19,9 @@ export function LanguageSwitcher({
   variant?: 'compact' | 'inline';
   className?: string;
 }) {
-  const { locale, setLocale } = useLocale();
+  const { locale, setLocale, t } = useI18n();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    document.documentElement.lang = locale;
-  }, [locale]);
 
   useEffect(() => {
     if (!open) return;
@@ -45,7 +41,7 @@ export function LanguageSwitcher({
 
   if (variant === 'inline') {
     return (
-      <div className={cn('inline-flex items-center gap-1 rounded-pill bg-white/10 p-1', className)} role="group" aria-label="Nyelvválasztó">
+      <div className={cn('inline-flex items-center gap-1 rounded-pill bg-white/10 p-1', className)} role="group" aria-label={t('lang.label')}>
         {siteConfig.locales.map((code) => (
           <button
             key={code}
@@ -81,7 +77,7 @@ export function LanguageSwitcher({
       {open ? (
         <ul
           role="listbox"
-          aria-label="Nyelv kiválasztása"
+          aria-label={t('lang.select')}
           className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-card border border-deep-100 bg-white py-1 shadow-lift"
         >
           {siteConfig.locales.map((code) => (
@@ -105,7 +101,7 @@ export function LanguageSwitcher({
             </li>
           ))}
           <li className="mt-1 border-t border-deep-100 px-3 py-2 text-[0.7rem] leading-snug text-deep-500">
-            A fordítások feltöltése folyamatban. A felület jelenleg magyar nyelvű.
+            {t('lang.partial')}
           </li>
         </ul>
       ) : null}

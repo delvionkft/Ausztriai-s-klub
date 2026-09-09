@@ -4,8 +4,9 @@ import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { availabilityLegend, availabilitySeason, pricingRules } from '@/data/availability';
 import { buildAvailabilityMap, getAvailabilityState, validateRange } from '@/lib/availability';
-import { HU_WEEKDAYS_SHORT, daysInMonth, monthLabel, shiftMonth, weekdayIndex } from '@/lib/date';
+import { HU_WEEKDAYS_SHORT, daysInMonth, monthLabel, nightsBetween, shiftMonth, weekdayIndex } from '@/lib/date';
 import { cn } from '@/lib/cn';
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics';
 import type { AvailabilityState } from '@/types';
 
 /**
@@ -85,6 +86,13 @@ export function AvailabilityCalendar({ value, onChange, months = 2 }: Availabili
       return;
     }
     setRange({ arrival: range.arrival, departure: iso });
+
+    // MÉRÉS 6: dátum kiválasztása (csak a teljes időszak számít konverziós lépésnek)
+    trackEvent(ANALYTICS_EVENTS.selectDates, {
+      arrival: range.arrival,
+      departure: iso,
+      nights: nightsBetween(range.arrival, iso),
+    });
   }
 
   const monthsToRender = Array.from({ length: months }, (_, index) => shiftMonth(visibleMonth, index)).filter(

@@ -134,6 +134,7 @@ komponenst NEM kell megnyitni.**
 | `homepage.ts` | Kezdőlapi szövegek: napi üzenet, szándékválasztó, ajánlat, hóriasztó |
 | `media.ts` | **Képek központi nyilvántartása** — ide kell beírni a valós fotók útvonalát |
 | `placeholders.ts` | **Helyőrző szövegek + a demó mód kapcsolója** |
+| `../i18n/hu.ts` · `de.ts` · `en.ts` | **Fordítások** — nyelvenként külön fájl |
 
 ### Fotók beillesztése
 
@@ -186,9 +187,120 @@ Ezeket a felület **láthatóan jelöli** („demó” címke, `DemoNotice` sáv
 | Jegyvásárlás | A „Vásárlás” gomb **letiltva**, magyarázó szöveggel | `services/ticketService.ts` |
 | Foglaltsági naptár | A `data/availability.ts`-ből számol | `lib/availability.ts` |
 | Árkalkuláció | Tiszta függvények a demó árazásból | `lib/pricing.ts` |
-| Nyelvválasztó | Menti a választást, állítja a `<html lang>`-ot — **fordítási szótár még nincs** | `hooks/useLocale.ts` |
+| Nyelvválasztó | **Működik**: DE/EN/HU szótárak, azonnali váltás, mentett választás | `src/i18n/` |
+| Mérés (GA4/GTM) | Az események a `window.dataLayer`-be mennek; GTM-konténer csak `NEXT_PUBLIC_GTM_ID` esetén tölt be | `lib/analytics.ts` |
+| Süti-hozzájárulás | Működik, `localStorage`-ban tárol; mérés csak elfogadás után indul | `lib/consent.ts` |
 | Pályatérkép | **Sematikus ábra**, nem valós domborzat; kattintható elemek a valós adatmodellből | `features/SlopeMap.tsx` |
 | PDF letöltés / offline mentés | Gombok letiltva, amíg nincs végleges térképfájl | `features/SlopeMap.tsx` |
+
+---
+
+## 5/b. Háromnyelvű működés (DE / EN / HU)
+
+```
+src/i18n/
+├── hu.ts              referencia nyelv — innen származik a TranslationKey típus
+├── de.ts              német
+├── en.ts              angol
+├── index.ts           getDictionary() · createTranslator() — React-mentes mag
+└── I18nProvider.tsx   React context: locale, setLocale, t()
+```
+
+**Használat komponensben:**
+
+```tsx
+const { t, locale, setLocale } = useI18n();
+<button>{t('cta.buyTickets')}</button>   // HU: Jegyvásárlás · DE: Tickets kaufen · EN: Buy tickets
+```
+
+**Új szöveg felvétele:** írd be a kulcsot a `hu.ts`-be — a TypeScript ettől
+kezdve *hibát jelez*, amíg a `de.ts` és `en.ts` is meg nem kapja. Így nyelv
+nem maradhat ki csendben. Futásidőben a hiányzó kulcs a magyar szövegre esik
+vissza, tehát a felület soha nem lesz üres.
+
+**Mi van lefordítva:** a globális keret — fejléc, főmenü és almenük, élő
+státuszsáv, lábléc, mobil menü, fix mobil CTA-sáv, nyelvválasztó, süti-sáv,
+általános állapotüzenetek (betöltés / hiba / üres). **Az oldaltörzsek szövege
+egyelőre magyar**, és a nyelvválasztó ezt meg is mondja (`lang.partial`) —
+nem hazudik teljes fordítást. A bővítés mechanikus: a szöveg átkerül az
+adatfájlból vagy a komponensből egy `t()` kulcs mögé.
+
+**Nyelvenkénti URL-ek:** jelenleg egy URL-készlet van, a nyelv kliensoldali.
+Ha SEO-hoz nyelvenkénti útvonal kell (`/de/…`, `/en/…`), a `layout.tsx`
+`alternates.languages` blokkját és a `sitemap.ts`-t kell bővíteni — a szótárak
+változatlanul használhatók.
+
+---
+
+## 5/c. Mérés — GA4 / Google Tag Manager
+
+Minden esemény a `window.dataLayer`-be kerül, ezért **GTM-ben elég `event`
+triggert felvenni a névre** — a kódot nem kell módosítani.
+
+`.env.local` → `NEXT_PUBLIC_GTM_ID=GTM-XXXXXXX`. Amíg üres, az események
+ugyanúgy lefutnak és a `dataLayer`-ben ellenőrizhetők a konzolból:
+
+```js
+window.dataLayer.map(e => e.event)
+```
+
+| # | Esemény (GA4 név) | Mikor | Hol |
+|---|---|---|---|
+| 1 | `begin_ticket_purchase` | Jegyvásárlás CTA (fejléc, mobil menü, mobil sáv, jegyajánló) | `Header`, `MobileNavigation`, `StickyMobileCTA`, `TicketAdvisor` |
+| 2 | `view_recommended_ticket` | A jegyajánló minden válaszváltozásakor | `TicketAdvisor` |
+| 3 | `open_slope_map` | Pályatérkép megnyitása, pálya/felvonó kiválasztása | `SlopeMap` |
+| 4 | `view_webcam` | A webkamera-kártya ténylegesen látszik (IntersectionObserver) | `WebcamCard` |
+| 5 | `begin_ski_school_booking` | „Időpontot foglalok” | `app/siiskola` + `TrackedCTA` |
+| 6 | `select_dates` | Teljes időszak kiválasztása a naptárban | `AvailabilityCalendar` |
+| 7 | `submit_quote_request` | Sikeres ajánlatkérés — **a fő konverzió** | `QuoteForm` |
+| 8 | `click_phone` | Telefonlink | `ContactActions`, `Footer`, `MobileNavigation` |
+| 9 | `click_whatsapp` | WhatsApp-link | `ContactActions`, `StickyMobileCTA` |
+| 10 | `click_email` | E-mail-link | `ContactActions`, `Footer` |
+| 11 | `subscribe_snow_alert` | Sikeres hóértesítő-feliratkozás | `NewsletterForm` |
+| 12 | `change_language` | Nyelvváltás (`from_language` → `to_language`) | `I18nProvider` |
+| + | `consent_update` | Süti-döntés (Consent Mode v2 jelzés) | `lib/analytics.ts` |
+| + | `begin_quote_request` | Ajánlatkérés megkezdése (mikrokonverzió) | `StickyMobileCTA` |
+
+> A 8–10. esemény kódja készen áll, de a gombok **letiltva** maradnak, amíg a
+> `data/contact.ts`-ben nincs valós telefonszám / e-mail / WhatsApp-szám.
+
+---
+
+## 5/d. Süti- és adatvédelmi réteg
+
+- **Alapértelmezés: minden nem szükséges kategória tiltott.** Amíg nincs
+  döntés, `trackEvent()` semmit nem küld, és a GTM-konténer sem töltődik be.
+- Az „Elfogadom” és a „Csak a szükségeseket” **egyenrangú gomb** (nincs sötét minta).
+- A „Beállítások” panelen az analitika és a marketing külön kapcsolható.
+- A döntés `localStorage`-ban tárolódik **időbélyeggel** (GDPR-bizonyíthatóság).
+- A `CONSENT_VERSION` növelése újra bekéri a hozzájárulást — ezt kell tenni,
+  ha a süti-tájékoztató érdemben változik.
+- A lábléc **„Süti-beállítások”** gombja bármikor újranyitja a döntést.
+- Az „Adatkezelési tájékoztató” link a `data/contact.ts` → `legalDocuments`
+  tömbből jön; amíg nincs feltöltve, helyőrző szöveg jelenik meg link helyett.
+
+Fájlok: `lib/consent.ts` (React-mentes), `hooks/useConsent.ts`,
+`components/layout/CookieConsent.tsx`, `components/layout/AnalyticsScripts.tsx`.
+
+---
+
+## 5/e. Strukturált adatok (schema.org / JSON-LD)
+
+| Séma | Hol | Tartalom |
+|---|---|---|
+| `WebSite` | minden oldal | név, URL, nyelvek |
+| `SkiResort` | minden oldal | név, leírás, kép + **csak a kitöltött** elérhetőség, cím, GPS, közösségi linkek |
+| `LodgingBusiness` | `/vendeghaz` | a vendégház mint szálláshely |
+| `FAQPage` | `/informacio` | a teljes GYIK |
+| `ItemList` / `Event` | `/elmeny` | **csak a dátummal kihirdetett** események |
+| `BreadcrumbList` | `/informacio`, `/vendeghaz` | morzsamenü |
+
+A `lib/structuredData.ts` `prune()` függvénye **minden `null` mezőt kidob**,
+ezért kitalált üzleti adat nem kerülhet a strukturált adatba. Ellenőrzés:
+
+```bash
+curl -s http://localhost:3000/informacio | grep -o 'application/ld+json'
+```
 
 ---
 
@@ -202,6 +314,8 @@ Lásd **`.env.example`** — másold `.env.local` néven.
 | `NEXT_PUBLIC_API_BASE_URL` | backendhez | ha ki van töltve, a service réteg éles hívásokat indít |
 | `NEXT_PUBLIC_MAPS_EMBED_URL` | opcionális | beágyazott térkép |
 | `NEXT_PUBLIC_ANALYTICS_DOMAIN` | opcionális | webanalitika |
+| `NEXT_PUBLIC_GTM_ID` | méréshez | GTM-konténer; csak süti-elfogadás után tölt be |
+| `NEXT_PUBLIC_GA4_ID` | opcionális | GA4 közvetlen bekötéshez (GTM nélkül) |
 | `EMAIL_API_KEY`, `EMAIL_TO` | szerveroldali | ajánlatkérés továbbítása |
 | `TICKETING_API_KEY` | szerveroldali | online jegyértékesítés |
 | `BOOKING_API_KEY` | szerveroldali | foglalási rendszer / channel manager |
@@ -263,6 +377,10 @@ Ha az Emergent nem Next.js alatt fut (pl. Vite/CRA + React Router):
 | `error.tsx`, `global-error.tsx`, `loading.tsx`, `not-found.tsx` | React `ErrorBoundary` + útvonal-fallback. A megjelenés átvihető. | kicsi |
 | `'use client'` direktívák | Egyszerűen eltávolíthatók. | triviális |
 | `src/data/`, `src/lib/`, `src/types/`, `src/hooks/`, `src/services/` | **Nem igényel módosítást** — tiszta TypeScript, nincs benne Next.js. | nincs |
+| `src/i18n/` | A szótárak és az `index.ts` változatlan. Az `I18nProvider.tsx`-ből csak a `'use client'` sor törlendő. | triviális |
+| `lib/analytics.ts`, `lib/consent.ts`, `lib/structuredData.ts` | **Nem igényel módosítást** — tiszta TypeScript. | nincs |
+| `AnalyticsScripts.tsx` | `usePathname()` → `useLocation().pathname`. | 1 sor |
+| `components/seo/JsonLd.tsx` | SPA alatt `react-helmet` `<script>` gyerekeként, azonos adattal. | 1 fájl |
 | `src/components/ui/`, `features/`, `sections/` | A fentieken (Link/Image) túl **nem igényel módosítást**. | nincs |
 
 **Gyakorlati becslés:** a migráció a fájlok kevesebb mint 15%-át érinti, és
@@ -297,6 +415,12 @@ Ha a stílusokon dolgozol, érdemes tudni:
 - **34 automatizált interakciós teszt** (mobilmenü, nyelvváltás, szűrők,
   térképrétegek, jegyajánló, naptár, árkalkuláció, űrlapvalidáció és -beküldés,
   GYIK, galéria, hóriasztó, billentyűzetes navigáció)
+- **30 további automatizált teszt** az új rétegekre: süti-sáv megjelenése és
+  elrejtése, részleges hozzájárulás mentése, kapcsoló egérrel és billentyűzettel,
+  mérési események tiltása hozzájárulás előtt és után, mind a 12 esemény
+  kiváltása, HU→DE→EN váltás a fejlécben / státuszsávban / láblécben, a nyelv
+  megőrzése oldalváltáskor, `<html lang>` állítása, JSON-LD jelenléte és
+  tartalma (kitalált adat nélkül)
 - Minden oldalon pontosan egy `<h1>`, egyedi `title` és `description`
 - Nincs üres vagy `#`-re mutató link; a hiányzó elérhetőségek letiltott,
   magyarázó címkés gombként jelennek meg

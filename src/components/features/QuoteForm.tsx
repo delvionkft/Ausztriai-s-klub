@@ -5,6 +5,7 @@ import { CheckCircle2, Clock, Send } from 'lucide-react';
 import { groupTypeOptions } from '@/data/availability';
 import { submitQuoteRequest, validateQuoteRequest, type QuoteValidationErrors } from '@/services/bookingService';
 import { cn } from '@/lib/cn';
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics';
 import { PrimaryButton, SecondaryButton } from '@/components/ui/Button';
 import type { QuoteRequestPayload } from '@/types';
 
@@ -78,6 +79,13 @@ export function QuoteForm({ initialValues, onSubmitted }: QuoteFormProps) {
     if (result.ok) {
       setState('success');
       setMessage(result.message);
+      // MÉRÉS 7: szállásajánlat-kérés beküldése (a fő konverzió)
+      trackEvent(ANALYTICS_EVENTS.submitQuoteRequest, {
+        arrival: values.arrival,
+        departure: values.departure,
+        guests: values.guests,
+        group_type: values.groupType,
+      });
       onSubmitted?.();
     } else {
       setState('error');

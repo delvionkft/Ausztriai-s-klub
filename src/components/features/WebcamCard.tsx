@@ -1,18 +1,48 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
 import { Camera, MapPin } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { AlpineScene } from '@/components/ui/AlpineScene';
 import { PendingValue } from '@/components/ui/PendingValue';
 import { formatDateTimeHu } from '@/lib/date';
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics';
 import type { Webcam } from '@/types';
 
 /**
  * WEBKAMERA ELŐNÉZET
  * INTEGRÁCIÓ: a `webcam.imageUrl` kitöltésével automatikusan valós kép jelenik meg.
+ * MÉRÉS 4: a kártya akkor számít megtekintésnek, amikor tényleg látszik
+ * a képernyőn (IntersectionObserver) — nem pedig a lista renderelésekor.
  */
 export function WebcamCard({ webcam }: { webcam: Webcam }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const seenRef = useRef(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !seenRef.current) {
+            seenRef.current = true;
+            trackEvent(ANALYTICS_EVENTS.viewWebcam, { webcam_id: webcam.id, webcam_name: webcam.name });
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.5 },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [webcam.id, webcam.name]);
+
   return (
     <Card as="li" className="overflow-hidden">
-      <div className="relative aspect-video bg-ice-100">
+      <div ref={ref} className="relative aspect-video bg-ice-100">
         {webcam.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

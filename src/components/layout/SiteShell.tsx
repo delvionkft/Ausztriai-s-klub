@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { AnalyticsScripts } from './AnalyticsScripts';
+import { CookieConsent } from './CookieConsent';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import { LiveStatusBar } from './LiveStatusBar';
@@ -29,6 +31,10 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
       <Footer />
       <StickyMobileCTA />
+
+      {/* Süti-sáv: a mérési szkriptek csak elfogadás után töltődnek be. */}
+      <CookieConsent />
+      <AnalyticsScripts />
     </div>
   );
 }

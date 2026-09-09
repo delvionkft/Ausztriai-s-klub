@@ -16,6 +16,8 @@ import { PageHero } from '@/components/ui/PageHero';
 import { PendingValue } from '@/components/ui/PendingValue';
 import { Card } from '@/components/ui/Card';
 import { PrimaryButton, SecondaryButton } from '@/components/ui/Button';
+import { TrackedCTA } from '@/components/features/TrackedCTA';
+import { ANALYTICS_EVENTS } from '@/lib/analytics';
 
 export const metadata: Metadata = {
   title: 'Síiskola és kölcsönző',
@@ -46,13 +48,19 @@ export default function SkiSchoolPage() {
         size="md"
         actions={
           <>
-            <PrimaryButton
-              href={routes.quote}
-              size="lg" variant="onDark"
-              icon={<CalendarCheck aria-hidden="true" className="h-[18px] w-[18px]" />}
+            {/* MÉRÉS 5: síiskolai foglalás megkezdése */}
+            <TrackedCTA
+              event={ANALYTICS_EVENTS.beginSkiSchoolBooking}
+              params={{ cta_location: 'ski_school_hero' }}
             >
-              Időpontot foglalok
-            </PrimaryButton>
+              <PrimaryButton
+                href={routes.quote}
+                size="lg" variant="onDark"
+                icon={<CalendarCheck aria-hidden="true" className="h-[18px] w-[18px]" />}
+              >
+                Időpontot foglalok
+              </PrimaryButton>
+            </TrackedCTA>
             <SecondaryButton href="#kolcsonzo" size="lg" tone="dark">
               Kölcsönző és szerviz
             </SecondaryButton>

@@ -26,6 +26,8 @@ import { PrimaryButton, SecondaryButton } from '@/components/ui/Button';
 import { MapEmbed } from '@/components/features/MapEmbed';
 import { FAQAccordion } from '@/components/features/FAQAccordion';
 import { ContactActions } from '@/components/features/ContactActions';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { breadcrumbSchema, faqSchema } from '@/lib/structuredData';
 
 export const metadata: Metadata = {
   title: 'Megközelítés, GYIK és kapcsolat',
@@ -52,6 +54,17 @@ const travelIcons = { car: Car, skibus: Bus, train: Train, plane: Plane } as con
 export default function InfoPage() {
   return (
     <>
+      {/* Strukturált adat: a GYIK a találati listában is megjelenhet. */}
+      <JsonLd
+        data={[
+          faqSchema(faqItems),
+          breadcrumbSchema([
+            { name: 'Kezdőlap', path: routes.home },
+            { name: 'Info', path: routes.info },
+          ]),
+        ].filter(Boolean) as Array<Record<string, unknown>>}
+      />
+
       <PageHero
         eyebrow="Info"
         title="Megközelítés, GYIK és kapcsolat"

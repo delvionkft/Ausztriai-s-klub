@@ -1,5 +1,8 @@
+'use client';
+
 import { Mail, MessageCircle, Phone } from 'lucide-react';
 import { contactInfo } from '@/data/contact';
+import { ANALYTICS_EVENTS, trackEvent, type AnalyticsEventName } from '@/lib/analytics';
 import { toDialString } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
@@ -7,14 +10,22 @@ import { cn } from '@/lib/cn';
  * PÁRHUZAMOS CSATORNÁK — WhatsApp · Telefon · E-mail (drótváz 10/05).
  * Ha egy elérhetőség még nincs megadva, a gomb NEM lesz üres link:
  * letiltott állapotban jelenik meg, magyarázó címkével.
+ * Minden csatorna saját mérési eseményt küld (MÉRÉS 8–10).
  */
 interface ContactActionsProps {
   layout?: 'row' | 'grid';
   tone?: 'light' | 'dark';
+  /** Hol áll a gombsor — a mérési eseménybe kerül. */
+  ctaLocation?: string;
   className?: string;
 }
 
-export function ContactActions({ layout = 'grid', tone = 'light', className }: ContactActionsProps) {
+export function ContactActions({
+  layout = 'grid',
+  tone = 'light',
+  ctaLocation = 'contact_actions',
+  className,
+}: ContactActionsProps) {
   const whatsappHref = contactInfo.whatsapp
     ? `https://wa.me/${toDialString(contactInfo.whatsapp).replace('+', '')}`
     : null;
@@ -26,6 +37,7 @@ export function ContactActions({ layout = 'grid', tone = 'light', className }: C
       value: contactInfo.whatsapp,
       href: whatsappHref,
       icon: MessageCircle,
+      event: ANALYTICS_EVENTS.clickWhatsapp as AnalyticsEventName,
       external: true,
       missing: 'WhatsApp szám megadása szükséges',
       accent: true,
@@ -36,6 +48,7 @@ export function ContactActions({ layout = 'grid', tone = 'light', className }: C
       value: contactInfo.phone,
       href: contactInfo.phone ? `tel:${toDialString(contactInfo.phone)}` : null,
       icon: Phone,
+      event: ANALYTICS_EVENTS.clickPhone as AnalyticsEventName,
       external: false,
       missing: 'Telefonszám megadása szükséges',
       accent: false,
@@ -46,6 +59,7 @@ export function ContactActions({ layout = 'grid', tone = 'light', className }: C
       value: contactInfo.email,
       href: contactInfo.email ? `mailto:${contactInfo.email}` : null,
       icon: Mail,
+      event: ANALYTICS_EVENTS.clickEmail as AnalyticsEventName,
       external: false,
       missing: 'E-mail cím megadása szükséges',
       accent: false,
@@ -89,6 +103,7 @@ export function ContactActions({ layout = 'grid', tone = 'light', className }: C
             <a
               href={action.href}
               {...(action.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              onClick={() => trackEvent(action.event, { cta_location: ctaLocation })}
               className={cn(
                 base,
                 action.accent

@@ -1,10 +1,15 @@
+'use client';
+
 import Link from 'next/link';
-import { Facebook, Instagram, Mail, MapPin, Phone, Youtube } from 'lucide-react';
+import { Cookie, Facebook, Instagram, Mail, MapPin, Phone, Youtube } from 'lucide-react';
 import { footerNavigation, routes } from '@/data/navigation';
 import { contactInfo, legalDocuments } from '@/data/contact';
 import { displayNameLong } from '@/data/site.config';
 import { PLACEHOLDER_TEXT } from '@/data/placeholders';
 import { toDialString } from '@/lib/format';
+import { useI18n } from '@/i18n/I18nProvider';
+import { useConsent } from '@/hooks/useConsent';
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
 
@@ -12,7 +17,9 @@ const socialIcons = { Facebook, Instagram, Youtube } as const;
 
 /** LÁBLÉC — a második navigáció (drótváz 13/03). */
 export function Footer() {
-  const year = 2026;
+  const { t } = useI18n();
+  const { reopen } = useConsent();
+  const year = new Date().getFullYear();
 
   return (
     <footer className="deep-surface text-ice-100">
@@ -34,7 +41,14 @@ export function Footer() {
               <li className="flex items-start gap-2">
                 <Phone aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-glacier-300" />
                 {contactInfo.phone ? (
-                  <a href={`tel:${toDialString(contactInfo.phone)}`} className="link-underline text-ice-100">
+                  <a
+                    href={`tel:${toDialString(contactInfo.phone)}`}
+                    onClick={() =>
+                      // MÉRÉS 8: telefonhívás indítása
+                      trackEvent(ANALYTICS_EVENTS.clickPhone, { cta_location: 'footer' })
+                    }
+                    className="link-underline text-ice-100"
+                  >
                     {contactInfo.phone}
                   </a>
                 ) : (
@@ -44,7 +58,14 @@ export function Footer() {
               <li className="flex items-start gap-2">
                 <Mail aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-glacier-300" />
                 {contactInfo.email ? (
-                  <a href={`mailto:${contactInfo.email}`} className="link-underline text-ice-100">
+                  <a
+                    href={`mailto:${contactInfo.email}`}
+                    onClick={() =>
+                      // MÉRÉS 10: e-mail-kattintás
+                      trackEvent(ANALYTICS_EVENTS.clickEmail, { cta_location: 'footer' })
+                    }
+                    className="link-underline text-ice-100"
+                  >
                     {contactInfo.email}
                   </a>
                 ) : (
@@ -84,9 +105,11 @@ export function Footer() {
             </div>
           </div>
 
-          {footerNavigation.map((column) => (
-            <nav key={column.title} aria-label={column.title}>
-              <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-glacier-300">{column.title}</h2>
+          {footerNavigation.map((column) => {
+            const title = column.titleKey ? t(column.titleKey) : column.title;
+            return (
+            <nav key={column.title} aria-label={title}>
+              <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-glacier-300">{title}</h2>
               <ul className="mt-4 space-y-2.5">
                 {column.items.map((item) => (
                   <li key={item.href}>
@@ -94,13 +117,14 @@ export function Footer() {
                       href={item.href}
                       className="text-sm text-ice-200/85 transition-colors hover:text-white"
                     >
-                      {item.label}
+                      {item.labelKey ? t(item.labelKey) : item.label}
                     </Link>
                   </li>
                 ))}
               </ul>
             </nav>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-6">
@@ -123,12 +147,22 @@ export function Footer() {
                   )}
                 </li>
               ))}
+              <li>
+                <button
+                  type="button"
+                  onClick={reopen}
+                  className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
+                >
+                  <Cookie aria-hidden="true" className="h-3.5 w-3.5" />
+                  {t('consent.manage')}
+                </button>
+              </li>
             </ul>
             <LanguageSwitcher variant="inline" />
           </div>
 
           <p className="mt-6 text-xs text-ice-300/55">
-            © {year} {displayNameLong}. Minden jog fenntartva. Az üzemeltető adatai az impresszumban.
+            © {year} {displayNameLong}. {t('footer.rights')} Az üzemeltető adatai az impresszumban.
           </p>
         </div>
       </div>

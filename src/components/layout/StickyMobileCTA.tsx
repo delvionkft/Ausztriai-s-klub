@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { MessageCircle, Ticket } from 'lucide-react';
 import { contactInfo } from '@/data/contact';
 import { routes } from '@/data/navigation';
+import { useI18n } from '@/i18n/I18nProvider';
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics';
 import { toDialString } from '@/lib/format';
 
 /**
@@ -14,6 +16,7 @@ import { toDialString } from '@/lib/format';
  */
 export function StickyMobileCTA() {
   const pathname = usePathname();
+  const { t } = useI18n();
   const accommodationRoutes: string[] = [routes.guesthouse, routes.groups, routes.availability, routes.quote];
   const isAccommodation = accommodationRoutes.includes(pathname);
 
@@ -30,10 +33,18 @@ export function StickyMobileCTA() {
       <div className="flex gap-2 pb-2">
         <Link
           href={isAccommodation ? routes.quote : routes.tickets}
+          onClick={() =>
+            trackEvent(
+              isAccommodation
+                ? ANALYTICS_EVENTS.beginQuoteRequest // ajánlatkérés megkezdése
+                : ANALYTICS_EVENTS.beginTicketPurchase, // MÉRÉS 1
+              { cta_location: 'sticky_mobile' },
+            )
+          }
           className="flex min-h-[52px] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-pill bg-deep-800 px-3 text-[0.9rem] font-bold text-white transition-colors active:bg-deep-900"
         >
           <Ticket aria-hidden="true" className="h-[18px] w-[18px]" />
-          {isAccommodation ? 'Ajánlatot kérek' : 'Jegyvásárlás'}
+          {isAccommodation ? t('cta.requestQuote') : t('cta.buyTickets')}
         </Link>
 
         {whatsappHref ? (
@@ -41,10 +52,14 @@ export function StickyMobileCTA() {
             href={whatsappHref}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() =>
+              // MÉRÉS 9: WhatsApp-kattintás
+              trackEvent(ANALYTICS_EVENTS.clickWhatsapp, { cta_location: 'sticky_mobile' })
+            }
             className="flex min-h-[52px] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-pill bg-glacier-600 px-3 text-[0.9rem] font-bold text-white transition-colors active:bg-glacier-700"
           >
             <MessageCircle aria-hidden="true" className="h-[18px] w-[18px]" />
-            WhatsApp
+            {t('cta.whatsapp')}
           </a>
         ) : (
           <Link

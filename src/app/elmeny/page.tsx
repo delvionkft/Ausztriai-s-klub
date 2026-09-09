@@ -12,6 +12,8 @@ import { EmptyState } from '@/components/ui/States';
 import { PrimaryButton, SecondaryButton } from '@/components/ui/Button';
 import { ExperienceGrid } from '@/components/features/ExperienceGrid';
 import { EventCard } from '@/components/features/EventCard';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { eventListSchema } from '@/lib/structuredData';
 
 export const metadata: Metadata = {
   title: 'Élmény és nyári üzem',
@@ -35,6 +37,9 @@ export default function ExperiencePage() {
 
   return (
     <>
+      {/* Strukturált adat: csak a KIHIRDETETT (dátummal rendelkező) események. */}
+      <JsonLd data={eventListSchema(events)} />
+
       <PageHero
         eyebrow={isSummer ? 'Nyári üzem' : 'Téli üzem'}
         title={isSummer ? 'Nyáron is van miért feljönni a hegyre' : 'A síelésen túl is van program'}

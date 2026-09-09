@@ -1,15 +1,18 @@
+'use client';
+
 import { CableCar, Mountain, RefreshCw, Snowflake, Thermometer } from 'lucide-react';
 import { liveStatus } from '@/data/status';
 import { DEMO_DATA_ENABLED } from '@/data/placeholders';
 import { formatDateTimeHu } from '@/lib/date';
 import { formatNumber, formatRatio, formatTemperature } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import { resortStatusLabels } from '@/components/ui/StatusBadge';
+import { useI18n } from '@/i18n/I18nProvider';
 
 /**
  * ÉLŐ STÁTUSZ SÁV — minden releváns oldalon, EGYETLEN adatforrásból.
  * Forrás: `src/data/status.ts` → `src/services/statusService.ts`.
- * Szerveroldalon renderelődik (azonnali megjelenés, jó CLS/LCP).
+ * A szerver is renderel belőle HTML-t (jó CLS/LCP), a feliratok a nyelvi
+ * szótárból jönnek (`src/i18n/`), így DE/EN/HU alatt is helyesek.
  */
 
 const statusTone = {
@@ -26,29 +29,38 @@ interface Metric {
   icon: typeof Snowflake;
 }
 
+const statusKey = {
+  open: 'status.open',
+  closed: 'status.closed',
+  maintenance: 'status.maintenance',
+  preparing: 'status.preparing',
+} as const;
+
 export function LiveStatusBar({ className }: { className?: string }) {
+  const { t } = useI18n();
+
   const metrics: Metric[] = [
     {
       id: 'snow',
-      label: 'Hó a hegyen',
+      label: t('status.snowDepth'),
       value: formatNumber(liveStatus.snowDepthMountainCm, ' cm'),
       icon: Snowflake,
     },
     {
       id: 'temp',
-      label: 'Hőmérséklet',
+      label: t('status.temperature'),
       value: formatTemperature(liveStatus.temperatureC),
       icon: Thermometer,
     },
     {
       id: 'lifts',
-      label: 'Felvonó',
+      label: t('status.liftsOpen'),
       value: formatRatio(liveStatus.liftsOpen, liveStatus.liftsTotal),
       icon: CableCar,
     },
     {
       id: 'slopes',
-      label: 'Pálya',
+      label: t('status.slopesOpen'),
       value: formatRatio(liveStatus.slopesOpen, liveStatus.slopesTotal),
       icon: Mountain,
     },
@@ -57,7 +69,7 @@ export function LiveStatusBar({ className }: { className?: string }) {
   return (
     <div
       className={cn('border-b border-deep-100 bg-white/95 backdrop-blur-md', className)}
-      aria-label="Élő státusz"
+      aria-label={t('status.live')}
     >
       <div className="container-page">
         {/* Asztali és tablet: egy sor */}
@@ -68,7 +80,7 @@ export function LiveStatusBar({ className }: { className?: string }) {
                 aria-hidden="true"
                 className={cn('h-2 w-2 rounded-full', statusTone[liveStatus.resortStatus], 'animate-pulse-dot')}
               />
-              A síközpont {resortStatusLabels[liveStatus.resortStatus].toLowerCase()}
+              {t(statusKey[liveStatus.resortStatus])}
             </span>
             <ul className="flex items-center gap-4">
               {metrics.map((metric) => (
@@ -83,7 +95,7 @@ export function LiveStatusBar({ className }: { className?: string }) {
           </div>
           <p className="flex items-center gap-1.5 whitespace-nowrap text-xs text-deep-500">
             <RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />
-            Frissítve: {formatDateTimeHu(liveStatus.updatedAt)}
+            {t('status.updatedAt')}: {formatDateTimeHu(liveStatus.updatedAt)}
             {DEMO_DATA_ENABLED ? <span className="rounded bg-ice-200 px-1.5 py-0.5 font-medium text-deep-700">demó</span> : null}
           </p>
         </div>
@@ -96,7 +108,7 @@ export function LiveStatusBar({ className }: { className?: string }) {
                 aria-hidden="true"
                 className={cn('h-2 w-2 rounded-full', statusTone[liveStatus.resortStatus], 'animate-pulse-dot')}
               />
-              {resortStatusLabels[liveStatus.resortStatus]}
+              {t(statusKey[liveStatus.resortStatus])}
             </span>
             <span className="truncate text-[0.7rem] text-deep-500">
               {formatDateTimeHu(liveStatus.updatedAt)}

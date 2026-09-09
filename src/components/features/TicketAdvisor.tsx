@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Check, Sparkles } from 'lucide-react';
 import { ageGroupLabels, currency } from '@/data/tickets';
 import { ONLINE_CHECKOUT_ENABLED, checkoutUnavailableMessage } from '@/services/ticketService';
 import { recommendTicket } from '@/lib/pricing';
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics';
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import { DemoNotice } from '@/components/ui/DemoNotice';
@@ -76,6 +77,18 @@ export function TicketAdvisor() {
   const [ageGroup, setAgeGroup] = useState<AgeGroup>('adult');
 
   const recommendation = useMemo(() => recommendTicket(people, days, ageGroup), [people, days, ageGroup]);
+
+  // MÉRÉS 2: ajánlott jegytípus megtekintése (a válaszok minden változásakor)
+  useEffect(() => {
+    trackEvent(ANALYTICS_EVENTS.viewRecommendedTicket, {
+      ticket_id: recommendation.product.id,
+      ticket_name: recommendation.product.name,
+      people,
+      days,
+      age_group: ageGroup,
+      total_price: recommendation.totalPrice,
+    });
+  }, [recommendation, people, days, ageGroup]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
@@ -154,7 +167,20 @@ export function TicketAdvisor() {
 
         <div className="mt-auto pt-5">
           {ONLINE_CHECKOUT_ENABLED ? (
-            <PrimaryButton size="lg" fullWidth iconRight={<ArrowRight aria-hidden="true" className="h-4 w-4" />}>
+            <PrimaryButton
+              size="lg"
+              fullWidth
+              onClick={() =>
+                // MÉRÉS 1: jegyvásárlás megkezdése
+                trackEvent(ANALYTICS_EVENTS.beginTicketPurchase, {
+                  cta_location: 'ticket_advisor',
+                  ticket_id: recommendation.product.id,
+                  quantity: people,
+                  value: recommendation.totalPrice,
+                })
+              }
+              iconRight={<ArrowRight aria-hidden="true" className="h-4 w-4" />}
+            >
               Vásárlás
             </PrimaryButton>
           ) : (

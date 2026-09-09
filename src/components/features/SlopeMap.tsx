@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Download, Layers, Map as MapIcon, Minus, Plus, RotateCcw, WifiOff } from 'lucide-react';
 import { difficultyColors, difficultyLabels, slopes } from '@/data/slopes';
 import { liftTypeLabels, lifts } from '@/data/lifts';
 import { PLACEHOLDER_MEDIA } from '@/data/placeholders';
 import { formatLength, formatNumber } from '@/lib/format';
 import { cn } from '@/lib/cn';
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics';
 import { PendingValue } from '@/components/ui/PendingValue';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { SecondaryButton } from '@/components/ui/Button';
@@ -85,6 +86,11 @@ export function SlopeMap() {
   });
   const [zoom, setZoom] = useState(1);
   const [selection, setSelection] = useState<Selection>(null);
+
+  // MÉRÉS 3: pályatérkép megnyitása (egyszer, a térkép megjelenésekor)
+  useEffect(() => {
+    trackEvent(ANALYTICS_EVENTS.openSlopeMap, { map_type: 'interactive' });
+  }, []);
 
   const closedSlopes = useMemo(() => slopes.filter((slope) => slope.status !== 'open'), []);
 
@@ -204,7 +210,14 @@ export function SlopeMap() {
                       role="button"
                       tabIndex={0}
                       aria-label={`${lift.name} felvonó kiválasztása`}
-                      onClick={() => setSelection({ kind: 'lift', item: lift })}
+                      onClick={() => {
+                        setSelection({ kind: 'lift', item: lift });
+                        trackEvent(ANALYTICS_EVENTS.openSlopeMap, {
+                          map_type: 'interactive',
+                          interaction: 'select_lift',
+                          item_id: lift.id,
+                        });
+                      }}
                       onKeyDown={(event) => {
                         if (event.key === 'Enter' || event.key === ' ') {
                           event.preventDefault();
@@ -252,7 +265,14 @@ export function SlopeMap() {
                   role="button"
                   tabIndex={0}
                   aria-label={`${slope.name} kiválasztása`}
-                  onClick={() => setSelection({ kind: 'slope', item: slope })}
+                  onClick={() => {
+                    setSelection({ kind: 'slope', item: slope });
+                    trackEvent(ANALYTICS_EVENTS.openSlopeMap, {
+                      map_type: 'interactive',
+                      interaction: 'select_slope',
+                      item_id: slope.id,
+                    });
+                  }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();

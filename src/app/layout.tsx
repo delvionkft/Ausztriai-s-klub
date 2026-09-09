@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { SiteShell } from '@/components/layout/SiteShell';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { I18nProvider } from '@/i18n/I18nProvider';
 import { siteConfig } from '@/data/site.config';
+import { skiResortSchema, websiteSchema } from '@/lib/structuredData';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -26,7 +29,12 @@ export const metadata: Metadata = {
     images: [siteConfig.ogImage],
   },
   robots: { index: true, follow: true },
-  alternates: { canonical: '/' },
+  alternates: {
+    canonical: '/',
+    // Háromnyelvű működés: amint a nyelvenkénti útvonalak élesednek
+    // (pl. /de, /en), itt kell a valós URL-eket megadni.
+    languages: { hu: '/', de: '/', en: '/' },
+  },
 };
 
 export const viewport: Viewport = {
@@ -38,9 +46,14 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="hu">
+    <html lang={siteConfig.defaultLocale}>
+      <head>
+        <JsonLd data={[websiteSchema(), skiResortSchema()]} />
+      </head>
       <body>
-        <SiteShell>{children}</SiteShell>
+        <I18nProvider>
+          <SiteShell>{children}</SiteShell>
+        </I18nProvider>
       </body>
     </html>
   );

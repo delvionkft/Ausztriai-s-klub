@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { ChevronDown, Snowflake, Ticket } from 'lucide-react';
 import { mainNavigation, routes } from '@/data/navigation';
+import { useI18n } from '@/i18n/I18nProvider';
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
@@ -17,6 +19,7 @@ import { MobileNavigation } from './MobileNavigation';
  */
 export function Header() {
   const pathname = usePathname();
+  const { t } = useI18n();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   return (
@@ -25,7 +28,7 @@ export function Header() {
         <div className="flex h-[68px] items-center justify-between gap-4">
           <Logo />
 
-          <nav aria-label="Főmenü" className="hidden lg:block">
+          <nav aria-label={t('cta.menu')} className="hidden lg:block">
             <ul className="flex items-center gap-0.5">
               {mainNavigation.map((item) => {
                 const active = pathname === item.href || item.children?.some((child) => child.href === pathname);
@@ -48,7 +51,7 @@ export function Header() {
                         active ? 'text-glacier-700' : 'text-deep-700 hover:bg-deep-50 hover:text-deep-900',
                       )}
                     >
-                      {item.label}
+                      {item.labelKey ? t(item.labelKey) : item.label}
                       {hasChildren ? (
                         <ChevronDown
                           aria-hidden="true"
@@ -72,7 +75,9 @@ export function Header() {
                                   pathname === child.href ? 'bg-glacier-50' : 'hover:bg-deep-50',
                                 )}
                               >
-                                <span className="block text-sm font-semibold text-deep-900">{child.label}</span>
+                                <span className="block text-sm font-semibold text-deep-900">
+                                  {child.labelKey ? t(child.labelKey) : child.label}
+                                </span>
                                 {child.description ? (
                                   <span className="mt-0.5 block text-xs text-deep-500">{child.description}</span>
                                 ) : null}
@@ -94,14 +99,18 @@ export function Header() {
               className="hidden min-h-[42px] items-center gap-1.5 rounded-pill border border-deep-200 px-3.5 text-sm font-semibold text-deep-800 transition-colors hover:border-deep-300 hover:bg-deep-50 md:inline-flex"
             >
               <Snowflake aria-hidden="true" className="h-4 w-4 text-glacier-600" />
-              Hójelentés
+              {t('cta.snowReport')}
             </Link>
             <Link
               href={routes.tickets}
+              onClick={() =>
+                // MÉRÉS 1: jegyvásárlás megkezdése
+                trackEvent(ANALYTICS_EVENTS.beginTicketPurchase, { cta_location: 'header' })
+              }
               className="hidden min-h-[42px] items-center gap-1.5 rounded-pill bg-deep-800 px-4 text-sm font-semibold text-white shadow-subtle transition-all hover:bg-deep-700 hover:shadow-card md:inline-flex"
             >
               <Ticket aria-hidden="true" className="h-4 w-4" />
-              Jegyvásárlás
+              {t('cta.buyTickets')}
             </Link>
             <LanguageSwitcher className="hidden lg:block" />
             <MobileNavigation />

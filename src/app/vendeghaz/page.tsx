@@ -28,6 +28,8 @@ import { Card } from '@/components/ui/Card';
 import { PrimaryButton, SecondaryButton } from '@/components/ui/Button';
 import { AccommodationSubNav } from '@/components/layout/AccommodationSubNav';
 import { Gallery } from '@/components/features/Gallery';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { breadcrumbSchema, lodgingSchema } from '@/lib/structuredData';
 
 export const metadata: Metadata = {
   title: 'A vendégház',
@@ -52,6 +54,17 @@ const benefitIcons = { KeyRound, Users, ReceiptText } as const;
 export default function GuesthousePage() {
   return (
     <>
+      {/* Strukturált adat: a vendégház mint szálláshely. */}
+      <JsonLd
+        data={[
+          lodgingSchema(),
+          breadcrumbSchema([
+            { name: 'Kezdőlap', path: routes.home },
+            { name: 'A vendégház', path: routes.guesthouse },
+          ]),
+        ]}
+      />
+
       <AccommodationSubNav />
 
       <PageHero

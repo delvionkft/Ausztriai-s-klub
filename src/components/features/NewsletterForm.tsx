@@ -4,6 +4,7 @@ import { useId, useState } from 'react';
 import { BellRing, CheckCircle2 } from 'lucide-react';
 import { newsletterCopy } from '@/data/homepage';
 import { subscribeToSnowAlert } from '@/services/newsletterService';
+import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics';
 import { isValidEmail } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
@@ -33,7 +34,11 @@ export function NewsletterForm({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
     const result = await subscribeToSnowAlert({ email });
     setState(result.ok ? 'success' : 'error');
     setMessage(result.message);
-    if (result.ok) setEmail('');
+    if (result.ok) {
+      // MÉRÉS 11: hóértesítő feliratkozás
+      trackEvent(ANALYTICS_EVENTS.subscribeSnowAlert, { form_location: tone === 'dark' ? 'home' : 'inline' });
+      setEmail('');
+    }
   }
 
   const dark = tone === 'dark';
