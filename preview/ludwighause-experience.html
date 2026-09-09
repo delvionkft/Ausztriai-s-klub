@@ -1,11 +1,11 @@
-<title>Ludwighause 2340</title>
+<title>Ludwighaus</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
 
 <style>
 /* ============================================================================
-   LUDWIGHAUSE — ÉLMÉNYOLDAL
+   LUDWIGHAUS — ÉLMÉNYOLDAL
    Design token réteg. Emergent-portoláskor ez a blokk kerül a globális stíluslapba.
    A lap egy szándékosan egységes vizuális világ: a paletta nem a néző
    témájától, hanem a MAGASSÁGTÓL függ (völgy -> gerinc -> csúcs).
@@ -380,32 +380,36 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <path d="M2 20h20L14.5 5.5 11 12l-2.2-3.4L2 20Z" fill="#43B4BB"/>
       <path d="M14.5 5.5 11 12l1.8 2.8L16.2 9l-1.7-3.5Z" fill="#E9F1F7"/>
     </svg>
-    <span>Ludwighause<small>Sípálya &amp; Vendégház</small></span>
+    <span>Ludwighaus<small>Neukirchen am Grossvenediger</small></span>
   </a>
   <nav aria-label="Fő navigáció">
     <ul class="nav-links">
-      <li><a href="#hohelyzet">Hóhelyzet</a></li>
-      <li><a href="#palyak">Pályák</a></li>
-      <li><a href="#felvonok">Felvonók</a></li>
-      <li><a href="#jegyek">Jegyek</a></li>
-      <li><a href="#vendeghaz">Vendégház</a></li>
+      <li><a href="#szallasunk">Szállásunk</a></li>
+      <li><a href="#szobak">Szobák</a></li>
+      <li><a href="#sipalyak">Sípályák</a></li>
+      <li><a href="#ebike">E-Bike</a></li>
+      <li><a href="#galeria">Galéria</a></li>
+      <li><a href="#arak">Árak</a></li>
+      <li><a href="#foglalas">Foglalás</a></li>
     </ul>
   </nav>
   <div class="nav-tools">
+    <div class="lang" role="group" aria-label="Nyelv">
+      <button type="button" aria-pressed="true">HU</button>
+      <button type="button" aria-pressed="false">EN</button>
+      <button type="button" aria-pressed="false">DE</button>
+      <button type="button" aria-pressed="false">AT</button>
+      <button type="button" aria-pressed="false">NL</button>
+    </div>
     <button class="toggle-motion" id="motion-toggle" type="button" aria-pressed="true">Mozgás: be</button>
-    <a class="btn" href="#jegyek">Jegyet veszek</a>
+    <a class="btn" href="#foglalas">Időpontot foglalok</a>
   </div>
 </header>
 
-<!-- ====================== KOMPONENS: AltitudeRail ========================= -->
+<!-- ======================== KOMPONENS: SectionRail ======================== -->
 <aside class="rail" id="rail" aria-hidden="true">
-  <div class="rail-alt mono"><span id="rail-value">940</span><small>m</small></div>
-  <div class="rail-zone" id="rail-zone">Völgyállomás</div>
-  <div class="rail-track">
-    <div class="rail-fill" id="rail-fill"></div>
-    <span class="rail-tick" style="top:0%">2 340</span>
-    <span class="rail-tick" style="top:100%">940</span>
-  </div>
+  <div class="rail-zone" id="rail-zone">Szállásunk</div>
+  <div class="rail-track"><div class="rail-fill" id="rail-fill"></div></div>
 </aside>
 
 <main id="top">
@@ -413,163 +417,197 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 <!-- =========================== KOMPONENS: Hero ============================ -->
 <section class="band hero wrap" id="hero">
   <div class="hero-top" data-parallax="-0.06">
-    <span class="chip"><i class="dot"></i> Nyitva &nbsp;<b>08:30 – 16:15</b></span>
-    <span class="chip">Hó a hegyen <b>82 cm</b></span>
+    <span class="chip"><i class="dot"></i> ⛷ Neukirchen am Grossvenediger &middot; Ausztria</span>
   </div>
 
   <div data-parallax="-0.14">
-    <p class="eyebrow">Ausztria &middot; 940 – 2 340 m</p>
     <h1 id="hero-title">
-      <span class="l"><i>Ezernégyszáz méter</i></span>
-      <span class="l"><i>lefelé, <em>egy nyom</em> alatt.</i></span>
+      <span class="l"><i>Az Alpok</i></span>
+      <span class="l"><i><em>szívében</em></i></span>
+      <span class="l"><i>vár a ház</i></span>
     </h1>
   </div>
 
   <div class="hero-foot" data-parallax="-0.22">
-    <div class="hero-ctas">
-      <a class="btn" href="#jegyek" data-magnetic>Jegyek</a>
-      <a class="btn btn--ghost" href="#hohelyzet" data-magnetic>Mai hóhelyzet</a>
-    </div>
-    <div class="ascent">
-      <span><b class="mono">940</b></span>
-      <span class="ascent-bar"></span>
-      <span><b class="mono">2 340</b></span>
+    <div>
+      <p class="lede">Fiatalos alpesi panzió, 45 vendégágy, bár a pincében — 600 méterre a Wildkogel sípályáktól.</p>
+      <div class="hero-ctas">
+        <a class="btn" href="#foglalas" data-magnetic>Szabad időpontok megtekintése</a>
+        <a class="btn btn--ghost" href="#szallasunk" data-magnetic>Szállásunk</a>
+      </div>
     </div>
   </div>
 
-  <div class="scroll-hint" data-parallax="-0.3"><i></i> Görgetés = emelkedés</div>
+  <div class="scroll-hint" data-parallax="-0.3"><i></i> Görgess</div>
 </section>
 
-<!-- ====================== KOMPONENS: LiveConditions ====================== -->
-<section class="band wrap" id="hohelyzet">
-  <div class="head rise" data-parallax="0.07">
-    <p class="eyebrow">01 &middot; Hóhelyzet</p>
-    <h2>Ma reggel 07:40.</h2>
-  </div>
-
+<!-- ========================== KOMPONENS: KeyStats ========================= -->
+<section class="band band--tight wrap" id="szamok">
   <dl class="gauges rise">
-    <div class="gauge"><dt>Hó — hegy</dt><dd class="mono">82<u>cm</u></dd><div class="meter"><i style="width:68%"></i></div></div>
-    <div class="gauge"><dt>Hó — völgy</dt><dd class="mono">41<u>cm</u></dd><div class="meter"><i style="width:34%"></i></div></div>
-    <div class="gauge"><dt>Hőmérséklet</dt><dd class="mono">&minus;4<u>°C</u></dd><span class="sub">Gerincen &minus;9 °C</span></div>
-    <div class="gauge"><dt>Nyitott pálya</dt><dd class="mono">8<u>/ 11</u></dd><div class="meter"><i style="width:73%"></i></div></div>
+    <div class="gauge"><dd class="mono">402<u>km</u></dd><dt>Sípálya a régióban</dt></div>
+    <div class="gauge"><dd class="mono">45</dd><dt>Vendégágy</dt></div>
+    <div class="gauge"><dd class="mono">12</dd><dt>Szoba</dt></div>
+    <div class="gauge"><dd class="mono">14<u>km</u></dd><dt>Leghosszabb kivilágított szánkópálya</dt></div>
   </dl>
-
-  <div class="report">
-    <ul class="forecast rise" data-parallax="0.05">
-      <li><span class="day">Ma</span><span class="txt">Havazás, gerincen párás</span><span class="temps mono">&minus;3° <span>/ &minus;7°</span></span></li>
-      <li><span class="day">Holnap</span><span class="txt">Felszakadozó felhőzet</span><span class="temps mono">&minus;2° <span>/ &minus;8°</span></span></li>
-      <li><span class="day">Szerda</span><span class="txt">Napos, kiváló láthatóság</span><span class="temps mono">&minus;1° <span>/ &minus;11°</span></span></li>
-    </ul>
-    <div class="panel avalanche rise" data-parallax="0.12">
-      <p class="eyebrow" style="color:var(--warn)">Lavinaveszély</p>
-      <div class="ava-scale">
-        <i data-n="1" data-on="true"></i><i data-n="2" data-on="true"></i><i data-n="3"></i><i data-n="4"></i><i data-n="5"></i>
-      </div>
-      <p class="ava-txt"><b>2 — mérsékelt</b> az ötfokozatú skálán.</p>
-    </div>
-  </div>
 </section>
 
-<!-- ========================== KOMPONENS: Pistes ========================== -->
-<section class="band wrap" id="palyak">
+<!-- ======================== KOMPONENS: AboutHouse ========================= -->
+<section class="band wrap" id="szallasunk">
   <div class="head rise" data-parallax="0.07">
-    <p class="eyebrow">02 &middot; Pályák</p>
-    <h2>Tizenegy pálya,<br>három fokozat.</h2>
+    <p class="eyebrow">A szállásunk</p>
+    <h2>Neukirchen am<br>Grossvenediger</h2>
   </div>
 
-  <div class="piste-grid rise" id="piste-grid"></div>
-
-  <div class="panel profile-wrap rise" data-parallax="0.06">
-    <div class="profile-head">
-      <h3>Magassági szelvény</h3>
-      <div class="profile-legend">
-        <span><i style="background:var(--piste-blue)"></i> Kék</span>
-        <span><i style="background:var(--piste-red)"></i> Piros</span>
-        <span><i style="background:var(--piste-black)"></i> Fekete</span>
-      </div>
+  <div class="two-col">
+    <div class="rise" data-parallax="0.05">
+      <p class="lede">A Ludwighaus a falu főutcájában található. 12 szobájával, 45 vendégággyal és fiatalos hangulatával várja a vendégeket — télen-nyáron.</p>
+      <p class="body-text">Az összkomfortos, többnyire erkélyes szobákból pazar kilátás nyílik a hegyekre, amelyek legmagasabb pontja az örök hóhatár felett lévő 3.662 m magas Großvenediger.</p>
     </div>
-    <canvas id="profile" aria-label="A pályák magassági szelvénye 940 és 2340 méter között"></canvas>
+    <div class="panel park rise" data-parallax="0.12">
+      <p class="eyebrow">A terület</p>
+      <h3>Hohen Tauern Nemzeti Park</h3>
+      <p class="body-text">Közép-Európa legnagyobb nemzeti parkjában, Salzburg, Karintia és Tirol találkozásánál. Több mint 300 hegycsúcs, gleccserek, vízesések.</p>
+      <p class="body-text">8 km-re a Krimmler vízesés — Európa leghosszabb vízesése. Körülötted Ausztria egyik legváltozatosabb természeti csodája.</p>
+    </div>
   </div>
+
+  <ul class="highlights rise" data-parallax="0.04">
+    <li><span aria-hidden="true">👩‍🍳</span> Self-cooking konyha 50 fő részére, teljesen felszerelve</li>
+    <li><span aria-hidden="true">🍸</span> Bár &amp; Disco a panzió pincéjében</li>
+    <li><span aria-hidden="true">🅿️</span> Ingyenes parkolás a ház mellett</li>
+    <li><span aria-hidden="true">🥃</span> Ingyenes pálinka egész nap — ez a ház különlegessége</li>
+    <li><span aria-hidden="true">📶</span> Korlátlan WiFi és magyar recepció</li>
+  </ul>
 </section>
 
-<!-- ========================== KOMPONENS: Lifts =========================== -->
-<section class="band wrap" id="felvonok">
+<!-- =========================== KOMPONENS: Rooms =========================== -->
+<section class="band wrap" id="szobak">
   <div class="head rise" data-parallax="0.07">
-    <p class="eyebrow">03 &middot; Felvonók</p>
-    <h2>Mi jár most.</h2>
+    <p class="eyebrow">Szobáink</p>
+    <h2>Minden szoba<br>egyedi panorámával.</h2>
+    <p class="lede">Venediger vagy Wildkogel kilátással, legtöbbje erkéllyel.</p>
   </div>
-  <div class="scroll-x rise">
-    <table class="lift-table">
-      <thead><tr><th>Felvonó</th><th>Típus</th><th>Nyitvatartás</th><th>Állapot</th></tr></thead>
-      <tbody id="lift-body"></tbody>
-    </table>
+  <ul class="room-types rise">
+    <li>Családi szoba</li><li>Kétágyas szoba</li><li>Franciaágyas szoba</li>
+    <li>Ikerágyas szoba</li><li>Fürdőszoba</li>
+  </ul>
+  <div class="cards rise" id="room-grid"></div>
+</section>
+
+<!-- ========================= KOMPONENS: SkiAreas ========================== -->
+<section class="band wrap" id="sipalyak">
+  <div class="head rise" data-parallax="0.07">
+    <p class="eyebrow">A környék</p>
+    <h2>Három síterep,<br>egy szállásból</h2>
+  </div>
+  <div class="cards cards--wide rise" id="ski-grid"></div>
+</section>
+
+<!-- =========================== KOMPONENS: EBike =========================== -->
+<section class="band wrap" id="ebike">
+  <div class="head rise" data-parallax="0.07">
+    <p class="eyebrow">Tavasz &middot; Nyár &middot; Ősz</p>
+    <h2>E-Bike túrák<br>a hegyekben</h2>
+    <p class="lede">Amikor elolvad a hó, a hegyek új arcukat mutatják. Elektromos kerékpárjainkkal kényelmesen, izzadás nélkül fedezheted fel a völgyeket, vízeséseket és panorámautakat — kezdőként és haladóként is.</p>
+  </div>
+  <div class="cards cards--wide rise" id="bike-grid"></div>
+  <div class="inline-ctas rise">
+    <a class="btn" href="#foglalas" data-magnetic>Foglalj e-bike túrát →</a>
+    <a class="btn btn--ghost" href="#galeria" data-magnetic>A környék galériája →</a>
   </div>
 </section>
 
 <!-- ========================= KOMPONENS: Gallery ========================== -->
 <section class="band wrap" id="galeria">
   <div class="head rise" data-parallax="0.07">
-    <p class="eyebrow">04 &middot; A hegy három arca</p>
-    <h2>Reggel, délben,<br>reflektorfényben.</h2>
+    <p class="eyebrow">Galéria</p>
+    <h2>A ház és<br>a környék.</h2>
   </div>
   <div class="strips rise">
-    <figure class="strip" data-parallax="0.16"><canvas data-scape="dawn"></canvas><figcaption><b>Első nyom</b><small>08:30 &middot; Völgyállomás</small></figcaption></figure>
-    <figure class="strip" data-parallax="-0.05"><canvas data-scape="day"></canvas><figcaption><b>Gerincpanoráma</b><small>12:10 &middot; 2 340 m</small></figcaption></figure>
-    <figure class="strip" data-parallax="0.22"><canvas data-scape="night"></canvas><figcaption><b>Esti síelés</b><small>18:00 – 21:00</small></figcaption></figure>
+    <figure class="strip" data-parallax="0.16"><canvas data-scape="dawn"></canvas><figcaption><b>Wildkogel</b><small>600 m gyalog a háztól</small></figcaption></figure>
+    <figure class="strip" data-parallax="-0.05"><canvas data-scape="day"></canvas><figcaption><b>Großvenediger</b><small>3.662 m</small></figcaption></figure>
+    <figure class="strip" data-parallax="0.22"><canvas data-scape="night"></canvas><figcaption><b>Kivilágított szánkópálya</b><small>14 km</small></figcaption></figure>
   </div>
 </section>
 
-<!-- ========================= KOMPONENS: Tickets ========================== -->
-<section class="band wrap" id="jegyek">
+<!-- ========================= KOMPONENS: Services ========================== -->
+<section class="band wrap" id="szolgaltatasok">
   <div class="head rise" data-parallax="0.07">
-    <p class="eyebrow">05 &middot; Jegyek</p>
-    <h2>Mikor éri meg<br>a bérlet?</h2>
+    <p class="eyebrow">Ami benne van</p>
+    <h2>Szolgáltatásaink</h2>
   </div>
+  <div class="cards rise" id="service-grid"></div>
+</section>
 
-  <div class="ticket-layout">
-    <div class="tickets rise" id="ticket-list" data-parallax="0.05"></div>
-
-    <div class="panel calc rise" data-parallax="0.13">
-      <div class="seg" role="group" aria-label="Korosztály">
-        <button type="button" data-age="child" aria-pressed="false">Gyermek</button>
-        <button type="button" data-age="youth" aria-pressed="false">Ifjúsági</button>
-        <button type="button" data-age="adult" aria-pressed="true">Felnőtt</button>
-        <button type="button" data-age="senior" aria-pressed="false">Szenior</button>
-      </div>
-      <div>
-        <div class="calc-row">
-          <label for="days">Síelt napok</label>
-          <output id="days-out" class="mono" for="days">9</output>
-        </div>
-        <input id="days" type="range" min="1" max="30" step="1" value="9">
-      </div>
-      <div class="calc-result">
-        <div id="res-day"><span>Napijeggyel</span><b class="mono" id="sum-day">468 €</b></div>
-        <div id="res-season"><span>Szezonbérlettel</span><b class="mono" id="sum-season">420 €</b></div>
-      </div>
-      <p class="calc-verdict" id="verdict"></p>
-      <a class="btn btn--lamp" href="#vendeghaz" data-magnetic>Bérletet váltok</a>
+<!-- ========================== KOMPONENS: Pricing ========================== -->
+<section class="band wrap" id="arak">
+  <div class="head rise" data-parallax="0.07">
+    <p class="eyebrow">Átlátható árazás</p>
+    <h2>Mi van benne,<br>mi nincs</h2>
+  </div>
+  <div class="two-col two-col--even">
+    <div class="panel price-box rise" data-parallax="0.05">
+      <h3>A szállás tartalmazza</h3>
+      <ul class="list-yes" id="incl"></ul>
+    </div>
+    <div class="panel price-box rise" data-parallax="0.12">
+      <h3>Nem tartalmazza</h3>
+      <ul class="list-no" id="excl"></ul>
     </div>
   </div>
 </section>
 
-<!-- ===================== KOMPONENS: Guesthouse / CTA ===================== -->
-<section class="band wrap" id="vendeghaz">
-  <div class="house">
-    <div class="rise" data-parallax="0.08">
-      <p class="eyebrow">06 &middot; Vendégház</p>
-      <h2>Teljes ház,<br>a felvonó tövében.</h2>
-      <div class="house-figs">
-        <div><b class="mono">24</b><small>Férőhely</small></div>
-        <div><b class="mono">7</b><small>Hálószoba</small></div>
-        <div><b class="mono">120 m</b><small>A felvonótól</small></div>
-      </div>
-      <div class="hero-ctas">
-        <a class="btn" href="#vendeghaz" data-magnetic>Ajánlatot kérek</a>
-        <a class="btn btn--ghost" href="#hohelyzet" data-magnetic>Szabad időpontok</a>
+<!-- ========================== KOMPONENS: Reviews ========================== -->
+<section class="band wrap" id="velemenyek">
+  <div class="head rise" data-parallax="0.07">
+    <p class="eyebrow">136 Google vélemény alapján</p>
+    <h2>Amit a vendégek<br>mondanak</h2>
+  </div>
+  <div class="cards cards--wide rise" id="review-grid"></div>
+</section>
+
+<!-- ========================= KOMPONENS: Booking =========================== -->
+<section class="band wrap" id="foglalas">
+  <div class="head rise" data-parallax="0.07">
+    <p class="eyebrow">Foglalás</p>
+    <h2>Foglald le<br>a szobád</h2>
+    <p class="lede">Rugalmas érkezés — bármely nap, akár esti órákban is. Töltsd ki az űrlapot, visszajelzünk hamarosan.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="rise" data-parallax="0.05">
+      <ul class="contact-list">
+        <li><span aria-hidden="true">📍</span> Neukirchen am Grossvenediger, Ausztria</li>
+        <li><span aria-hidden="true">☎️</span> Magyar recepció — hívható bármikor</li>
+        <li><span aria-hidden="true">🕘</span> Rugalmas becsekkolás, esti érkezés is OK</li>
+        <li><span aria-hidden="true">🅿️</span> Ingyenes parkolás a ház mellett</li>
+      </ul>
+      <p class="eyebrow" style="margin-top:2rem">Megkereshetsz minket itt is</p>
+      <div class="contact-direct">
+        <a href="tel:+36205972010">📞 +36 20 597 2010</a>
+        <a href="mailto:ludwighausaustria@gmail.com">✉️ ludwighausaustria@gmail.com</a>
       </div>
     </div>
-    <div class="rise" data-parallax="-0.1"><canvas id="house-canvas" aria-label="A vendégház és a felvonó vázlatos éjszakai látképe"></canvas></div>
+
+    <form class="panel bookform rise" data-parallax="0.12" id="bookform">
+      <div class="field"><label for="f-name">Teljes név</label><input id="f-name" name="name" type="text" autocomplete="name"></div>
+      <div class="field"><label for="f-mail">E-mail cím</label><input id="f-mail" name="email" type="email" autocomplete="email"></div>
+      <div class="field-row">
+        <div class="field"><label for="f-in">Érkezés</label><input id="f-in" name="checkin" type="date"></div>
+        <div class="field"><label for="f-out">Távozás</label><input id="f-out" name="checkout" type="date"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="f-adult">Felnőtt</label><input id="f-adult" name="adults" type="number" min="1" value="2"></div>
+        <div class="field"><label for="f-child">Gyermek</label><input id="f-child" name="children" type="number" min="0" value="0"></div>
+      </div>
+      <div class="field"><label for="f-room">Szoba kiválasztása</label>
+        <select id="f-room" name="room"><option>— Válassz szobát —</option></select>
+      </div>
+      <label class="check"><input id="f-whole" name="wholehouse" type="checkbox"> Teljes házat szeretnék foglalni</label>
+      <div class="field"><label for="f-note">Megjegyzés (opcionális)</label><textarea id="f-note" name="note" rows="3"></textarea></div>
+      <button class="btn" type="submit" data-magnetic>Foglalás leadása →</button>
+      <p class="fineprint">A foglalás elküldésével elfogadod az <a href="#adatkezeles">Adatkezelési tájékoztatót</a> és az <a href="#aszf">ÁSZF-et</a>.</p>
+    </form>
   </div>
 </section>
 
@@ -582,23 +620,23 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
           <path d="M2 20h20L14.5 5.5 11 12l-2.2-3.4L2 20Z" fill="#43B4BB"/>
           <path d="M14.5 5.5 11 12l1.8 2.8L16.2 9l-1.7-3.5Z" fill="#E9F1F7"/>
         </svg>
-        <span>Ludwighause<small>940 – 2 340 m</small></span>
+        <span>Ludwighaus<small>Alpesi panzió</small></span>
       </a>
     </div>
-    <div><h4>A hegy</h4><ul><li><a href="#hohelyzet">Hójelentés</a></li><li><a href="#palyak">Pályák</a></li><li><a href="#felvonok">Felvonók</a></li></ul></div>
-    <div><h4>Tervezés</h4><ul><li><a href="#jegyek">Jegyek</a></li><li><a href="#vendeghaz">Szállás</a></li><li><a href="#vendeghaz">Csoportoknak</a></li></ul></div>
-    <div><h4>Kapcsolat</h4><ul><li><a href="#top">Megközelítés</a></li><li><a href="#top">GYIK</a></li><li><a href="#top">Írok</a></li></ul></div>
+    <div><h4>Az oldal</h4><ul><li><a href="#szallasunk">Szállásunk</a></li><li><a href="#szobak">Szobák</a></li><li><a href="#sipalyak">Sípályák</a></li><li><a href="#ebike">E-Bike</a></li></ul></div>
+    <div><h4>Foglalás</h4><ul><li><a href="#arak">Árak</a></li><li><a href="#galeria">Galéria</a></li><li><a href="#foglalas">Időpontot foglalok</a></li></ul></div>
+    <div><h4>Dokumentumok</h4><ul><li><a href="#aszf">ÁSZF</a></li><li><a href="#adatkezeles">Adatkezelés</a></li><li><a href="#foglalas">Kapcsolat</a></li></ul></div>
   </div>
   <div class="foot-bottom">
-    <span>© 2026 Ludwighause</span>
-    <span>Demó adatok &middot; HU / DE / EN</span>
+    <span>© 2025 Ludwighaus · sportclubhausamwildkogel.eu</span>
+    <span>HU / EN / DE / AT / NL</span>
   </div>
 </footer>
 </main>
 
 <script>
 /* ============================================================================
-   LUDWIGHAUSE — élményréteg
+   LUDWIGHAUS — élményréteg
    Felépítés (Emergent-portoláshoz): ADAT -> MOTOR -> KOMPONENSEK.
    Egyetlen requestAnimationFrame ciklus hajt minden mozgást.
    ========================================================================= */
@@ -606,48 +644,84 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 'use strict';
 
 /* --------------------------------------------------------------------------
-   1. ADAT — éles üzemben ez a blokk kerül külön adatfájlba / API-ba.
+   1. ADAT — a ludwighaus.com tartalma. Emergentben ez lesz a props / API.
    -------------------------------------------------------------------------- */
-const RESORT = { valleyM: 940, peakM: 2340 };
-
-const ZONES = [
-  { upTo: .18, label: 'Völgyállomás' },
-  { upTo: .40, label: 'Erdőhatár' },
-  { upTo: .62, label: 'Középállomás' },
-  { upTo: .82, label: 'Gerincút' },
-  { upTo: 1.1, label: 'Csúcs — 2 340 m' },
+const SECTIONS = [
+  ['hero','Ludwighaus'], ['szamok','Számokban'], ['szallasunk','Szállásunk'],
+  ['szobak','Szobák'], ['sipalyak','Sípályák'], ['ebike','E-Bike'],
+  ['galeria','Galéria'], ['szolgaltatasok','Szolgáltatások'], ['arak','Árak'],
+  ['velemenyek','Vélemények'], ['foglalas','Foglalás'],
 ];
 
-const GRADE = {
-  blue:  { label: 'Kék',   color: 'var(--piste-blue)',  raw: '#3C8FDD' },
-  red:   { label: 'Piros', color: 'var(--piste-red)',   raw: '#DC4F63' },
-  black: { label: 'Fekete',color: 'var(--piste-black)', raw: '#C8D3DE' },
-};
-
-const PISTES = [
-  { id:'talweg', name:'Talweg', sub:'Völgyi levezető', grade:'blue', len:2100, vert:260, top:1200, bottom:940, status:'open', flags:['Hóágyú','Esti síelés'] },
-  { id:'familien', name:'Familienhang', sub:'Családi lejtő', grade:'blue', len:1250, vert:140, top:1080, bottom:940, status:'open', flags:['Hóágyú','Tanpálya'] },
-  { id:'panorama', name:'Panorama', sub:'Középső szakasz', grade:'red', len:2640, vert:420, top:1620, bottom:1200, status:'open', flags:['Hóágyú','Panoráma'] },
-  { id:'grat', name:'Grat', sub:'Gerincpálya', grade:'red', len:1900, vert:380, top:2000, bottom:1620, status:'open', flags:['Szélnek kitett'] },
-  { id:'nord', name:'Nordhang', sub:'Északi lejtő', grade:'black', len:1480, vert:460, top:2340, bottom:1880, status:'closed', flags:['Természetes hó'], note:'Hóviszonyok miatt zárva' },
-  { id:'renn', name:'Rennstrecke', sub:'Versenypálya', grade:'black', len:1120, vert:340, top:1960, bottom:1620, status:'open', flags:['Hóágyú','Időmérés'] },
+const ROOMS = [
+  { no:'No.11', floor:'1. emelet', name:'Venediger panoráma', type:'Panorámás szoba, terasszal', cap:'2+1 fő' },
+  { no:'No.12', floor:'1. emelet', name:'Venediger apartman', type:'Apartman, terasszal', cap:'4+1 fő' },
+  { no:'No.14', floor:'1. emelet', name:'Wildkogel családi', type:'Panorámás családi szoba', cap:'3+2 fő' },
+  { no:'No.15', floor:'1. emelet', name:'Wildkogel dupla', type:'Dupla szoba, terasszal', cap:'2+2 fő' },
+  { no:'No.16', floor:'1. emelet', name:'Wildkogel családi', type:'Panorámás családi szoba', cap:'2+1 fő' },
+  { no:'No.17', floor:'1. emelet', name:'Franciaágyas', type:'Wildkogel panorámás szoba', cap:'2 fő' },
+  { no:'No.21', floor:'2. emelet', name:'Venediger panoráma', type:'Panorámás szoba, terasszal', cap:'2+1 fő' },
+  { no:'No.22', floor:'2. emelet', name:'Venediger dupla', type:'Dupla szoba, terasszal', cap:'3+3 fő' },
+  { no:'No.24', floor:'2. emelet', name:'Wildkogel családi', type:'Panorámás családi szoba', cap:'3+2 fő' },
+  { no:'No.25', floor:'2. emelet', name:'Wildkogel dupla', type:'Dupla szoba, terasszal', cap:'2+2 fő' },
+  { no:'No.26', floor:'2. emelet', name:'Wildkogel családi', type:'Panorámás családi szoba', cap:'2+1 fő' },
+  { no:'No.27', floor:'2. emelet', name:'Franciaágyas', type:'Wildkogel panorámás szoba', cap:'2 fő' },
 ];
 
-const LIFTS = [
-  { name:'A — Ludwig gondola', type:'Gondola, 8 személyes', hours:'08:30 – 16:15', status:'open' },
-  { name:'B — Hochfeld', type:'Négyüléses ülőlift', hours:'09:00 – 16:00', status:'open', note:'Esti síelés 21:00-ig' },
-  { name:'C — Grat', type:'Kétüléses ülőlift', hours:'09:00 – 15:45', status:'open' },
-  { name:'D — Kinderland', type:'Tányéros felvonó', hours:'09:00 – 15:30', status:'open' },
-  { name:'E — Nordhang', type:'Vonólift', hours:'—', status:'closed', note:'Erős szél miatt áll' },
-  { name:'F — Talstation', type:'Mozgójárda', hours:'08:30 – 16:00', status:'open' },
+const SKI_AREAS = [
+  { km:'72 km', name:'Wildkogel Aréna',
+    desc:'Több családbarát díjjal kitüntetett síterep. 35 km piros, 30 km kék, 10 km fekete. 1320 m szintkülönbség.',
+    dist:'600 m gyalog a háztól' },
+  { km:'181 km', name:'Kitzbühel–Mittersill',
+    desc:'Kezdőknek ideális, rengeteg tanulóliftel. 94 km kék, 67 km piros, 20 km fekete. 1200 m szintkülönbség.',
+    dist:'11 km autóval' },
+  { km:'146 km', name:'Zillertal Aréna',
+    desc:'Ausztria egyik legnagyobb, legmodernebb síparadicsoma. 49 km kék, 87 km piros, 10,7 km fekete. 1920 m szintkülönbség.',
+    dist:'15 km autóval' },
 ];
 
-const AGES = { child:'Gyermek', youth:'Ifjúsági', adult:'Felnőtt', senior:'Szenior' };
-const TICKETS = [
-  { id:'half',  name:'Félnapos jegy', desc:'Délelőtti vagy délutáni belépés.', price:{child:22,youth:30,adult:38,senior:32} },
-  { id:'day',   name:'Napijegy',      desc:'Nyitástól zárásig, minden üzemelő felvonóra.', price:{child:30,youth:42,adult:52,senior:44} },
-  { id:'multi', name:'Többnapos bérlet', desc:'Egymást követő napokra — napi árban számolva.', price:{child:27,youth:38,adult:47,senior:40}, perDay:true },
-  { id:'season',name:'Szezonbérlet',  desc:'Korlátlan síelés a teljes szezonban.', price:{child:240,youth:330,adult:420,senior:355} },
+const BIKE_TOURS = [
+  { tag:'Könnyű · családbarát', name:'Krimmler vízesés túra',
+    desc:'Lazán tekerhető útvonal Európa leghosszabb vízeséséhez. Árnyas erdei szakaszok, pihenőhelyek, a végén a lélegzetelállító 380 méteres zuhatag.',
+    figs:[['~16 km','Táv oda-vissza'],['2–3 ó','Időtartam']] },
+  { tag:'Közepes · panoráma', name:'Wildkogel panoráma',
+    desc:'Felfelé az e-bike viszi a terhet — neked csak a kilátás marad. Alpesi legelők, havasi kürtök hangja, és a 3.662 m magas Großvenediger a háttérben.',
+    figs:[['~22 km','Táv'],['900 m','Szint']] },
+  { tag:'Tetszőleges · hosszú', name:'Tauern kerékpárút',
+    desc:'A híres Tauernradweg a házunk mellett halad el. Salzach-parti, szinte végig lejtős nyomvonal — akár egész napos kalandhoz, festői falvakon át.',
+    figs:[['Rugalmas','Hossz'],['A ház','Indulás']] },
+];
+
+const SERVICES = [
+  { icon:'🛏️', name:'Ágynemű & felszerelés', desc:'Ágynemű, szappan, hajszárító minden szobában' },
+  { icon:'🍽️', name:'Tágas étkező', desc:'50 fő befogadására alkalmas, hűtővel, kávéfőzővel' },
+  { icon:'👩‍🍳', name:'Self-cooking konyha', desc:'Tűzhely, sütő, ipari mosogatógép, nagy főzőedények, kukta' },
+  { icon:'🎿', name:'Fűtött sítároló', desc:'Sífelszerelés és cipők biztonságos, meleg tárolása' },
+  { icon:'🅿️', name:'Ingyenes parkolás', desc:'A ház melletti utcai parkolóban, korlátlanul' },
+  { icon:'📶', name:'Korlátlan WiFi', desc:'Az egész házban, ingyenesen' },
+  { icon:'🥃', name:'Ingyenes pálinka egész nap', desc:'Ez a ház különlegessége — mert a hegyen megdolgoztatok érte.' },
+];
+
+const INCLUDED = [
+  'Ágynemű, szappan, hajszárító',
+  'Étkező és büfékonyha használata',
+  'Self-cooking konyha (tűzhely, sütő, mosogatógép)',
+  'Venediger panorámás napozóterasz',
+  'Fűtött sí- és sífelszerelés tároló',
+  'Korlátlan WiFi',
+  'Ingyenes parkolás',
+  'Közösségi terek és játékok',
+  'Ingyenes pálinka egész nap 🥃',
+];
+const EXCLUDED = [
+  'Idegenforgalmi adó: 3 € / nap (helyszínen fizetendő)',
+  'Egyszeri takarítási díj: 25 € / fő',
+];
+
+const REVIEWS = [
+  { stars:5, text:'Nagyon hangulatos hely. Elsősorban téli síeléshez, de a nyári meleget is jobb itt átvészelni. Jó, tágas szobák, felszerelt konyha. A házigazdák nagyon szívélyesek.', who:'András Kálmán', src:'Google vélemény' },
+  { stars:5, text:'Guter Standard und sauber. Az elhelyezkedés tökéletes, a szobák kényelmesek, a személyzet kedves és segítőkész.', who:'Ralph Kirchhoff', src:'Google vélemény' },
+  { stars:4, text:'Szép kilátás, jó légkör. Uncomplicated hosts, reasonable price for the quality. A perfect base for ski trips in the region.', who:'Michael E.', src:'Google vélemény' },
 ];
 
 /* --------------------------------------------------------------------------
@@ -931,29 +1005,33 @@ window.addEventListener('pointermove', e => {
 })();
 
 /* --------------------------------------------------------------------------
-   4. KOMPONENS: AltitudeRail — a görgetés magasságként olvasva
+   4. KOMPONENS: SectionRail — hol tartok az oldalon
    -------------------------------------------------------------------------- */
-(function AltitudeRail(){
-  const val = document.getElementById('rail-value');
+(function SectionRail(){
   const zone = document.getElementById('rail-zone');
   const fill = document.getElementById('rail-fill');
-  let shown = RESORT.valleyM, lastZone = '';
+  if (!zone) return;
+  const els = SECTIONS.map(([id,label]) => ({ el:document.getElementById(id), label }))
+                      .filter(x => x.el);
+  let last = '';
   onTick(s => {
-    const target = RESORT.valleyM + (RESORT.peakM - RESORT.valleyM) * s.p;
-    shown = s.motion ? lerp(shown, target, .12) : target;
-    val.textContent = (Math.round(shown/10)*10).toLocaleString('hu-HU');
     fill.style.height = (s.p*100).toFixed(1) + '%';
-    const z = (ZONES.find(z => s.p <= z.upTo) || ZONES[ZONES.length-1]).label;
-    if (z !== lastZone){ zone.textContent = z; lastZone = z; }
+    let cur = els[0];
+    for (const x of els) if (x.el.getBoundingClientRect().top <= s.h*0.4) cur = x;
+    if (cur && cur.label !== last){ zone.textContent = cur.label; last = cur.label; }
   });
 })();
 
 /* --------------------------------------------------------------------------
-   5. KOMPONENS: Nav — tapadó állapot
+   5. KOMPONENS: Nav — tapadó állapot, nyelvváltó, mozgás-kapcsoló
    -------------------------------------------------------------------------- */
 (function Nav(){
   const nav = document.getElementById('nav');
   onTick(s => { nav.dataset.stuck = String(s.scrollY > 40); });
+
+  document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.lang button').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+  }));
 
   const btn = document.getElementById('motion-toggle');
   btn.addEventListener('click', () => {
@@ -987,137 +1065,106 @@ window.addEventListener('pointermove', e => {
 })();
 
 /* --------------------------------------------------------------------------
-   7. KOMPONENS: Pistes — kártyák + 3D dőlés
+   7. KOMPONENS: Rooms — 12 szoba + a foglalási űrlap szobalistája
    -------------------------------------------------------------------------- */
-(function Pistes(){
-  const grid = document.getElementById('piste-grid');
+(function Rooms(){
+  const grid = document.getElementById('room-grid');
   if (!grid) return;
-  grid.innerHTML = PISTES.map(p => `
-    <article class="panel piste" data-status="${p.status}">
-      <div class="piste-top">
-        <span class="grade"><i style="background:${GRADE[p.grade].color}"></i>${GRADE[p.grade].label}</span>
-        <span class="status-pill" style="color:${p.status==='open'?'var(--ok)':'var(--stop)'}">${p.status==='open'?'Nyitva':'Zárva'}</span>
+  grid.innerHTML = ROOMS.map(r => `
+    <article class="panel card">
+      <div class="card-top">
+        <span class="tag">${r.floor}</span>
+        <span class="cap mono">👤 ${r.cap}</span>
       </div>
-      <h3>${p.name}<span>${p.sub}</span></h3>
-      <div class="piste-figs">
-        <div><b class="mono">${p.len.toLocaleString('hu-HU')} m</b><small>Hossz</small></div>
-        <div><b class="mono">${p.vert} m</b><small>Szint</small></div>
-      </div>
+      <h3>${r.no} — ${r.name}</h3>
+      <p class="card-desc">${r.type}</p>
     </article>`).join('');
 
-  /* Dőlés: csak mutatóeszközzel és bekapcsolt mozgás mellett */
+  const sel = document.getElementById('f-room');
+  if (sel) sel.insertAdjacentHTML('beforeend', ROOMS.map(r => {
+    const terrace = /terasszal/.test(r.type) ? ', terasz' : '';
+    return `<option>${r.no} — ${r.name}${terrace} (${r.cap})</option>`;
+  }).join(''));
+
+  tilt(grid.querySelectorAll('.card'));
+})();
+
+/* Közös 3D dőlés — csak egérrel, bekapcsolt mozgás mellett. */
+function tilt(nodes){
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-  grid.querySelectorAll('.piste').forEach(card => {
+  nodes.forEach(card => {
     card.addEventListener('pointermove', e => {
       if (!state.motion) return;
       const r = card.getBoundingClientRect();
       const dx = (e.clientX - r.left)/r.width - .5;
       const dy = (e.clientY - r.top)/r.height - .5;
-      card.style.transform = `perspective(900px) rotateX(${(-dy*5).toFixed(2)}deg) rotateY(${(dx*6).toFixed(2)}deg) translateZ(6px)`;
+      card.style.transform = `perspective(900px) rotateX(${(-dy*4).toFixed(2)}deg) rotateY(${(dx*5).toFixed(2)}deg) translateZ(5px)`;
       card.style.transitionDuration = '.08s';
     });
-    card.addEventListener('pointerleave', () => {
-      card.style.transform = ''; card.style.transitionDuration = '';
-    });
+    card.addEventListener('pointerleave', () => { card.style.transform=''; card.style.transitionDuration=''; });
   });
-})();
+}
 
 /* --------------------------------------------------------------------------
-   8. KOMPONENS: ElevationProfile — a hat levezetés magassági szelvénye
+   8. KOMPONENS: SkiAreas
    -------------------------------------------------------------------------- */
-(function ElevationProfile(){
-  const cv = document.getElementById('profile');
-  if (!cv) return;
-  const ctx = cv.getContext('2d');
-  let W=0,H=0,dpr=1, visible=false;
-
-  function size(){
-    dpr = Math.min(2, window.devicePixelRatio||1);
-    W = cv.clientWidth; H = cv.clientHeight;
-    cv.width = W*dpr; cv.height = H*dpr;
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-
-  function fgRGBA(a){
-    const c = getComputedStyle(root).getPropertyValue('--fg').trim();
-    return c.replace('rgb(', 'rgba(').replace(')', `,${a})`);
-  }
-
-  function draw(){
-    if (!visible || !W) return;
-    const padL = 44, padR = 12, padT = 14, padB = 26;
-    const x0 = padL, x1 = W - padR, y0 = padT, y1 = H - padB;
-    ctx.clearRect(0,0,W,H);
-
-    const alt2y = a => y1 - (a - RESORT.valleyM)/(RESORT.peakM - RESORT.valleyM) * (y1-y0);
-
-    /* Rács + magasságcímkék */
-    ctx.font = '10px "JetBrains Mono", monospace';
-    ctx.textBaseline = 'middle';
-    for (let a = 1000; a <= 2340; a += 400){
-      const y = alt2y(a);
-      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y);
-      ctx.strokeStyle = fgRGBA(.10); ctx.lineWidth = 1; ctx.stroke();
-      ctx.fillStyle = fgRGBA(.42);
-      ctx.textAlign = 'right';
-      ctx.fillText(a.toLocaleString('hu-HU'), x0 - 8, y);
-    }
-
-    /* Pályák: vízszintesen a hossz arányában, függőlegesen a magasság szerint */
-    const total = PISTES.reduce((s,p)=>s+p.len,0);
-    let cursor = x0 + 6;
-    const usable = (x1 - x0) - 12 - (PISTES.length-1)*10;
-    PISTES.forEach(p => {
-      const w = usable * (p.len/total);
-      const ya = alt2y(p.top), yb = alt2y(p.bottom);
-      ctx.beginPath();
-      ctx.moveTo(cursor, ya);
-      ctx.bezierCurveTo(cursor + w*.4, ya + (yb-ya)*.12, cursor + w*.6, ya + (yb-ya)*.88, cursor + w, yb);
-      ctx.strokeStyle = GRADE[p.grade].raw;
-      ctx.lineWidth = p.status === 'open' ? 2.4 : 1.4;
-      if (p.status !== 'open') ctx.setLineDash([4,4]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      /* Végpont-hangsúly */
-      ctx.beginPath(); ctx.arc(cursor + w, yb, 3, 0, 6.2832);
-      ctx.fillStyle = GRADE[p.grade].raw; ctx.fill();
-      /* Név a szakasz alatt */
-      ctx.textAlign = 'center';
-      ctx.fillStyle = fgRGBA(p.status==='open' ? .62 : .32);
-      ctx.font = '9px "JetBrains Mono", monospace';
-      ctx.fillText(p.name.toUpperCase(), cursor + w/2, y1 + 14);
-      cursor += w + 10;
-    });
-  }
-
-  size(); 
-  const io = new IntersectionObserver(e => { visible = e[0].isIntersecting; if (visible) draw(); }, { threshold:.05 });
-  io.observe(cv);
-  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(()=>{ size(); draw(); }, 160); });
-  /* Újrarajzolás, amikor a paletta érdemben elmozdult */
-  let lastLight = -1;
-  onTick(s => { const l = Math.round(smooth(.72,.92,s.p)*12); if (l !== lastLight){ lastLight = l; draw(); } });
+(function SkiAreas(){
+  const grid = document.getElementById('ski-grid');
+  if (!grid) return;
+  grid.innerHTML = SKI_AREAS.map(a => `
+    <article class="panel card card--tall">
+      <span class="big-fig mono">${a.km}</span>
+      <h3>${a.name}</h3>
+      <p class="card-desc">${a.desc}</p>
+      <span class="tag tag--foot">${a.dist}</span>
+    </article>`).join('');
+  tilt(grid.querySelectorAll('.card'));
 })();
 
 /* --------------------------------------------------------------------------
-   9. KOMPONENS: Lifts
+   9. KOMPONENS: EBike
    -------------------------------------------------------------------------- */
-(function Lifts(){
-  const body = document.getElementById('lift-body');
-  if (!body) return;
-  body.innerHTML = LIFTS.map(l => `
-    <tr>
-      <td class="lift-name">${l.name}${l.note?`<small>${l.note}</small>`:''}</td>
-      <td style="color:var(--fg-soft)">${l.type}</td>
-      <td class="mono">${l.hours}</td>
-      <td><span class="status-pill" style="color:${l.status==='open'?'var(--ok)':'var(--stop)'}">
-        <i class="dot${l.status==='open'?'':' dot--warn'}" style="background:currentColor;box-shadow:none"></i>
-        ${l.status==='open'?'Üzemel':'Áll'}</span></td>
-    </tr>`).join('');
+(function EBike(){
+  const grid = document.getElementById('bike-grid');
+  if (!grid) return;
+  grid.innerHTML = BIKE_TOURS.map(t => `
+    <article class="panel card card--tall">
+      <span class="tag">${t.tag}</span>
+      <h3>${t.name}</h3>
+      <p class="card-desc">${t.desc}</p>
+      <div class="figs">${t.figs.map(([v,l])=>`<div><b class="mono">${v}</b><small>${l}</small></div>`).join('')}</div>
+    </article>`).join('');
+  tilt(grid.querySelectorAll('.card'));
 })();
 
 /* --------------------------------------------------------------------------
-   10. KOMPONENS: Gallery — generatív helyőrző látképek
+   10. KOMPONENS: Services / Pricing / Reviews
+   -------------------------------------------------------------------------- */
+(function Content(){
+  const sg = document.getElementById('service-grid');
+  if (sg) sg.innerHTML = SERVICES.map(x => `
+    <article class="panel card card--flat">
+      <span class="ico" aria-hidden="true">${x.icon}</span>
+      <h3>${x.name}</h3>
+      <p class="card-desc">${x.desc}</p>
+    </article>`).join('');
+
+  const inc = document.getElementById('incl');
+  if (inc) inc.innerHTML = INCLUDED.map(x => `<li>${x}</li>`).join('');
+  const exc = document.getElementById('excl');
+  if (exc) exc.innerHTML = EXCLUDED.map(x => `<li>${x}</li>`).join('');
+
+  const rg = document.getElementById('review-grid');
+  if (rg) rg.innerHTML = REVIEWS.map(r => `
+    <article class="panel card card--tall">
+      <span class="stars" aria-label="${r.stars} csillag">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</span>
+      <p class="quote">${r.text}</p>
+      <div class="who"><b>${r.who}</b><small>${r.src}</small></div>
+    </article>`).join('');
+})();
+
+/* --------------------------------------------------------------------------
+   11. KOMPONENS: Gallery — generatív helyőrző látképek
    -------------------------------------------------------------------------- */
 (function Gallery(){
   const PRESETS = {
@@ -1138,8 +1185,7 @@ window.addEventListener('pointermove', e => {
     c.fillStyle = g; c.fillRect(0,0,W,H);
 
     for (let i=0;i<P.stars;i++){
-      c.globalAlpha = .2 + Math.random()*.7;
-      c.fillStyle = '#FFFFFF';
+      c.globalAlpha = .2 + Math.random()*.7; c.fillStyle = '#FFFFFF';
       c.fillRect(Math.random()*W, Math.random()*H*.55, 1.2, 1.2);
     }
     c.globalAlpha = 1;
@@ -1164,136 +1210,17 @@ window.addEventListener('pointermove', e => {
 })();
 
 /* --------------------------------------------------------------------------
-   11. KOMPONENS: TicketCalculator — mikor éri meg a szezonbérlet
+   12. KOMPONENS: BookingForm — csak felület, backend nélkül
    -------------------------------------------------------------------------- */
-(function TicketCalculator(){
-  const list = document.getElementById('ticket-list');
-  const range = document.getElementById('days');
-  if (!list || !range) return;
-  let age = 'adult';
-
-  const fmt = n => `${Math.round(n).toLocaleString('hu-HU')} €`;
-
-  function renderList(){
-    list.innerHTML = TICKETS.map(t => `
-      <div class="ticket" data-best="${t.id==='season'}">
-        <b>${t.name}</b>
-        <span class="price mono">${fmt(t.price[age])}${t.perDay?'<u> / nap</u>':''}</span>
-      </div>`).join('');
-  }
-
-  function renderCalc(){
-    const days = +range.value;
-    const day = TICKETS.find(t=>t.id==='day').price[age];
-    const season = TICKETS.find(t=>t.id==='season').price[age];
-    const multi = TICKETS.find(t=>t.id==='multi').price[age];
-    const sumDay = days * day;
-    const breakEven = Math.floor(season/day) + 1;
-
-    document.getElementById('days-out').textContent = days;
-    document.getElementById('sum-day').textContent = fmt(sumDay);
-    document.getElementById('sum-season').textContent = fmt(season);
-    document.getElementById('res-day').dataset.win = String(sumDay < season);
-    document.getElementById('res-season').dataset.win = String(season <= sumDay);
-
-    const v = document.getElementById('verdict');
-    if (season <= sumDay){
-      v.innerHTML = `<b>A szezonbérlet ${fmt(sumDay-season)}-val kedvezőbb.</b> ${AGES[age].toLowerCase()} áron a ${breakEven}. síeléstől fordul át.`;
-    } else if (days >= 2 && days <= 7){
-      v.innerHTML = `Ennyi napra a <b>többnapos bérlet</b> a legjobb: ${fmt(days*multi)} — a napijegyeknél ${fmt(sumDay-days*multi)}-val kevesebb. A szezonbérlet a ${breakEven}. naptól éri meg.`;
-    } else {
-      v.innerHTML = `Ennyi napra a <b>napijegy</b> olcsóbb. A szezonbérlet ${AGES[age].toLowerCase()} áron a <b>${breakEven}. síeléstől</b> fordul át.`;
-    }
-  }
-
-  document.querySelectorAll('.seg button').forEach(b => {
-    b.addEventListener('click', () => {
-      age = b.dataset.age;
-      document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
-      renderList(); renderCalc();
-    });
+(function BookingForm(){
+  const f = document.getElementById('bookform');
+  if (!f) return;
+  f.addEventListener('submit', e => {
+    e.preventDefault();
+    const btn = f.querySelector('button[type=submit]');
+    btn.textContent = 'Köszönjük — hamarosan visszajelzünk';
+    btn.disabled = true;
   });
-  range.addEventListener('input', renderCalc);
-  renderList(); renderCalc();
-})();
-
-/* --------------------------------------------------------------------------
-   12. KOMPONENS: GuesthouseScene — éjszakai látkép a vendégházzal
-   -------------------------------------------------------------------------- */
-(function GuesthouseScene(){
-  const cv = document.getElementById('house-canvas');
-  if (!cv) return;
-  const c = cv.getContext('2d');
-  function draw(){
-    const dpr = Math.min(2, window.devicePixelRatio||1);
-    const W = cv.clientWidth, H = cv.clientHeight;
-    if (!W) return;
-    cv.width = W*dpr; cv.height = H*dpr; c.setTransform(dpr,0,0,dpr,0,0);
-
-    const g = c.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#060E1A'); g.addColorStop(1,'#123049');
-    c.fillStyle = g; c.fillRect(0,0,W,H);
-    for (let i=0;i<70;i++){ c.globalAlpha=.15+Math.random()*.65; c.fillStyle='#fff';
-      c.fillRect(Math.random()*W, Math.random()*H*.6, 1.1, 1.1); }
-    c.globalAlpha = 1;
-
-    /* Hegyoldal */
-    c.beginPath(); c.moveTo(0,H); c.lineTo(0,H*.62);
-    c.lineTo(W*.34,H*.30); c.lineTo(W*.58,H*.52); c.lineTo(W*.8,H*.36); c.lineTo(W,H*.58); c.lineTo(W,H);
-    c.closePath(); c.fillStyle='#0B1B2B'; c.fill();
-    c.beginPath(); c.moveTo(0,H); c.lineTo(0,H*.82); c.lineTo(W*.45,H*.70); c.lineTo(W,H*.86); c.lineTo(W,H);
-    c.closePath(); c.fillStyle='#E9F1F7'; c.globalAlpha=.9; c.fill(); c.globalAlpha=1;
-
-    /* Felvonókábel + két szék */
-    c.beginPath(); c.moveTo(W*.06,H*.66); c.lineTo(W*.94,H*.24);
-    c.strokeStyle='rgba(233,241,247,.35)'; c.lineWidth=1; c.stroke();
-    [[.3,.545],[.62,.39]].forEach(([tx,ty])=>{
-      c.beginPath(); c.moveTo(W*tx,H*ty); c.lineTo(W*tx,H*ty+12);
-      c.strokeStyle='rgba(233,241,247,.5)'; c.stroke();
-      c.fillStyle='#43B4BB'; c.fillRect(W*tx-7,H*ty+12,14,6);
-    });
-
-    /* Vendégház */
-    const hx = W*.16, hy = H*.74, hw = W*.24, hh = H*.16;
-    c.fillStyle='#0A1420'; c.fillRect(hx,hy,hw,hh);
-    c.beginPath(); c.moveTo(hx-8,hy); c.lineTo(hx+hw/2,hy-hh*.55); c.lineTo(hx+hw+8,hy);
-    c.closePath(); c.fillStyle='#E9F1F7'; c.fill();
-    c.fillStyle='#F2A65A';
-    for (let r=0;r<2;r++) for (let i=0;i<3;i++)
-      c.fillRect(hx + hw*(.14+i*.28), hy + hh*(.2+r*.42), hw*.14, hh*.22);
-    /* Fényfolt a hóban */
-    const gl = c.createRadialGradient(hx+hw/2, hy+hh, 2, hx+hw/2, hy+hh, hw*.9);
-    gl.addColorStop(0,'rgba(242,166,90,.30)'); gl.addColorStop(1,'rgba(242,166,90,0)');
-    c.fillStyle = gl; c.fillRect(hx-hw, hy, hw*3, hh*2);
-  }
-  draw();
-  let rt; window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(draw,180); });
-})();
-
-/* --------------------------------------------------------------------------
-   13. Mágneses gombok + belépő szekvencia
-   -------------------------------------------------------------------------- */
-(function Micro(){
-  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches){
-    document.querySelectorAll('[data-magnetic]').forEach(el => {
-      el.addEventListener('pointermove', e => {
-        if (!state.motion) return;
-        const r = el.getBoundingClientRect();
-        el.style.transform = `translate(${((e.clientX-r.left)/r.width-.5)*10}px, ${((e.clientY-r.top)/r.height-.5)*7}px)`;
-      });
-      el.addEventListener('pointerleave', () => { el.style.transform = ''; });
-    });
-  }
-
-  const lines = document.querySelectorAll('#hero-title .l > i');
-  if (state.motion && lines.length){
-    lines.forEach((el,i) => {
-      el.animate(
-        [{ transform:'translateY(105%)' }, { transform:'translateY(0)' }],
-        { duration:900, delay:120 + i*110, easing:'cubic-bezier(.22,1,.36,1)', fill:'backwards' }
-      );
-    });
-  }
 })();
 
 /* --------------------------------------------------------------------------
@@ -1424,4 +1351,113 @@ section.band + section.band{ border-top:0; }
 /* Parallax elemek — a transformot a JS írja, itt csak a réteg készül elő */
 [data-parallax]{ will-change:transform; }
 @media (prefers-reduced-motion:reduce){ [data-parallax]{ transform:none !important; } }
+</style>
+<style>
+/* ============================================================================
+   A LUDWIGHAUS TARTALOMHOZ TARTOZÓ KOMPONENSEK
+   ========================================================================= */
+.band--tight{ padding-block:clamp(2rem,5vh,3.5rem); }
+
+/* Nyelvváltó */
+.lang{ display:flex; gap:2px; }
+.lang button{
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.08em;
+  background:transparent; border:1px solid transparent; color:var(--fg-faint);
+  padding:.34rem .42rem; border-radius:6px; cursor:pointer; transition:.2s;
+}
+.lang button:hover{ color:var(--fg); }
+.lang button[aria-pressed="true"]{ color:var(--glacier); border-color:var(--panel-edge); }
+@media (max-width:1200px){ .lang{ display:none; } }
+
+/* Kéthasábos elrendezés */
+.two-col{ display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(1.5rem,4vw,3rem); align-items:start; }
+.two-col--even{ grid-template-columns:1fr 1fr; }
+@media (max-width:860px){ .two-col, .two-col--even{ grid-template-columns:1fr; } }
+
+.body-text{ color:var(--fg-soft); max-width:62ch; margin-top:1.1rem; }
+.park{ padding:1.7rem; border-radius:18px; }
+.park h3{ font-size:var(--step-2); margin:.9rem 0 0; letter-spacing:-.03em; }
+
+/* Kiemelt jellemzők — sor, nem kártya */
+.highlights{ list-style:none; margin:2.5rem 0 0; padding:0; display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:.15rem 2rem; }
+.highlights li{ display:flex; gap:.75rem; align-items:flex-start; padding:.85rem 0;
+  border-top:1px solid var(--rule); font-size:.92rem; color:var(--fg-soft); }
+.highlights li span{ flex:none; font-size:1.05rem; line-height:1.4; }
+
+/* Szobatípus-címkék */
+.room-types{ list-style:none; display:flex; flex-wrap:wrap; gap:.45rem; margin:0 0 2rem; padding:0; }
+.room-types li{ font-family:var(--mono); font-size:.62rem; letter-spacing:.12em; text-transform:uppercase;
+  padding:.36rem .7rem; border-radius:999px; border:1px solid var(--panel-edge); color:var(--fg-soft); }
+
+/* Kártyarács */
+.cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:1.15rem; perspective:1100px; }
+.cards--wide{ grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
+.card{
+  padding:1.5rem; border-radius:18px; display:flex; flex-direction:column; gap:.75rem;
+  transition:transform .5s var(--ease), border-color .3s; will-change:transform;
+}
+.card:hover{ border-color:color-mix(in srgb, var(--glacier) 55%, transparent); }
+.card--tall{ gap:1rem; }
+.card--flat{ gap:.55rem; }
+.card h3{ font-size:1.2rem; letter-spacing:-.02em; }
+.card-desc{ font-size:.88rem; color:var(--fg-soft); }
+.card-top{ display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+.tag{ font-family:var(--mono); font-size:.58rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--glacier); }
+.tag--foot{ margin-top:auto; padding-top:.9rem; border-top:1px solid var(--rule); color:var(--fg-faint); }
+.cap{ font-size:.72rem; color:var(--fg-soft); }
+.big-fig{ font-size:clamp(2rem,3.6vw,2.7rem); font-weight:700; line-height:1; letter-spacing:-.03em; }
+.ico{ font-size:1.5rem; line-height:1; }
+.figs{ display:flex; gap:1.8rem; margin-top:auto; padding-top:.9rem; border-top:1px solid var(--rule); }
+.figs div{ display:flex; flex-direction:column; }
+.figs b{ font-size:1.02rem; }
+.figs small{ font-family:var(--mono); font-size:.55rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); }
+
+/* Árak */
+.price-box{ padding:1.7rem; border-radius:18px; }
+.price-box h3{ font-family:var(--body); font-size:1.05rem; font-weight:700; letter-spacing:0; margin-bottom:1.1rem; }
+.price-box ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.price-box li{ display:flex; gap:.7rem; padding:.62rem 0; border-top:1px solid var(--rule); font-size:.9rem; color:var(--fg-soft); }
+.price-box li::before{ flex:none; font-family:var(--mono); font-size:.85rem; }
+.list-yes li::before{ content:'✓'; color:var(--ok); }
+.list-no li::before{ content:'—'; color:var(--warn); }
+
+/* Vélemények */
+.stars{ color:var(--lamp); letter-spacing:.12em; font-size:.9rem; }
+.quote{ font-size:.95rem; line-height:1.6; color:var(--fg-soft); }
+.who{ margin-top:auto; padding-top:.9rem; border-top:1px solid var(--rule); display:flex; flex-direction:column; }
+.who b{ font-size:.9rem; }
+.who small{ font-family:var(--mono); font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); }
+
+/* Kapcsolat */
+.contact-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.contact-list li{ display:flex; gap:.75rem; padding:.85rem 0; border-top:1px solid var(--rule); font-size:.92rem; color:var(--fg-soft); }
+.contact-list li span{ flex:none; }
+.contact-direct{ display:flex; flex-wrap:wrap; gap:1.5rem; margin-top:.9rem; }
+.contact-direct a{ text-decoration:none; font-family:var(--mono); font-size:.92rem; transition:color .2s; }
+.contact-direct a:hover{ color:var(--glacier); }
+
+/* Foglalási űrlap */
+.bookform{ padding:1.7rem; border-radius:18px; display:flex; flex-direction:column; gap:1rem; }
+.field{ display:flex; flex-direction:column; gap:.35rem; flex:1; }
+.field-row{ display:flex; gap:1rem; flex-wrap:wrap; }
+.field label{ font-family:var(--mono); font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); }
+.bookform input, .bookform select, .bookform textarea{
+  font-family:var(--body); font-size:.92rem; color:var(--fg);
+  background:color-mix(in srgb, var(--sky-bottom) 55%, transparent);
+  border:1px solid var(--panel-edge); border-radius:9px; padding:.62rem .75rem;
+  width:100%; min-width:0;
+}
+.bookform textarea{ resize:vertical; }
+.check{ display:flex; align-items:center; gap:.6rem; font-size:.88rem; color:var(--fg-soft); cursor:pointer; }
+.check input{ width:16px; height:16px; accent-color:var(--glacier); }
+.fineprint{ font-size:.75rem; color:var(--fg-faint); }
+.fineprint a{ color:var(--fg-soft); }
+.bookform .btn{ align-self:flex-start; }
+.inline-ctas{ display:flex; flex-wrap:wrap; gap:.7rem; margin-top:2rem; }
+
+/* A hero középre igazított lábsora — most csak szöveg + gombok */
+.hero-foot{ display:block; }
+.hero .lede{ margin-bottom:1.8rem; }
 </style>
