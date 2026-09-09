@@ -733,7 +733,7 @@ window.addEventListener('pointermove', e => {
 (function AlpineScene(){
   const cv = document.getElementById('scene');
   const ctx = cv.getContext('2d', { alpha:true });
-  let dpr = 1, W = 0, H = 0, layers = [], flakes = [], birds = [], clouds = [], peaks = [];
+  let dpr = 1, W = 0, H = 0, layers = [], flakes = [], birds = [], clouds = [], peaks = [], seam = [];
   let lastP = 0, cooldown = 0, ambient = 0;
 
   /** Középpont-eltolásos gerincgenerálás — determinisztikus, mag alapján. */
@@ -781,7 +781,135 @@ window.addEventListener('pointermove', e => {
       w: W*(.28 + Math.random()*.34), h: H*(.05 + Math.random()*.05),
       v: .05 + Math.random()*.13, o: .10 + Math.random()*.14,
     }));
+    /* Repedésvonal: cikkcakkos, függőleges varrat a képernyő közepén */
+    seam = Array.from({length:15}, (_,i) => ({ t:i/14, o:(Math.random()-.5)*1.7 }));
     birds.length = 0;
+  }
+
+  /* --- Gerinc-geometria segédek ------------------------------------------ */
+  const seamX = i => W*.5 + seam[i].o*W*.055;
+  const seamY = i => seam[i].t*(H+140) - 70;
+
+  function tracePath(L, xOff, yOff, scale){
+    const pts = L.pts;
+    ctx.beginPath();
+    ctx.moveTo(xOff - 40, H + 60);
+    let peakX = xOff, peakY = 1e9;
+    for (let j=0;j<pts.length;j++){
+      const px = xOff + pts[j].x * (W*1.24);
+      const py = yOff - (1 - pts[j].y) * scale;
+      if (py < peakY && px > 0 && px < W){ peakY = py; peakX = px; }
+      ctx.lineTo(px, py);
+    }
+    ctx.lineTo(xOff + W*1.24 + 40, H + 60);
+    ctx.closePath();
+    return { x:peakX, y:peakY };
+  }
+  function traceCrest(L, xOff, yOff, scale){
+    const pts = L.pts;
+    ctx.beginPath();
+    for (let j=0;j<pts.length;j++){
+      const px = xOff + pts[j].x * (W*1.24);
+      const py = yOff - (1 - pts[j].y) * scale;
+      j === 0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+    }
+  }
+  function paintRidge(L, xOff, yOff, scale, col, crest){
+    const pk = tracePath(L, xOff, yOff, scale);
+    ctx.fillStyle = col; ctx.fill();
+    traceCrest(L, xOff, yOff, scale);
+    ctx.strokeStyle = crest; ctx.lineWidth = 1.1; ctx.stroke();
+    return pk;
+  }
+  /* A repedés egyik oldalára vágunk, majd oldalra toljuk-döntjük a félhegyet. */
+  function paintHalf(side, L, xOff, yOff, scale, col, crest, dx, rot){
+    ctx.save();
+    ctx.beginPath();
+    const far = side < 0 ? -W : W*2;
+    ctx.moveTo(far, -H);
+    for (let i=0;i<seam.length;i++) ctx.lineTo(seamX(i), seamY(i));
+    ctx.lineTo(far, H*2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.translate(W*.5, H*.6); ctx.rotate(rot);
+    ctx.translate(-W*.5 + side*dx, -H*.6 + dx*.14);
+    paintRidge(L, xOff, yOff, scale, col, crest);
+    ctx.restore();
+  }
+  function paintSeam(crack){
+    if (crack <= .002 || crack >= .998) return;
+    const a = Math.sin(crack*Math.PI);
+    ctx.save();
+    ctx.beginPath();
+    for (let i=0;i<seam.length;i++) i===0 ? ctx.moveTo(seamX(i), seamY(i)) : ctx.lineTo(seamX(i), seamY(i));
+    ctx.strokeStyle = `rgba(67,180,187,${a*.45})`;
+    ctx.lineWidth = 1 + a*1.8;
+    ctx.shadowColor = `rgba(67,180,187,${a*.7})`;
+    ctx.shadowBlur = 20*a;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* --- A résben felépülő sípálya ---------------------------------------- */
+  function paintPiste(s, apex, crack, lightF){
+    if (crack <= .003) return;
+    const ax = apex && apex.x ? apex.x : W*.5;
+    const ay = Math.max(apex ? apex.y : H*.4, H*.14);
+    const by = H + 70;
+    const topW = 8 + 30*crack, botW = W*.36*crack;
+
+    const yAt = t => lerp(ay, by, t*t*.8 + t*.2);
+    const xL  = t => ax - lerp(topW, botW, t*t)*.5 - t*W*.02;
+    const xR  = t => ax + lerp(topW, botW, t*t)*.5 + t*W*.02;
+
+    ctx.save();
+    ctx.globalAlpha = crack;
+
+    ctx.beginPath();
+    ctx.moveTo(xL(0), yAt(0));
+    for (let t=.05; t<=1.0001; t+=.05) ctx.lineTo(xL(t), yAt(t));
+    for (let t=1;   t>=-.0001; t-=.05) ctx.lineTo(xR(t), yAt(t));
+    ctx.closePath();
+    const g = ctx.createLinearGradient(0, ay, 0, by);
+    g.addColorStop(0, `rgba(255,255,255,${lerp(.88,.97,lightF)})`);
+    g.addColorStop(1, `rgba(212,231,244,${lerp(.84,.94,lightF)})`);
+    ctx.fillStyle = g; ctx.fill();
+
+    /* Ratrak-nyomok: lefelé folyó csíkozás */
+    ctx.save(); ctx.clip();
+    const flow = s.motion ? (s.t*.00007)%1 : .2;
+    ctx.strokeStyle = 'rgba(122,154,182,.30)';
+    for (let k=0;k<28;k++){
+      const t = ((k/28) + flow) % 1;
+      ctx.lineWidth = .5 + t*1.7;
+      ctx.beginPath(); ctx.moveTo(xL(t)-6, yAt(t)); ctx.lineTo(xR(t)+6, yAt(t)); ctx.stroke();
+    }
+    ctx.restore();
+
+    /* Szegélykarók — a perspektívával nőnek */
+    for (let k=1;k<10;k++){
+      const t = k/10, y = yAt(t), h = 4 + t*24;
+      ctx.fillStyle = k%2 ? '#F2A65A' : '#3C8FDD';
+      ctx.fillRect(xL(t)-2.4, y-h, 2.4, h);
+      ctx.fillRect(xR(t),     y-h, 2.4, h);
+    }
+
+    /* Felvonó a pálya mellett — a repedés második felében jelenik meg */
+    const lift = smooth(.45, 1, crack);
+    if (lift > .01){
+      ctx.globalAlpha = crack*lift;
+      const x1 = ax + W*.13, y1 = ay + 14, x2 = ax + W*.31, y2 = by;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+      ctx.strokeStyle = 'rgba(58,88,118,.55)'; ctx.lineWidth = 1; ctx.stroke();
+      const tm = s.motion ? (s.t*.00004)%1 : .35;
+      for (let k=0;k<3;k++){
+        const t = ((k/3)+tm)%1, cx = lerp(x1,x2,t), cy = lerp(y1,y2,t), sz = 3 + t*8;
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx,cy+sz*.7);
+        ctx.strokeStyle = 'rgba(58,88,118,.6)'; ctx.stroke();
+        ctx.fillStyle = '#43B4BB'; ctx.fillRect(cx-sz*.5, cy+sz*.7, sz, sz*.45);
+      }
+    }
+    ctx.restore();
   }
 
   /* --- Madárraj ----------------------------------------------------------
@@ -822,39 +950,28 @@ window.addEventListener('pointermove', e => {
     const lightF = smooth(.55, .95, p);
     const wind = (s.px - .5) * 2;
 
+    /* A közeli gerinc a görgetés közepén kettéreped és sípályát nyit. */
+    const crack = smooth(.22, .56, p);
+    const SPLIT = 3;
+
     for (let i=0;i<layers.length;i++){
       const L = layers[i];
-      const col = mixc(hex(RIDGE_DARK[i]), hex(RIDGE_LITE[i]), lightF);
+      const col = rgb(mixc(hex(RIDGE_DARK[i]), hex(RIDGE_LITE[i]), lightF));
       const yOff = L.base*H + p*H*L.speed*2.6;
       const xOff = -W*.12 + wind * (8 + i*14) * (s.motion?1:0);
       const scale = H*.42*L.amp;
+      const crest = `rgba(233,241,247,${lerp(.16,.05,lightF) * (1 - i*.18)})`;
 
-      ctx.beginPath();
-      ctx.moveTo(xOff - 40, H + 60);
-      const pts = L.pts;
-      let peakX = xOff, peakY = 1e9;
-      for (let j=0;j<pts.length;j++){
-        const px = xOff + pts[j].x * (W*1.24);
-        const py = yOff - (1 - pts[j].y) * scale;
-        if (py < peakY && px > 0 && px < W){ peakY = py; peakX = px; }
-        ctx.lineTo(px, py);
+      if (i === SPLIT && crack > .003){
+        peaks[i] = tracePath(L, xOff, yOff, scale);   /* csak geometria a madaraknak */
+        paintPiste(s, peaks[i], crack, lightF);
+        const dx = crack * W * .18;
+        paintHalf(-1, L, xOff, yOff, scale, col, crest, dx, -crack*.022);
+        paintHalf( 1, L, xOff, yOff, scale, col, crest, dx,  crack*.022);
+        paintSeam(crack);
+        continue;
       }
-      peaks[i] = { x: peakX, y: peakY };
-      ctx.lineTo(xOff + W*1.24 + 40, H + 60);
-      ctx.closePath();
-      ctx.fillStyle = rgb(col);
-      ctx.fill();
-
-      /* Havas gerincél — vékony világos kontúr a felső élen */
-      ctx.beginPath();
-      for (let j=0;j<pts.length;j++){
-        const px = xOff + pts[j].x * (W*1.24);
-        const py = yOff - (1 - pts[j].y) * scale;
-        j === 0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
-      }
-      ctx.strokeStyle = `rgba(233,241,247,${lerp(.16,.05,lightF) * (1 - i*.18)})`;
-      ctx.lineWidth = 1.1;
-      ctx.stroke();
+      peaks[i] = paintRidge(L, xOff, yOff, scale, col, crest);
     }
 
     /* --- Felhősávok: lassú, folyamatos sodródás ------------------------- */
