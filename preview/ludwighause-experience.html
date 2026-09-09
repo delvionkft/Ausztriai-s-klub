@@ -733,7 +733,8 @@ window.addEventListener('pointermove', e => {
 (function AlpineScene(){
   const cv = document.getElementById('scene');
   const ctx = cv.getContext('2d', { alpha:true });
-  let dpr = 1, W = 0, H = 0, layers = [], flakes = [];
+  let dpr = 1, W = 0, H = 0, layers = [], flakes = [], birds = [], clouds = [], peaks = [];
+  let lastP = 0, cooldown = 0, ambient = 0;
 
   /** Középpont-eltolásos gerincgenerálás — determinisztikus, mag alapján. */
   function ridge(seed, points, rough){
@@ -774,6 +775,45 @@ window.addEventListener('pointermove', e => {
       d: Math.random()*Math.PI*2,
       o: .25 + Math.random()*.6,
     }));
+
+    clouds = Array.from({length:4}, (_,i) => ({
+      x: Math.random()*W, y: H*(.12 + i*.11),
+      w: W*(.28 + Math.random()*.34), h: H*(.05 + Math.random()*.05),
+      v: .05 + Math.random()*.13, o: .10 + Math.random()*.14,
+    }));
+    birds.length = 0;
+  }
+
+  /* --- Madárraj ----------------------------------------------------------
+     Lefelé görgetéskor a gerincről rebben fel egy raj; menet közben ritkán
+     magától is elindul egy-két madár, hogy a háttér akkor is éljen. */
+  function spawnFlock(originX, originY, n){
+    const dir = originX < W*.5 ? 1 : -1;
+    for (let i=0;i<n;i++){
+      birds.push({
+        x: originX + (Math.random()-.5)*70,
+        y: originY - Math.random()*26,
+        vx: dir * (.9 + Math.random()*1.5),
+        vy: -(.16 + Math.random()*.42),
+        s: 4.5 + Math.random()*5.5,
+        ph: Math.random()*6.28,
+        fl: .16 + Math.random()*.12,
+        life: 1,
+      });
+    }
+  }
+
+  function drawBird(b, col){
+    const w = Math.sin(b.ph) * .8;          // szárnycsapás
+    const s2 = b.s;
+    ctx.beginPath();
+    ctx.moveTo(b.x - s2, b.y - s2*w*.55);
+    ctx.quadraticCurveTo(b.x - s2*.42, b.y + s2*.26, b.x, b.y);
+    ctx.quadraticCurveTo(b.x + s2*.42, b.y + s2*.26, b.x + s2, b.y - s2*w*.55);
+    ctx.strokeStyle = col;
+    ctx.lineWidth = Math.max(1, s2*.16);
+    ctx.lineCap = 'round';
+    ctx.stroke();
   }
 
   function draw(s){
@@ -792,11 +832,14 @@ window.addEventListener('pointermove', e => {
       ctx.beginPath();
       ctx.moveTo(xOff - 40, H + 60);
       const pts = L.pts;
+      let peakX = xOff, peakY = 1e9;
       for (let j=0;j<pts.length;j++){
         const px = xOff + pts[j].x * (W*1.24);
         const py = yOff - (1 - pts[j].y) * scale;
-        j === 0 ? ctx.lineTo(px, py) : ctx.lineTo(px, py);
+        if (py < peakY && px > 0 && px < W){ peakY = py; peakX = px; }
+        ctx.lineTo(px, py);
       }
+      peaks[i] = { x: peakX, y: peakY };
       ctx.lineTo(xOff + W*1.24 + 40, H + 60);
       ctx.closePath();
       ctx.fillStyle = rgb(col);
@@ -812,6 +855,52 @@ window.addEventListener('pointermove', e => {
       ctx.strokeStyle = `rgba(233,241,247,${lerp(.16,.05,lightF) * (1 - i*.18)})`;
       ctx.lineWidth = 1.1;
       ctx.stroke();
+    }
+
+    /* --- Felhősávok: lassú, folyamatos sodródás ------------------------- */
+    for (let i=0;i<clouds.length;i++){
+      const c = clouds[i];
+      if (s.motion) c.x += c.v + wind*.3;
+      if (c.x - c.w > W) c.x = -c.w;
+      const g = ctx.createRadialGradient(c.x, c.y, 1, c.x, c.y, c.w*.5);
+      const cl = lerp(255, 236, lightF)|0;
+      g.addColorStop(0, `rgba(${cl},${cl},255,${c.o * lerp(.55,1,lightF)})`);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.save(); ctx.translate(c.x, c.y); ctx.scale(1, c.h/(c.w*.5));
+      ctx.beginPath(); ctx.arc(0, 0, c.w*.5, 0, 6.2832); ctx.fill(); ctx.restore();
+    }
+
+    /* --- Madarak: lefelé görgetésre rebbennek fel a gerincről ------------ */
+    const dp = p - lastP; lastP = p;
+    if (s.motion){
+      cooldown -= 1; ambient -= 1;
+      if (dp > .0012 && cooldown <= 0 && birds.length < 22){
+        const src = peaks[1 + (Math.random()*2|0)] || peaks[0];
+        if (src){ spawnFlock(src.x, src.y, 3 + (Math.random()*4|0)); cooldown = 90; }
+      }
+      if (ambient <= 0 && birds.length < 10){
+        const src = peaks[2] || peaks[0];
+        if (src) spawnFlock(src.x, src.y, 1 + (Math.random()*2|0));
+        ambient = 420 + Math.random()*360;
+      }
+    }
+    if (birds.length){
+      const bc = mixc(hex('#C9DAE8'), hex('#243C52'), lightF);
+      for (let i=birds.length-1; i>=0; i--){
+        const b = birds[i];
+        if (s.motion){
+          b.ph += b.fl;
+          b.x += b.vx + wind*.5;
+          b.y += b.vy + Math.sin(b.ph*.5)*.22;
+          b.vy *= .996;
+          b.life -= .0022;
+        }
+        if (b.life <= 0 || b.x < -60 || b.x > W+60 || b.y < -60){ birds.splice(i,1); continue; }
+        ctx.globalAlpha = clamp(b.life,0,1) * .85;
+        drawBird(b, rgb(bc));
+      }
+      ctx.globalAlpha = 1;
     }
 
     /* Hóesés — a csúcs fölött (a felhők felett) elfogy */
