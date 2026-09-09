@@ -1,46 +1,28 @@
 'use client';
 
-/** Végső hibahatár — akkor is működik, ha a gyökér layout dől el. */
+/** Végső hibakezelő — akkor is működik, ha a gyökér elrendezés hibázik. */
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <html lang="hu">
-      <body
-        style={{
-          margin: 0,
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          backgroundColor: '#F7FAFC',
-          color: '#0E2540',
-          padding: '24px',
-        }}
-      >
-        <div style={{ maxWidth: '32rem', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Váratlan hiba történt</h1>
-          <p style={{ marginTop: '0.75rem', color: '#245586', lineHeight: 1.6 }}>
-            Az oldal betöltése nem sikerült. Kérünk, próbáld újra.
-          </p>
-          <button
-            type="button"
-            onClick={reset}
-            style={{
-              marginTop: '1.5rem',
-              minHeight: '48px',
-              padding: '0 1.5rem',
-              borderRadius: '999px',
-              border: 'none',
-              backgroundColor: '#143253',
-              color: '#fff',
-              fontWeight: 600,
-              fontSize: '0.95rem',
-              cursor: 'pointer',
-            }}
-          >
-            Újratöltés
-          </button>
-        </div>
+      <body style={{ fontFamily: 'system-ui, sans-serif', margin: 0, background: '#07111F', color: '#F8FBFF' }}>
+        <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '2rem', textAlign: 'center' }}>
+          <div style={{ maxWidth: '32rem' }}>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0 }}>Valami félrement</h1>
+            <p style={{ marginTop: '1rem', lineHeight: 1.6, color: '#DCEFFC' }}>
+              Átmeneti hiba történt. Töltsd újra az oldalt, vagy próbáld meg kicsit később.
+            </p>
+            <button
+              type="button"
+              onClick={reset}
+              style={{
+                marginTop: '1.75rem', minHeight: 48, padding: '0 1.75rem', borderRadius: 999,
+                border: 'none', background: '#38BDF8', color: '#07111F', fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              Újratöltés
+            </button>
+          </div>
+        </main>
       </body>
     </html>
   );

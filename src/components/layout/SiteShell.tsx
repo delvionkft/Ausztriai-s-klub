@@ -1,34 +1,27 @@
-import type { ReactNode } from 'react';
-import { Footer } from './Footer';
+'use client';
+
+import { LocaleProvider } from '@/i18n/LocaleProvider';
 import { Header } from './Header';
-import { LiveStatusBar } from './LiveStatusBar';
-import { StickyMobileCTA } from './StickyMobileCTA';
+import { Footer } from './Footer';
+import { MobileBottomCTA } from './MobileBottomCTA';
 
 /**
- * OLDAL VÁZ — fejléc + élő státuszsáv + tartalom + lábléc + mobil CTA.
- * Egyetlen helyen definiálva, hogy minden oldal azonosan viselkedjen.
+ * OLDALVÁZ
+ * ----------------------------------------------------------------------------
+ * Fejléc + státuszsáv, tartalom, lábléc és a mobil CTA-sáv. A tartalom felső
+ * térköze a fejléc magasságát követi, hogy semmi ne csússzon alá.
  */
-export function SiteShell({ children }: { children: ReactNode }) {
+export function SiteShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <a
-        href="#tartalom"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-deep-800 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
-      >
-        Ugrás a tartalomra
-      </a>
-
-      <div className="sticky top-0 z-50">
+    <LocaleProvider>
+      <div className="flex min-h-screen flex-col">
         <Header />
-        <LiveStatusBar />
+        <main id="fotartalom" className="flex-1 pt-[calc(var(--header-h)+var(--status-h))]">
+          {children}
+        </main>
+        <Footer />
+        <MobileBottomCTA />
       </div>
-
-      <main id="tartalom" className="flex-1 pb-safe-cta">
-        {children}
-      </main>
-
-      <Footer />
-      <StickyMobileCTA />
-    </div>
+    </LocaleProvider>
   );
 }

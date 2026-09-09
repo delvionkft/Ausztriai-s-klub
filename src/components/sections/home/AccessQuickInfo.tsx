@@ -1,95 +1,54 @@
-import { Car, Clock, MapPin, Navigation } from 'lucide-react';
-import { contactInfo, travelOptions } from '@/data/contact';
-import { dailyOpeningHours } from '@/data/openingHours';
+'use client';
+
+import { Car, CircleParking, MapPin } from 'lucide-react';
+import { useI18n } from '@/i18n/LocaleProvider';
+import { accessFacts } from '@/data/homepage';
 import { routes } from '@/data/navigation';
+import { MapEmbed } from '@/components/features/MapEmbed';
+import { ButtonLink } from '@/components/ui/Button';
+import { Reveal } from '@/components/ui/Reveal';
 import { Section } from '@/components/ui/Section';
 import { SectionHeading } from '@/components/ui/SectionHeading';
-import { SecondaryButton } from '@/components/ui/Button';
-import { PendingValue } from '@/components/ui/PendingValue';
-import { MapEmbed } from '@/components/features/MapEmbed';
 
-/** 09 · MEGKÖZELÍTÉS & GYORS INFÓ (drótváz 01/08). */
+const ICONS = { 'map-pin': MapPin, 'circle-parking': CircleParking, car: Car } as const;
+
+/** MEGKÖZELÍTÉS — térkép-előnézet és gyorsadatok. */
 export function AccessQuickInfo() {
-  const quickHours = dailyOpeningHours.slice(0, 3);
+  const { t, L } = useI18n();
 
   return (
-    <Section tone="white" labelledBy="megkozelites-cim">
-      <SectionHeading
-        id="megkozelites-cim"
-        eyebrow="Megközelítés"
-        title="Hogyan juttok el ide?"
-        description="Térkép, cím és a legfontosabb nyitvatartási idők egy helyen."
-        action={
-          <SecondaryButton href={`${routes.info}#megkozelites`} icon={<Navigation aria-hidden="true" className="h-4 w-4" />}>
-            Részletes útvonalak
-          </SecondaryButton>
-        }
-      />
+    <Section tone="frost" id="megkozelites">
+      <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
+        <Reveal>
+          <MapEmbed compact />
+        </Reveal>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <MapEmbed className="min-h-[300px]" />
+        <Reveal delay={100}>
+          <SectionHeading title={t.home.accessTitle} lead={t.home.accessLead} />
 
-        <div className="space-y-4">
-          <div className="rounded-card border border-deep-100 bg-white p-5">
-            <h3 className="flex items-center gap-2 text-[1rem] font-semibold text-deep-900">
-              <MapPin aria-hidden="true" className="h-4 w-4 text-glacier-600" />
-              Cím és koordináták
-            </h3>
-            <dl className="mt-3 space-y-2 text-sm">
-              <div className="flex justify-between gap-3">
-                <dt className="text-deep-500">Cím</dt>
-                <dd className="text-right font-medium text-deep-900">
-                  <PendingValue value={contactInfo.addressLine} hint="Cím megadása szükséges" />
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-deep-500">GPS</dt>
-                <dd className="text-right font-medium text-deep-900">
-                  {contactInfo.gpsLat !== null && contactInfo.gpsLng !== null ? (
-                    `${contactInfo.gpsLat}, ${contactInfo.gpsLng}`
-                  ) : (
-                    <PendingValue value={null} hint="GPS koordináta megadása szükséges" />
-                  )}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-deep-500">Parkolás</dt>
-                <dd className="text-right font-medium text-deep-900">
-                  <PendingValue value={null} hint="Parkolási információ megadása szükséges" />
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          <div className="rounded-card border border-deep-100 bg-white p-5">
-            <h3 className="flex items-center gap-2 text-[1rem] font-semibold text-deep-900">
-              <Clock aria-hidden="true" className="h-4 w-4 text-glacier-600" />
-              Gyors nyitvatartás
-            </h3>
-            <dl className="mt-3 space-y-2 text-sm">
-              {quickHours.map((entry) => (
-                <div key={entry.id} className="flex justify-between gap-3">
-                  <dt className="text-deep-500">{entry.label}</dt>
-                  <dd className="text-right font-medium text-deep-900">
-                    <PendingValue value={entry.hours} hint="Nyitvatartás megadása szükséges" />
-                  </dd>
+          <dl className="mt-8 space-y-5">
+            {accessFacts.map((fact) => {
+              const Icon = ICONS[fact.icon as keyof typeof ICONS] ?? MapPin;
+              return (
+                <div key={fact.id} className="flex items-start gap-3.5">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-glacier-600 shadow-subtle">
+                    <Icon aria-hidden="true" className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <dt className="text-[0.75rem] font-bold uppercase tracking-wider text-night-500">{L(fact.label)}</dt>
+                    <dd className="mt-0.5 font-semibold text-night-950">{L(fact.value)}</dd>
+                  </div>
                 </div>
-              ))}
-            </dl>
-          </div>
+              );
+            })}
+          </dl>
 
-          <ul className="grid grid-cols-2 gap-2">
-            {travelOptions.map((option) => (
-              <li
-                key={option.id}
-                className="flex items-center gap-2 rounded-xl bg-frost px-3 py-2.5 text-sm font-medium text-deep-700"
-              >
-                <Car aria-hidden="true" className="h-4 w-4 shrink-0 text-glacier-600" />
-                {option.title}
-              </li>
-            ))}
-          </ul>
-        </div>
+          <div className="mt-8">
+            <ButtonLink href={routes.directions} variant="secondary" size="lg">
+              {t.contact.travelTitle}
+            </ButtonLink>
+          </div>
+        </Reveal>
       </div>
     </Section>
   );

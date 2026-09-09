@@ -1,70 +1,34 @@
-import type { AvailabilityState, QuoteRequestPayload, ServiceResult } from '@/types';
-import { buildAvailabilityMap } from '@/lib/availability';
-import { isValidEmail, isValidPhone } from '@/lib/format';
-import { mockDelay } from './apiClient';
+import type { AvailabilityDay, InquiryPayload, SubmitResult } from '@/types';
+import { getAvailabilityMonth } from '@/data/availability';
+import { isLiveBackend, mockResponse, request } from './apiClient';
 
 /**
- * FOGLALÁS ÉS AJÁNLATKÉRÉS SERVICE
+ * SZÁLLÁSFOGLALÁS
  * ----------------------------------------------------------------------------
- * INTEGRÁCIÓ (Emergent):
- *   - `getAvailability()` → GET /availability  (channel manager / PMS)
- *   - `submitQuoteRequest()` → POST /quote-requests (e-mail + CRM)
- * A jelenlegi implementáció kliensoldali demó: nem küld adatot sehova.
+ * ÉLESÍTÉS:
+ *  - foglaltság:  GET  /availability?year=&month=
+ *  - ajánlatkérés: POST /inquiries
+ * A szerveroldali e-mail-küldést és a channel manager hívását a backend végzi,
+ * hogy titkos kulcs ne kerüljön a böngészőbe.
  */
 
-export async function getAvailability(): Promise<Map<string, AvailabilityState>> {
-  // return apiFetch<AvailabilityDay[]>('/availability').then(toMap);
-  return mockDelay(buildAvailabilityMap(), 300);
+export async function fetchAvailability(year: number, month: number): Promise<AvailabilityDay[]> {
+  if (isLiveBackend) return request<AvailabilityDay[]>(`/availability?year=${year}&month=${month + 1}`);
+  return mockResponse(getAvailabilityMonth(year, month), 180);
 }
 
-export interface QuoteValidationErrors {
-  arrival?: string;
-  departure?: string;
-  guests?: string;
-  groupType?: string;
-  contactName?: string;
-  email?: string;
-  phone?: string;
+function makeReference(): string {
+  const now = new Date();
+  const stamp = `${now.getFullYear()}${`${now.getMonth() + 1}`.padStart(2, '0')}${`${now.getDate()}`.padStart(2, '0')}`;
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `ALM-${stamp}-${rand}`;
 }
 
-/** Kliensoldali validáció — ugyanezt a backendnek is el kell végeznie. */
-export function validateQuoteRequest(payload: Partial<QuoteRequestPayload>): QuoteValidationErrors {
-  const errors: QuoteValidationErrors = {};
-
-  if (!payload.arrival) errors.arrival = 'Add meg az érkezés dátumát.';
-  if (!payload.departure) errors.departure = 'Add meg a távozás dátumát.';
-  if (payload.arrival && payload.departure && payload.departure <= payload.arrival) {
-    errors.departure = 'A távozás legyen későbbi, mint az érkezés.';
+export async function submitInquiry(payload: InquiryPayload): Promise<SubmitResult> {
+  if (isLiveBackend) {
+    return request<SubmitResult>('/inquiries', { method: 'POST', body: JSON.stringify(payload) });
   }
-  if (!payload.guests || payload.guests < 1) errors.guests = 'Add meg a létszámot (legalább 1 fő).';
-  if (!payload.groupType) errors.groupType = 'Válaszd ki a csoport típusát.';
-  if (!payload.contactName || payload.contactName.trim().length < 2) {
-    errors.contactName = 'Add meg a kapcsolattartó nevét.';
-  }
-  if (!payload.email || !isValidEmail(payload.email)) {
-    errors.email = 'Add meg egy érvényes e-mail címet.';
-  }
-  if (!payload.phone || !isValidPhone(payload.phone)) {
-    errors.phone = 'Add meg egy érvényes telefonszámot.';
-  }
-
-  return errors;
-}
-
-export async function submitQuoteRequest(
-  payload: QuoteRequestPayload,
-): Promise<ServiceResult<{ reference: string }>> {
-  const errors = validateQuoteRequest(payload);
-  if (Object.keys(errors).length > 0) {
-    return { ok: false, message: 'Az űrlap hiányosan lett kitöltve.' };
-  }
-
-  // INTEGRÁCIÓ: return apiFetch('/quote-requests', { method: 'POST', body: JSON.stringify(payload) });
-  // DEMÓ: az adat nem hagyja el a böngészőt.
-  const reference = `DEMO-${payload.arrival.replace(/-/g, '')}`;
-  return mockDelay({
-    ok: true,
-    message: 'Köszönjük! 24 órán belül személyes ajánlatot küldünk.',
-    data: { reference },
-  });
+  // Mock: a beküldés sikeres, és azonosítót ad vissza — a felület így teljes
+  // értékűen kipróbálható éles backend nélkül is.
+  return mockResponse({ ok: true, reference: makeReference() }, 900);
 }

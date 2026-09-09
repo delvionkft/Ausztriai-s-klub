@@ -1,159 +1,159 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { galleryCategories, galleryImages } from '@/data/gallery';
-import { PLACEHOLDER_MEDIA } from '@/data/placeholders';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight, Expand, X } from 'lucide-react';
+import type { GalleryCategory, GalleryImage } from '@/types';
+import { useI18n } from '@/i18n/LocaleProvider';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
+import { fill } from '@/i18n';
 import { cn } from '@/lib/cn';
-import { AlpineScene } from '@/components/ui/AlpineScene';
-import type { GalleryCategory } from '@/types';
+import { Media } from '@/components/ui/Media';
+import { EmptyState } from '@/components/ui/States';
+
+const CATEGORIES: Array<GalleryCategory | 'all'> = ['all', 'common', 'bedrooms', 'bathrooms', 'kitchen', 'ski-storage', 'exterior'];
 
 /**
- * GALÉRIA — funkció szerinti sorrendben (drótváz 07/06)
- * Valós fotó nélkül dizájnolt helyőrző jelenik meg, a képaláírással együtt.
- * Fotó beillesztése: `src/data/gallery.ts` → `src` mező kitöltése.
+ * GALÉRIA + LIGHTBOX
+ * ----------------------------------------------------------------------------
+ * Funkció szerinti szűrés, nagy nézet billentyűzetes lapozással
+ * (nyilak és Escape), mobilon teljes szélességű megjelenítéssel.
  */
-export function Gallery() {
+export function Gallery({ images }: { images: GalleryImage[] }) {
+  const { t, L } = useI18n();
   const [category, setCategory] = useState<GalleryCategory | 'all'>('all');
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const visibleImages = useMemo(
-    () => (category === 'all' ? galleryImages : galleryImages.filter((image) => image.category === category)),
-    [category],
+  const visible = useMemo(
+    () => (category === 'all' ? images : images.filter((img) => img.category === category)),
+    [category, images],
   );
 
-  useLockBodyScroll(lightboxIndex !== null);
+  useLockBodyScroll(activeIndex !== null);
+
+  const close = useCallback(() => setActiveIndex(null), []);
+  const next = useCallback(() => setActiveIndex((i) => (i === null ? null : (i + 1) % visible.length)), [visible.length]);
+  const prev = useCallback(() => setActiveIndex((i) => (i === null ? null : (i - 1 + visible.length) % visible.length)), [visible.length]);
 
   useEffect(() => {
-    if (lightboxIndex === null) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setLightboxIndex(null);
-      if (event.key === 'ArrowRight') setLightboxIndex((i) => (i === null ? null : (i + 1) % visibleImages.length));
-      if (event.key === 'ArrowLeft')
-        setLightboxIndex((i) => (i === null ? null : (i - 1 + visibleImages.length) % visibleImages.length));
+    if (activeIndex === null) return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowRight') next();
+      if (e.key === 'ArrowLeft') prev();
     };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [lightboxIndex, visibleImages.length]);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [activeIndex, close, next, prev]);
 
-  const active = lightboxIndex === null ? null : visibleImages[lightboxIndex];
+  const active = activeIndex !== null ? visible[activeIndex] : null;
 
   return (
     <div>
-      <div className="scroll-x">
-        <ul className="flex gap-2 whitespace-nowrap pb-1">
-          <li>
+      <div className="no-scrollbar mb-6 flex gap-2 overflow-x-auto pb-1" role="group" aria-label={t.common.filter}>
+        {CATEGORIES.map((cat) => {
+          const count = cat === 'all' ? images.length : images.filter((img) => img.category === cat).length;
+          if (count === 0) return null;
+          return (
             <button
+              key={cat}
               type="button"
-              onClick={() => setCategory('all')}
-              aria-pressed={category === 'all'}
+              onClick={() => { setCategory(cat); setActiveIndex(null); }}
+              aria-pressed={category === cat}
               className={cn(
-                'min-h-[42px] rounded-pill border px-4 text-sm font-semibold transition-colors',
-                category === 'all'
-                  ? 'border-deep-800 bg-deep-800 text-white'
-                  : 'border-deep-200 bg-white text-deep-700 hover:bg-deep-50',
+                'tap-target inline-flex shrink-0 items-center gap-2 rounded-pill px-4 text-sm font-semibold transition-all',
+                category === cat ? 'bg-night-950 text-white' : 'border border-night-200 bg-white text-night-700 hover:border-glacier-400 hover:bg-frost-100',
               )}
             >
-              Összes
+              {t.gallery[cat]}
+              <span className={cn('rounded-pill px-1.5 py-0.5 text-[0.6875rem] font-bold', category === cat ? 'bg-white/20' : 'bg-night-100 text-night-600')}>
+                {count}
+              </span>
             </button>
-          </li>
-          {galleryCategories.map((item) => (
-            <li key={item.id}>
+          );
+        })}
+      </div>
+
+      {visible.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {visible.map((image, index) => (
+            <li key={image.id} className={cn(index === 0 && 'col-span-2 row-span-2 sm:col-span-2 sm:row-span-2')}>
               <button
                 type="button"
-                onClick={() => setCategory(item.id)}
-                aria-pressed={category === item.id}
-                className={cn(
-                  'min-h-[42px] rounded-pill border px-4 text-sm font-semibold transition-colors',
-                  category === item.id
-                    ? 'border-deep-800 bg-deep-800 text-white'
-                    : 'border-deep-200 bg-white text-deep-700 hover:bg-deep-50',
-                )}
+                onClick={() => setActiveIndex(index)}
+                className="group relative block h-full w-full overflow-hidden rounded-card"
+                aria-label={`${L(image.caption)} — ${t.gallery.openImage}`}
               >
-                {item.label}
+                <Media
+                  mediaKey={image.imageKey}
+                  className={cn('h-full', index === 0 ? 'aspect-square sm:aspect-[4/3]' : 'aspect-square')}
+                  sizes="(min-width: 1024px) 25vw, 50vw"
+                  imgClassName="transition-transform duration-500 ease-smooth group-hover:scale-105"
+                  overlay="bottom"
+                  alt={L(image.caption)}
+                />
+                <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3 text-left">
+                  <span className="text-[0.75rem] font-semibold leading-snug text-white drop-shadow">{L(image.caption)}</span>
+                  <Expand aria-hidden="true" className="h-4 w-4 shrink-0 text-white opacity-0 transition-opacity group-hover:opacity-100" />
+                </span>
               </button>
             </li>
           ))}
         </ul>
-      </div>
-
-      <p className="mt-3 text-xs text-deep-500">{PLACEHOLDER_MEDIA.gallery}</p>
-
-      <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {visibleImages.map((image, index) => (
-          <li key={image.id}>
-            <button
-              type="button"
-              onClick={() => setLightboxIndex(index)}
-              className="group relative block aspect-[4/3] w-full overflow-hidden rounded-card border border-deep-100 bg-ice-100 transition-transform duration-200 hover:-translate-y-0.5"
-            >
-              {image.src ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={image.src} alt={image.alt} loading="lazy" className="h-full w-full object-cover" />
-              ) : (
-                <AlpineScene variant={index % 2 === 0 ? 'day' : 'dusk'} />
-              )}
-              <span className="absolute inset-x-0 bottom-0 bg-deep-950/70 px-2.5 py-1.5 text-left text-[0.72rem] font-medium text-white backdrop-blur-sm">
-                {image.caption}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
+      )}
 
       {active ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={active.caption}
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-deep-950/90 p-4"
-        >
-          <button
-            type="button"
-            aria-label="Galéria bezárása"
-            onClick={() => setLightboxIndex(null)}
-            className="absolute inset-0 h-full w-full cursor-default"
-          />
+        <div className="fixed inset-0 z-[70] flex flex-col p-4" role="dialog" aria-modal="true" aria-label={L(active.caption)}>
+          <div aria-hidden="true" onClick={close} className="absolute inset-0 bg-night-950/95 backdrop-blur-sm" />
 
-          <div className="relative z-10 w-full max-w-4xl">
-            <div className="relative aspect-[16/10] overflow-hidden rounded-panel bg-ice-100">
-              {active.src ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={active.src} alt={active.alt} className="h-full w-full object-contain" />
-              ) : (
-                <AlpineScene variant="dusk" />
-              )}
-            </div>
-            <p className="mt-3 text-center text-sm text-ice-100">
-              {active.caption} · {lightboxIndex! + 1} / {visibleImages.length}
+          <div className="relative z-10 flex items-center justify-between gap-3 pb-3">
+            <p className="text-sm font-semibold text-white">
+              {fill(t.gallery.imageOf, { current: (activeIndex ?? 0) + 1, total: visible.length })}
             </p>
+            <button
+              type="button"
+              onClick={close}
+              aria-label={t.gallery.closeLightbox}
+              className="tap-target inline-grid place-items-center rounded-pill border border-white/25 px-3 text-white transition-colors hover:bg-white/10"
+            >
+              <X aria-hidden="true" className="h-5 w-5" />
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setLightboxIndex(null)}
-            className="absolute right-4 top-4 z-20 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-white/20"
-          >
-            <X aria-hidden="true" className="h-5 w-5" />
-            <span className="sr-only">Bezárás</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setLightboxIndex((i) => (i === null ? null : (i - 1 + visibleImages.length) % visibleImages.length))}
-            className="absolute left-2 z-20 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-white/20 sm:left-6"
-          >
-            <ChevronLeft aria-hidden="true" className="h-5 w-5" />
-            <span className="sr-only">Előző kép</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setLightboxIndex((i) => (i === null ? null : (i + 1) % visibleImages.length))}
-            className="absolute right-2 z-20 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-6"
-          >
-            <ChevronRight aria-hidden="true" className="h-5 w-5" />
-            <span className="sr-only">Következő kép</span>
-          </button>
+          <div className="relative z-10 flex flex-1 items-center gap-3">
+            <button
+              type="button"
+              onClick={prev}
+              aria-label={t.common.previous}
+              className="tap-target hidden shrink-0 place-items-center rounded-pill border border-white/25 px-3 text-white transition-colors hover:bg-white/10 sm:grid"
+            >
+              <ChevronLeft aria-hidden="true" className="h-6 w-6" />
+            </button>
+
+            <figure className="flex min-h-0 flex-1 flex-col">
+              <Media mediaKey={active.imageKey} className="min-h-0 flex-1 rounded-panel" sizes="100vw" priority alt={L(active.caption)} />
+              <figcaption className="pt-3 text-center text-sm text-frost-200">{L(active.caption)}</figcaption>
+            </figure>
+
+            <button
+              type="button"
+              onClick={next}
+              aria-label={t.common.next}
+              className="tap-target hidden shrink-0 place-items-center rounded-pill border border-white/25 px-3 text-white transition-colors hover:bg-white/10 sm:grid"
+            >
+              <ChevronRight aria-hidden="true" className="h-6 w-6" />
+            </button>
+          </div>
+
+          <div className="relative z-10 flex justify-center gap-3 pt-3 sm:hidden">
+            <button type="button" onClick={prev} aria-label={t.common.previous} className="tap-target inline-grid place-items-center rounded-pill border border-white/25 px-5 text-white">
+              <ChevronLeft aria-hidden="true" className="h-5 w-5" />
+            </button>
+            <button type="button" onClick={next} aria-label={t.common.next} className="tap-target inline-grid place-items-center rounded-pill border border-white/25 px-5 text-white">
+              <ChevronRight aria-hidden="true" className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       ) : null}
     </div>

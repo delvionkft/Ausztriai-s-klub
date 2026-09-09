@@ -1,55 +1,44 @@
-import { PLACEHOLDER_VALUE } from '@/data/placeholders';
+import type { Locale } from '@/types';
 
-/** Pénzösszeg formázása. `null` esetén helyőrző. */
-export function formatCurrency(
-  amount: number | null | undefined,
-  currency = 'EUR',
-  options: { decimals?: number } = {},
-): string {
-  if (amount === null || amount === undefined || Number.isNaN(amount)) return PLACEHOLDER_VALUE;
-  const decimals = options.decimals ?? (Number.isInteger(amount) ? 0 : 2);
-  return new Intl.NumberFormat('hu-HU', {
+const LOCALE_TAG: Record<Locale, string> = { hu: 'hu-HU', de: 'de-AT', en: 'en-GB' };
+
+/** Pénzösszeg — alapértelmezetten euró, tizedes nélkül. */
+export function formatPrice(value: number, locale: Locale = 'hu', currency = 'EUR'): string {
+  return new Intl.NumberFormat(LOCALE_TAG[locale], {
     style: 'currency',
     currency,
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(amount);
+    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
+    minimumFractionDigits: 0,
+  }).format(value);
 }
 
-/** Szám formázása mértékegységgel. `null` esetén helyőrző. */
-export function formatNumber(value: number | null | undefined, suffix = ''): string {
-  if (value === null || value === undefined || Number.isNaN(value)) return PLACEHOLDER_VALUE;
-  return `${new Intl.NumberFormat('hu-HU').format(value)}${suffix}`;
+export function formatNumber(value: number, locale: Locale = 'hu'): string {
+  return new Intl.NumberFormat(LOCALE_TAG[locale]).format(value);
 }
 
-/** Hosszúság méterben vagy kilométerben, olvashatóan. */
-export function formatLength(meters: number | null | undefined): string {
-  if (meters === null || meters === undefined) return PLACEHOLDER_VALUE;
-  return meters >= 1000 ? `${(meters / 1000).toFixed(1).replace('.', ',')} km` : `${meters} m`;
+/** Hossz: 1200 m -> „1,2 km", 800 m -> „800 m". */
+export function formatLength(meters: number, locale: Locale = 'hu'): string {
+  if (meters >= 1000) return `${formatNumber(Math.round((meters / 1000) * 10) / 10, locale)} km`;
+  return `${formatNumber(meters, locale)} m`;
 }
 
-export function formatTemperature(celsius: number | null | undefined): string {
-  if (celsius === null || celsius === undefined) return PLACEHOLDER_VALUE;
-  return `${celsius > 0 ? '+' : ''}${celsius} °C`;
+export function formatTemperature(celsius: number, locale: Locale = 'hu'): string {
+  const sign = celsius > 0 ? '+' : '';
+  return `${sign}${formatNumber(celsius, locale)} °C`;
 }
 
-export function formatRatio(open: number | null | undefined, total: number | null | undefined): string {
-  if (open === null || open === undefined || total === null || total === undefined) return PLACEHOLDER_VALUE;
-  return `${open}/${total}`;
+export function formatCm(value: number, locale: Locale = 'hu'): string {
+  return `${formatNumber(value, locale)} cm`;
 }
 
-/** Egyszerű e-mail formátum-ellenőrzés (kliensoldali űrlapvalidációhoz). */
-export function isValidEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
+/** Telefonszám tárcsázható alakja. */
+export function toTelHref(phone: string): string {
+  return `tel:${phone.replace(/[^\d+]/g, '')}`;
 }
 
-/** Telefonszám: legalább 7 számjegy, opcionális + előtaggal. */
-export function isValidPhone(value: string): boolean {
-  const digits = value.replace(/[^\d]/g, '');
-  return digits.length >= 7 && /^\+?[\d\s()/-]+$/.test(value.trim());
-}
-
-/** `tel:` / `https://wa.me/` linkhez tisztított szám. */
-export function toDialString(value: string): string {
-  return value.replace(/[^\d+]/g, '');
+/** WhatsApp mélylink — a szám nemzetközi formátumban, + nélkül. */
+export function toWhatsAppHref(phone: string, message?: string): string {
+  const digits = phone.replace(/[^\d]/g, '');
+  const query = message ? `?text=${encodeURIComponent(message)}` : '';
+  return `https://wa.me/${digits}${query}`;
 }

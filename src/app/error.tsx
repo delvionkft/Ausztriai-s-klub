@@ -1,46 +1,43 @@
 'use client';
 
 import { useEffect } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Home, RotateCcw } from 'lucide-react';
+import Link from 'next/link';
 import { routes } from '@/data/navigation';
-import { PrimaryButton, SecondaryButton } from '@/components/ui/Button';
 
-/**
- * HIBAHATÁR — az oldalak közös hibakezelője.
- * Váratlan kliensoldali hiba esetén ez jelenik meg fehér képernyő helyett.
- */
-export default function ErrorBoundary({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+/** HIBAÁLLAPOT — újratöltési lehetőséggel. */
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    // INTEGRÁCIÓ: itt lehet hibanaplózót (pl. Sentry) bekötni.
-    console.error('Váratlan hiba:', error);
+    // Éles környezetben ide köthető a hibanaplózó (pl. Sentry).
+    console.error(error);
   }, [error]);
 
   return (
-    <section className="container-page">
-      <div className="mx-auto flex max-w-xl flex-col items-center py-24 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-status-closedBg text-status-closed">
-          <AlertTriangle aria-hidden="true" className="h-6 w-6" />
+    <section className="surface-frost">
+      <div className="container-page flex min-h-[60vh] flex-col items-center justify-center py-24 text-center">
+        <span className="grid h-16 w-16 place-items-center rounded-panel bg-state-closedBg text-state-closedInk">
+          <AlertTriangle aria-hidden="true" className="h-8 w-8" />
         </span>
-        <h1 className="mt-6 text-h1">Váratlan hiba történt</h1>
-        <p className="mt-3 text-deep-600">
-          Sajnáljuk, ezt az oldalt most nem tudtuk betölteni. Próbáld újra, vagy térj vissza a kezdőlapra.
+        <h1 className="mt-6 text-h2">Valami félrement</h1>
+        <p className="mx-auto mt-4 max-w-md text-lead text-night-600">
+          Átmeneti hiba történt. Töltsd újra az oldalt, vagy próbáld meg kicsit később.
         </p>
-        {error.digest ? (
-          <p className="mt-3 rounded-lg bg-frost px-3 py-1.5 font-mono text-xs text-deep-500">
-            Hibaazonosító: {error.digest}
-          </p>
-        ) : null}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <PrimaryButton onClick={reset} icon={<RefreshCw aria-hidden="true" className="h-4 w-4" />}>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <button
+            type="button"
+            onClick={reset}
+            className="tap-target inline-flex items-center gap-2 rounded-pill bg-sky-400 px-6 font-bold text-night-950 shadow-glow transition-colors hover:bg-glacier-300"
+          >
+            <RotateCcw aria-hidden="true" className="h-4 w-4" />
             Újratöltés
-          </PrimaryButton>
-          <SecondaryButton href={routes.home}>Vissza a kezdőlapra</SecondaryButton>
+          </button>
+          <Link
+            href={routes.home}
+            className="tap-target inline-flex items-center gap-2 rounded-pill border border-night-200 bg-white px-6 font-semibold text-night-900 transition-colors hover:border-glacier-400"
+          >
+            <Home aria-hidden="true" className="h-4 w-4" />
+            Kezdőlap
+          </Link>
         </div>
       </div>
     </section>

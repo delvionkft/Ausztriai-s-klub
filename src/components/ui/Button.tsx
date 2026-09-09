@@ -1,196 +1,86 @@
 import Link from 'next/link';
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
+/**
+ * GOMBOK
+ * ----------------------------------------------------------------------------
+ * Minden gomb legalább 44 pixel magas (kesztyűs használat), és jól elkülönülő
+ * elsődleges / másodlagos / halvány változatban létezik.
+ */
+type Variant = 'primary' | 'secondary' | 'ghost' | 'onDark' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
-const sizeClasses: Record<Size, string> = {
-  // Minimum 44px érintőfelület mobilon (kesztyűs használat).
-  sm: 'min-h-[40px] px-3.5 text-sm gap-1.5',
-  md: 'min-h-[46px] px-5 text-[0.95rem] gap-2',
-  lg: 'min-h-[54px] px-6 text-base gap-2.5',
+const VARIANTS: Record<Variant, string> = {
+  primary:
+    'bg-sky-400 text-night-950 shadow-glow hover:bg-glacier-300 hover:shadow-lift active:bg-glacier-400',
+  secondary:
+    'border border-night-200 bg-white text-night-900 hover:border-glacier-400 hover:bg-frost-100 hover:text-night-950',
+  ghost:
+    'text-night-700 hover:bg-night-50 hover:text-night-950',
+  onDark:
+    'border border-white/35 bg-white/10 text-white backdrop-blur-md hover:border-white/60 hover:bg-white/20',
+  danger:
+    'bg-state-closed text-white hover:bg-state-closedInk',
 };
 
-const baseClasses =
-  'inline-flex items-center justify-center rounded-pill font-semibold transition-all duration-200 ease-smooth ' +
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ' +
-  'disabled:cursor-not-allowed disabled:opacity-55 disabled:shadow-none';
+const SIZES: Record<Size, string> = {
+  sm: 'h-11 px-4 text-sm',
+  md: 'h-12 px-5 text-[0.95rem]',
+  lg: 'h-14 px-7 text-base',
+};
+
+const BASE =
+  'inline-flex items-center justify-center gap-2 rounded-pill font-semibold tracking-tight transition-all duration-200 ease-smooth disabled:cursor-not-allowed disabled:opacity-55 tap-target';
 
 interface CommonProps {
+  variant?: Variant;
   size?: Size;
-  /**
-   * `onDark` = sötét háttéren (hero, mélykék blokk) használt világos változat.
-   * Mindig ezt használd className-felülírás helyett: a Tailwind osztályok
-   * sorrendje nem garantált, ezért a `className`-ből érkező szín- és
-   * háttérosztályok nem megbízhatóan írják felül az alapváltozatot.
-   */
-  variant?: 'default' | 'onDark';
-  fullWidth?: boolean;
-  icon?: ReactNode;
-  iconRight?: ReactNode;
-  loading?: boolean;
-  children: ReactNode;
   className?: string;
+  children: React.ReactNode;
+  fullWidth?: boolean;
 }
 
-function Content({ icon, iconRight, loading, children }: Pick<CommonProps, 'icon' | 'iconRight' | 'loading' | 'children'>) {
-  return (
-    <>
-      {loading ? (
-        <span
-          aria-hidden="true"
-          className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-        />
-      ) : (
-        icon
-      )}
-      <span>{children}</span>
-      {!loading && iconRight}
-    </>
-  );
-}
+export function ButtonLink({
+  href, variant = 'primary', size = 'md', className, children, fullWidth, external, onClick, ...rest
+}: CommonProps & {
+  href: string;
+  external?: boolean;
+  onClick?: () => void;
+  'aria-label'?: string;
+}) {
+  const classes = cn(BASE, VARIANTS[variant], SIZES[size], fullWidth && 'w-full', className);
 
-/* ------------------------------ Elsődleges CTA ----------------------------- */
-
-type PrimaryProps = CommonProps &
-  ({ href: string; onClick?: never } | ({ href?: undefined } & ComponentPropsWithoutRef<'button'>));
-
-export function PrimaryButton({
-  size = 'md',
-  variant = 'default',
-  fullWidth,
-  icon,
-  iconRight,
-  loading,
-  children,
-  className,
-  ...rest
-}: PrimaryProps) {
-  const classes = cn(
-    baseClasses,
-    sizeClasses[size],
-    variant === 'onDark'
-      ? 'bg-white text-deep-900 shadow-card ring-white/70 hover:bg-ice-100 hover:shadow-lift'
-      : 'bg-deep-800 text-white shadow-card ring-deep-500 hover:bg-deep-700 hover:shadow-lift',
-    'active:translate-y-px',
-    fullWidth && 'w-full',
-    className,
-  );
-
-  if ('href' in rest && rest.href) {
-    const { href, ...anchorRest } = rest as { href: string };
+  if (external || href.startsWith('http') || href.startsWith('tel:') || href.startsWith('mailto:')) {
     return (
-      <Link href={href} className={classes} {...anchorRest}>
-        <Content icon={icon} iconRight={iconRight} loading={loading}>
-          {children}
-        </Content>
-      </Link>
+      <a
+        href={href}
+        className={classes}
+        onClick={onClick}
+        {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+        {...rest}
+      >
+        {children}
+      </a>
     );
   }
 
-  const buttonRest = rest as ComponentPropsWithoutRef<'button'>;
   return (
-    <button type="button" className={classes} disabled={loading || buttonRest.disabled} {...buttonRest}>
-      <Content icon={icon} iconRight={iconRight} loading={loading}>
-        {children}
-      </Content>
-    </button>
+    <Link href={href} className={classes} onClick={onClick} {...rest}>
+      {children}
+    </Link>
   );
 }
 
-/* ----------------------------- Másodlagos CTA ----------------------------- */
-
-type SecondaryProps = PrimaryProps & { tone?: 'light' | 'dark' };
-
-
-export function SecondaryButton({
-  size = 'md',
-  variant = 'default',
-  fullWidth,
-  icon,
-  iconRight,
-  loading,
-  children,
-  className,
-  tone,
-  ...rest
-}: SecondaryProps) {
-  // A `variant="onDark"` és a `tone="dark"` ugyanazt jelenti — így a három
-  // gombkomponens API-ja egységes marad.
-  const resolvedTone = tone ?? (variant === 'onDark' ? 'dark' : 'light');
-  const classes = cn(
-    baseClasses,
-    sizeClasses[size],
-    resolvedTone === 'light'
-      ? 'border border-deep-200 bg-white text-deep-800 ring-deep-400 hover:border-deep-300 hover:bg-deep-50'
-      : 'border border-white/35 bg-white/10 text-white ring-white/60 backdrop-blur-sm hover:bg-white/20',
-    'active:translate-y-px',
-    fullWidth && 'w-full',
-    className,
-  );
-
-  if ('href' in rest && rest.href) {
-    const { href, ...anchorRest } = rest as { href: string };
-    return (
-      <Link href={href} className={classes} {...anchorRest}>
-        <Content icon={icon} iconRight={iconRight} loading={loading}>
-          {children}
-        </Content>
-      </Link>
-    );
-  }
-
-  const buttonRest = rest as ComponentPropsWithoutRef<'button'>;
+export function Button({
+  variant = 'primary', size = 'md', className, children, fullWidth, type = 'button', ...rest
+}: CommonProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button type="button" className={classes} disabled={loading || buttonRest.disabled} {...buttonRest}>
-      <Content icon={icon} iconRight={iconRight} loading={loading}>
-        {children}
-      </Content>
-    </button>
-  );
-}
-
-/* ------------------------------- Akcentus CTA ------------------------------ */
-
-export function AccentButton({
-  size = 'md',
-  variant = 'default',
-  fullWidth,
-  icon,
-  iconRight,
-  loading,
-  children,
-  className,
-  ...rest
-}: PrimaryProps) {
-  const classes = cn(
-    baseClasses,
-    sizeClasses[size],
-    variant === 'onDark'
-      ? 'bg-white text-glacier-700 shadow-card ring-white/70 hover:bg-glacier-50 hover:shadow-lift'
-      : 'bg-glacier-600 text-white shadow-card ring-glacier-500 hover:bg-glacier-700 hover:shadow-lift',
-    'active:translate-y-px',
-    fullWidth && 'w-full',
-    className,
-  );
-
-  if ('href' in rest && rest.href) {
-    const { href, ...anchorRest } = rest as { href: string };
-    return (
-      <Link href={href} className={classes} {...anchorRest}>
-        <Content icon={icon} iconRight={iconRight} loading={loading}>
-          {children}
-        </Content>
-      </Link>
-    );
-  }
-
-  const buttonRest = rest as ComponentPropsWithoutRef<'button'>;
-  return (
-    <button type="button" className={classes} disabled={loading || buttonRest.disabled} {...buttonRest}>
-      <Content icon={icon} iconRight={iconRight} loading={loading}>
-        {children}
-      </Content>
+    <button
+      type={type}
+      className={cn(BASE, VARIANTS[variant], SIZES[size], fullWidth && 'w-full', className)}
+      {...rest}
+    >
+      {children}
     </button>
   );
 }

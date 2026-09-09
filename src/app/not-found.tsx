@@ -1,65 +1,56 @@
 import Link from 'next/link';
-import type { Metadata } from 'next';
-import { Compass, Home } from 'lucide-react';
-import { mainNavigation, routes } from '@/data/navigation';
-import { AlpineScene } from '@/components/ui/AlpineScene';
-import { PrimaryButton, SecondaryButton } from '@/components/ui/Button';
+import { Compass, Home, Map, Snowflake, Ticket } from 'lucide-react';
+import { routes } from '@/data/navigation';
+import { Media } from '@/components/ui/Media';
+import { ButtonLink } from '@/components/ui/Button';
 
-export const metadata: Metadata = {
-  title: 'Az oldal nem található',
-  description: 'A keresett oldal nem érhető el. Válassz a fő menüpontok közül, vagy térj vissza a kezdőlapra.',
+/** EGYEDI 404 OLDAL — továbbvezető linkekkel, nem zsákutcával. */
+export const metadata = {
+  title: 'Ez az oldal nincs a térképen',
   robots: { index: false, follow: true },
 };
 
+const SHORTCUTS = [
+  { href: routes.snowReport, label: 'Hójelentés', icon: Snowflake },
+  { href: routes.slopeMap, label: 'Pályatérkép', icon: Map },
+  { href: routes.tickets, label: 'Jegyek', icon: Ticket },
+  { href: routes.stay, label: 'Vendégház', icon: Compass },
+];
+
 export default function NotFound() {
   return (
-    <section className="relative isolate overflow-hidden">
-      <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <AlpineScene variant="dusk" />
-        <div className="absolute inset-0 bg-deep-950/70" />
+    <section className="relative isolate flex min-h-[70vh] items-center overflow-hidden">
+      <div className="absolute inset-0 -z-10">
+        <Media mediaKey="hero-snow" overlay="strong" sizes="100vw" className="h-full w-full" priority />
       </div>
 
-      <div className="container-page">
-        <div className="mx-auto flex max-w-2xl flex-col items-center py-20 text-center sm:py-28">
-          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-inset ring-white/20">
-            <Compass aria-hidden="true" className="h-6 w-6" />
-          </span>
+      <div className="container-page py-24 text-center">
+        <p className="font-display text-[5rem] font-extrabold leading-none text-glacier-300 lg:text-[7rem]">404</p>
+        <h1 className="mt-4 text-display text-white">Ez az oldal nincs a térképen</h1>
+        <p className="mx-auto mt-5 max-w-lg text-lead text-frost-200">
+          Lehet, hogy elírtad a címet, vagy áthelyeztük a tartalmat. Innen viszont könnyen továbbjutsz.
+        </p>
 
-          <p className="mt-6 text-sm font-bold uppercase tracking-[0.2em] text-glacier-200">Hiba 404</p>
-          <h1 className="mt-3 text-display text-white">Ez az útvonal nem létezik</h1>
-          <p className="mt-4 max-w-prose text-[1.02rem] leading-relaxed text-ice-100/85">
-            Lehet, hogy elírás történt, vagy az oldal átkerült máshova. Az alábbi menüpontokból biztosan
-            megtalálod, amit keresel.
-          </p>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <PrimaryButton
-              href={routes.home}
-              size="lg" variant="onDark"
-              icon={<Home aria-hidden="true" className="h-[18px] w-[18px]" />}
-            >
-              Vissza a kezdőlapra
-            </PrimaryButton>
-            <SecondaryButton href={routes.snowReport} size="lg" tone="dark">
-              Hójelentés
-            </SecondaryButton>
-          </div>
-
-          <nav aria-label="Fő menüpontok" className="mt-10 w-full">
-            <ul className="flex flex-wrap justify-center gap-2">
-              {mainNavigation.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="inline-flex min-h-[44px] items-center rounded-pill border border-white/25 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+        <div className="mt-9 flex justify-center">
+          <ButtonLink href={routes.home} size="lg">
+            <Home aria-hidden="true" className="h-5 w-5" />
+            Vissza a kezdőlapra
+          </ButtonLink>
         </div>
+
+        <ul className="mx-auto mt-12 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
+          {SHORTCUTS.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-card border border-white/20 bg-white/10 px-3 py-4 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:border-glacier-400/60 hover:bg-white/20"
+              >
+                <item.icon aria-hidden="true" className="h-5 w-5 text-glacier-300" />
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

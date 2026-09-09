@@ -1,168 +1,144 @@
-import { pricingRules } from '@/data/availability';
-import { multiDayMultipliers, seasonalPriceBands, ticketProducts } from '@/data/tickets';
-import type { AgeGroup, TicketProduct } from '@/types';
-import { addDays, isWithinRange, nightsBetween } from './date';
+import type { AgeGroup, AvailabilityDay, TicketType } from '@/types';
+import { fees, guesthouse } from '@/data/accommodation';
+import { getAvailabilityRange } from '@/data/availability';
+import { seasonPeriods, ticketTypes } from '@/data/tickets';
+import { parseISODate } from './date';
+
+/* -------------------------------------------------------------------------- */
+/*  Jegyárak                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/** Az adott naphoz tartozó szezonális ársáv. */
+export function periodForDate(iso: string) {
+  return seasonPeriods.find((p) => iso >= p.from && iso <= p.to) ?? null;
+}
+
+/** Felnőtt napijegy ára az adott napon. Szezonon kívül az alapár érvényes. */
+export function adultDayPrice(iso: string): number {
+  const period = periodForDate(iso);
+  if (period) return period.adultDayPrice;
+  return ticketTypes.find((t) => t.id === 'day')?.prices.adult ?? 58;
+}
+
+/** Egy jegytípus ára korosztály szerint. */
+export function ticketPrice(ticket: TicketType, group: AgeGroup): number | null {
+  return ticket.prices[group] ?? null;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Jegyajánló                                                                */
+/* -------------------------------------------------------------------------- */
+
+export type PartySize = 'solo' | 'couple' | 'family' | 'group';
+export type StayLength = 'one' | 'weekend' | 'week' | 'season';
+export type AgeMix = 'adult' | 'family' | 'youth' | 'senior';
+
+export interface Recommendation {
+  ticketId: string;
+  ageGroup: AgeGroup;
+  /** Hány főre / hány jegyre vonatkozik a kalkuláció. */
+  quantity: number;
+  reasonKey: 'season' | 'multi-day' | 'family' | 'single-day' | 'group';
+  savingsEur: number;
+}
 
 /**
- * ÁRLOGIKA — tiszta függvények.
- * Minden bemenő szám az adatfájlokból jön (`src/data/tickets.ts`,
- * `src/data/availability.ts`), így az árazás cseréje nem érint komponenst.
+ * A jegyajánló logikája. Szándékosan egyszerű és átlátható: a szabályok itt
+ * módosíthatók, a felület változtatás nélkül követi.
  */
+export function recommendTicket(party: PartySize, length: StayLength, ages: AgeMix): Recommendation {
+  const ageGroup: AgeGroup =
+    ages === 'youth' ? 'student' : ages === 'senior' ? 'senior' : 'adult';
+  const quantity = party === 'solo' ? 1 : party === 'couple' ? 2 : party === 'family' ? 4 : 12;
 
-/* ------------------------------- Szállásár ------------------------------- */
+  if (length === 'season') {
+    const season = ticketTypes.find((t) => t.id === 'season');
+    const day = ticketTypes.find((t) => t.id === 'day');
+    const savings = Math.max(
+      0,
+      (day?.prices[ageGroup] ?? 0) * 12 - (season?.prices[ageGroup] ?? 0),
+    );
+    return { ticketId: 'season', ageGroup, quantity, reasonKey: 'season', savingsEur: Math.round(savings) };
+  }
 
-export interface PriceLine {
-  id: string;
-  label: string;
-  detail?: string;
-  amount: number | null;
+  if (party === 'family' && ages === 'family' && length === 'one') {
+    const family = ticketTypes.find((t) => t.id === 'family-day');
+    const day = ticketTypes.find((t) => t.id === 'day');
+    const separate = (day?.prices.adult ?? 0) * 2 + (day?.prices.child ?? 0) * 2;
+    return {
+      ticketId: 'family-day', ageGroup: 'adult', quantity: 1, reasonKey: 'family',
+      savingsEur: Math.max(0, Math.round(separate - (family?.prices.adult ?? 0))),
+    };
+  }
+
+  if (length === 'week') {
+    const six = ticketTypes.find((t) => t.id === 'multi-6');
+    const day = ticketTypes.find((t) => t.id === 'day');
+    const savings = (day?.prices[ageGroup] ?? 0) * 6 - (six?.prices[ageGroup] ?? 0);
+    return { ticketId: 'multi-6', ageGroup, quantity, reasonKey: 'multi-day', savingsEur: Math.max(0, Math.round(savings)) };
+  }
+
+  if (length === 'weekend') {
+    const three = ticketTypes.find((t) => t.id === 'multi-3');
+    const day = ticketTypes.find((t) => t.id === 'day');
+    const savings = (day?.prices[ageGroup] ?? 0) * 3 - (three?.prices[ageGroup] ?? 0);
+    return { ticketId: 'multi-3', ageGroup, quantity, reasonKey: 'multi-day', savingsEur: Math.max(0, Math.round(savings)) };
+  }
+
+  if (party === 'group') {
+    const day = ticketTypes.find((t) => t.id === 'day');
+    const base = (day?.prices[ageGroup] ?? 0) * quantity;
+    return { ticketId: 'day', ageGroup, quantity, reasonKey: 'group', savingsEur: Math.round(base * 0.15) };
+  }
+
+  return { ticketId: 'day', ageGroup, quantity, reasonKey: 'single-day', savingsEur: 0 };
 }
 
-export interface AccommodationQuote {
+/* -------------------------------------------------------------------------- */
+/*  Szállásár                                                                 */
+/* -------------------------------------------------------------------------- */
+
+export interface StayQuote {
   nights: number;
   guests: number;
-  lines: PriceLine[];
-  total: number | null;
-  deposit: number | null;
-  currency: string;
-  /** `true`, ha bármelyik tétel tulajdonosi adatra vár. */
-  hasPendingValues: boolean;
+  days: AvailabilityDay[];
+  accommodationEur: number;
+  cleaningEur: number;
+  touristTaxEur: number;
+  linenEur: number;
+  totalEur: number;
+  depositEur: number;
+  /** Igaz, ha a kiválasztott időszakban van foglalt vagy opciós nap. */
+  hasUnavailable: boolean;
+  /** A tartományra érvényes legmagasabb minimum éjszakaszám. */
+  requiredMinNights: number;
 }
 
-function seasonalMultiplierFor(iso: string): number {
-  const band = pricingRules.seasonalMultipliers.find((item) =>
-    item.ranges.some((range) => isWithinRange(iso, range.from, range.to)),
-  );
-  return band?.multiplier ?? 1;
-}
+export function buildStayQuote(arrival: string, departure: string, guests: number): StayQuote | null {
+  if (!arrival || !departure) return null;
+  if (parseISODate(departure) <= parseISODate(arrival)) return null;
 
-/** Éjszakánkénti szállásdíj összege szezonális szorzókkal. */
-export function calculateAccommodationTotal(arrival: string, departure: string): number | null {
-  if (pricingRules.baseNightlyPrice === null) return null;
-  let sum = 0;
-  for (let iso = arrival; iso < departure; iso = addDays(iso, 1)) {
-    sum += pricingRules.baseNightlyPrice * seasonalMultiplierFor(iso);
-  }
-  return Math.round(sum);
-}
+  const days = getAvailabilityRange(arrival, departure);
+  if (days.length === 0) return null;
 
-export function buildAccommodationQuote(
-  arrival: string,
-  departure: string,
-  guests: number,
-): AccommodationQuote {
-  const nights = Math.max(0, nightsBetween(arrival, departure));
-  const stayTotal = nights > 0 ? calculateAccommodationTotal(arrival, departure) : 0;
-
-  const touristTax =
-    pricingRules.touristTaxPerPersonPerNight === null
-      ? null
-      : Math.round(pricingRules.touristTaxPerPersonPerNight * guests * nights * 100) / 100;
-
-  const lines: PriceLine[] = [
-    {
-      id: 'stay',
-      label: 'Szállásdíj',
-      detail: `${nights} éjszaka × szezonális ár (teljes ház)`,
-      amount: stayTotal,
-    },
-    {
-      id: 'cleaning',
-      label: 'Takarítási díj',
-      detail: 'egyszeri',
-      amount: pricingRules.cleaningFee,
-    },
-    {
-      id: 'tourist-tax',
-      label: 'Idegenforgalmi adó',
-      detail: `${guests} fő × ${nights} éjszaka`,
-      amount: touristTax,
-    },
-    ...pricingRules.extraMandatoryFees.map((fee) => ({
-      id: fee.id,
-      label: fee.label,
-      detail: fee.note ?? undefined,
-      amount:
-        fee.amount === null
-          ? null
-          : fee.note === 'fő / tartózkodás'
-            ? Math.round(fee.amount * guests)
-            : Math.round(fee.amount * nights),
-    })),
-  ];
-
-  const hasPendingValues = lines.some((line) => line.amount === null);
-  const total = hasPendingValues
-    ? null
-    : Math.round(lines.reduce((sum, line) => sum + (line.amount ?? 0), 0) * 100) / 100;
+  const accommodationEur = days.reduce((sum, d) => sum + d.priceEur, 0);
+  const cleaningEur = fees.cleaningFeeEur;
+  const touristTaxEur = Math.round(fees.touristTaxPerPersonPerNightEur * guests * days.length * 100) / 100;
+  const linenEur = fees.linenFeePerPersonEur * guests;
 
   return {
-    nights,
+    nights: days.length,
     guests,
-    lines,
-    total,
-    deposit: pricingRules.deposit,
-    currency: pricingRules.currency,
-    hasPendingValues,
+    days,
+    accommodationEur,
+    cleaningEur,
+    touristTaxEur,
+    linenEur,
+    totalEur: Math.round((accommodationEur + cleaningEur + touristTaxEur + linenEur) * 100) / 100,
+    depositEur: fees.depositEur,
+    hasUnavailable: days.some((d) => d.state === 'booked' || d.state === 'option'),
+    requiredMinNights: Math.max(...days.map((d) => d.minNights)),
   };
 }
 
-/* --------------------------------- Jegyár --------------------------------- */
-
-export interface TicketRecommendation {
-  product: TicketProduct;
-  ageGroup: AgeGroup;
-  people: number;
-  days: number;
-  unitPrice: number | null;
-  totalPrice: number | null;
-  reason: string;
-}
-
-/** Szezonális szorzó a jegyárakhoz (naptáras árnézethez is használjuk). */
-export function ticketSeasonMultiplier(iso: string): { multiplier: number; bandId: string; label: string } {
-  const band = seasonalPriceBands.find((item) =>
-    item.ranges.some((range) => isWithinRange(iso, range.from, range.to)),
-  );
-  return band
-    ? { multiplier: band.multiplier, bandId: band.id, label: band.label }
-    : { multiplier: 1, bandId: 'mid', label: 'Alapár' };
-}
-
-/**
- * Jegyajánló: létszám + napszám + korosztály → ajánlott jegytípus.
- * A logika átlátható és szándékosan egyszerű, hogy az üzemeltető is értse.
- */
-export function recommendTicket(
-  people: number,
-  days: number,
-  ageGroup: AgeGroup,
-): TicketRecommendation {
-  const byId = (id: string) => ticketProducts.find((p) => p.id === id)!;
-
-  let product: TicketProduct;
-  let reason: string;
-
-  if (days >= 8) {
-    product = byId('season');
-    reason = '8 síelt nap felett a szezonbérlet kedvezőbb, mint a napijegyek összege.';
-  } else if (days >= 2) {
-    product = byId('multiday');
-    reason = 'Egymást követő napokra a többnapos bérlet napi ára kedvezőbb.';
-  } else {
-    product = byId('day');
-    reason = 'Egy teljes napra a napijegy a legegyszerűbb választás.';
-  }
-
-  const basePrice = product.priceByAgeGroup[ageGroup];
-  let unitPrice: number | null = basePrice;
-
-  if (basePrice !== null && product.duration === 'multiday') {
-    const multiplier = multiDayMultipliers[Math.min(days, 7)] ?? days * 0.8;
-    unitPrice = Math.round(basePrice * multiplier);
-  }
-
-  const totalPrice = unitPrice === null ? null : Math.round(unitPrice * people);
-
-  return { product, ageGroup, people, days, unitPrice, totalPrice, reason };
-}
+export const MAX_GUESTS = guesthouse.maxGuests;

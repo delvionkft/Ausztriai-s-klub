@@ -1,60 +1,53 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, Globe } from 'lucide-react';
-import { localeLabels, siteConfig } from '@/data/site.config';
-import { useLocale } from '@/hooks/useLocale';
+import { Check, Globe } from 'lucide-react';
+import type { Locale } from '@/types';
+import { LOCALES, localeLabels } from '@/i18n';
+import { useI18n } from '@/i18n/LocaleProvider';
 import { cn } from '@/lib/cn';
 
 /**
- * NYELVVÁLASZTÓ — DE / EN / HU
- * DEMÓ: a választás elmentődik és a `<html lang>` értékét is állítja, de a
- * fordítási szótár még nincs bekötve. A felület jelenleg magyar nyelvű.
- * INTEGRÁCIÓ: i18n réteg (next-intl / react-i18next) a `useLocale` hook mögé.
+ * NYELVVÁLASZTÓ
+ * ----------------------------------------------------------------------------
+ * A választás a `localStorage`-ban marad meg, így oldalváltáskor és frissítés
+ * után is érvényes. A gomb legalább 44 pixel magas, mobilon is használható.
  */
-export function LanguageSwitcher({
-  variant = 'compact',
-  className,
-}: {
-  variant?: 'compact' | 'inline';
-  className?: string;
-}) {
-  const { locale, setLocale } = useLocale();
+export function LanguageSwitcher({ invert = false, variant = 'dropdown' }: { invert?: boolean; variant?: 'dropdown' | 'inline' }) {
+  const { locale, setLocale, t } = useI18n();
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    document.documentElement.lang = locale;
-  }, [locale]);
-
-  useEffect(() => {
-    if (!open) return;
-    function onPointerDown(event: MouseEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
-    }
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false);
-    }
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
+    if (!open) return undefined;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
     };
   }, [open]);
 
+  const choose = (next: Locale) => { setLocale(next); setOpen(false); };
+
   if (variant === 'inline') {
     return (
-      <div className={cn('inline-flex items-center gap-1 rounded-pill bg-white/10 p-1', className)} role="group" aria-label="Nyelvválasztó">
-        {siteConfig.locales.map((code) => (
+      <div className="flex items-center gap-1" role="group" aria-label={t.a11y.languageSwitcher}>
+        {LOCALES.map((code) => (
           <button
             key={code}
             type="button"
-            onClick={() => setLocale(code)}
-            aria-current={locale === code ? 'true' : undefined}
+            onClick={() => choose(code)}
+            aria-pressed={locale === code}
             className={cn(
-              'min-h-[36px] min-w-[46px] rounded-pill px-3 text-sm font-semibold transition-colors',
-              locale === code ? 'bg-white text-deep-900' : 'text-white/80 hover:bg-white/10 hover:text-white',
+              'tap-target rounded-pill px-3 text-sm font-bold transition-colors',
+              locale === code
+                ? 'bg-glacier-400 text-night-950'
+                : invert ? 'text-frost-300 hover:bg-white/10 hover:text-white' : 'text-night-500 hover:bg-night-50 hover:text-night-900',
             )}
           >
             {localeLabels[code].short}
@@ -65,48 +58,44 @@ export function LanguageSwitcher({
   }
 
   return (
-    <div ref={containerRef} className={cn('relative', className)}>
+    <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-pill border border-deep-200 px-3 text-sm font-semibold text-deep-700 transition-colors hover:border-deep-300 hover:bg-deep-50"
+        aria-label={t.a11y.languageSwitcher}
+        className={cn(
+          'tap-target inline-flex items-center gap-1.5 rounded-pill px-3 text-sm font-semibold transition-colors',
+          invert ? 'text-frost-200 hover:bg-white/10 hover:text-white' : 'text-night-700 hover:bg-night-50 hover:text-night-950',
+        )}
       >
         <Globe aria-hidden="true" className="h-4 w-4" />
         {localeLabels[locale].short}
-        <ChevronDown aria-hidden="true" className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
       </button>
 
       {open ? (
         <ul
           role="listbox"
-          aria-label="Nyelv kiválasztása"
-          className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-card border border-deep-100 bg-white py-1 shadow-lift"
+          className="absolute right-0 z-50 mt-2 w-44 animate-slide-down overflow-hidden rounded-card border border-night-100 bg-white p-1.5 shadow-lift"
         >
-          {siteConfig.locales.map((code) => (
+          {LOCALES.map((code) => (
             <li key={code}>
               <button
                 type="button"
                 role="option"
                 aria-selected={locale === code}
-                onClick={() => {
-                  setLocale(code);
-                  setOpen(false);
-                }}
-                className="flex w-full min-h-[42px] items-center justify-between px-3 text-left text-sm text-deep-800 transition-colors hover:bg-deep-50"
+                onClick={() => choose(code)}
+                className={cn(
+                  'flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors',
+                  locale === code ? 'bg-frost-200 text-night-950' : 'text-night-700 hover:bg-frost-100',
+                )}
               >
-                <span>
-                  <span className="font-semibold">{localeLabels[code].short}</span>
-                  <span className="ml-2 text-deep-500">{localeLabels[code].long}</span>
-                </span>
-                {locale === code ? <Check aria-hidden="true" className="h-4 w-4 text-glacier-600" /> : null}
+                <span>{localeLabels[code].long}</span>
+                {locale === code ? <Check aria-hidden="true" className="h-4 w-4 text-glacier-500" /> : null}
               </button>
             </li>
           ))}
-          <li className="mt-1 border-t border-deep-100 px-3 py-2 text-[0.7rem] leading-snug text-deep-500">
-            A fordítások feltöltése folyamatban. A felület jelenleg magyar nyelvű.
-          </li>
         </ul>
       ) : null}
     </div>

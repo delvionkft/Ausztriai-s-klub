@@ -1,184 +1,210 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { ArrowRight, Check, Sparkles } from 'lucide-react';
-import { ageGroupLabels, currency } from '@/data/tickets';
-import { ONLINE_CHECKOUT_ENABLED, checkoutUnavailableMessage } from '@/services/ticketService';
-import { recommendTicket } from '@/lib/pricing';
-import { formatCurrency } from '@/lib/format';
+import { useState } from 'react';
+import { ArrowLeft, Check, RotateCcw, Sparkles, Ticket } from 'lucide-react';
+import { useI18n } from '@/i18n/LocaleProvider';
+import { ticketTypes } from '@/data/tickets';
+import {
+  recommendTicket, type AgeMix, type PartySize, type StayLength,
+} from '@/lib/pricing';
+import { formatPrice } from '@/lib/format';
+import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
-import { DemoNotice } from '@/components/ui/DemoNotice';
-import { PrimaryButton } from '@/components/ui/Button';
-import { routes } from '@/data/navigation';
-import type { AgeGroup } from '@/types';
+import { Button } from '@/components/ui/Button';
 
 /**
- * DÖNTÉSTÁMOGATÓ — 3 KÉRDÉS (drótváz 05/02–03)
- * Hányan? · Hány napra? · Korosztály? → ajánlott jegytípus + ár.
- * A logika: `src/lib/pricing.ts`, az árak: `src/data/tickets.ts`.
+ * JEGYAJÁNLÓ
+ * ----------------------------------------------------------------------------
+ * Három kérdés, majd konkrét javaslat indoklással és árral.
+ * A szabályok a `src/lib/pricing.ts` `recommendTicket()` függvényében vannak.
  */
+export function TicketAdvisor({ onCheckout }: { onCheckout?: (ticketId: string) => void }) {
+  const { t, L, locale } = useI18n();
+  const [step, setStep] = useState(0);
+  const [party, setParty] = useState<PartySize | null>(null);
+  const [length, setLength] = useState<StayLength | null>(null);
+  const [ages, setAges] = useState<AgeMix | null>(null);
 
-const peopleOptions = [1, 2, 3, 4, 5, 6];
-const dayOptions = [1, 2, 3, 4, 5, 6, 7, 8];
-const ageOptions: AgeGroup[] = ['child', 'youth', 'adult', 'senior'];
+  const questions = [
+    {
+      key: 'party',
+      title: t.tickets.q1,
+      options: [
+        { id: 'solo' as PartySize, label: t.tickets.q1Solo },
+        { id: 'couple' as PartySize, label: t.tickets.q1Couple },
+        { id: 'family' as PartySize, label: t.tickets.q1Family },
+        { id: 'group' as PartySize, label: t.tickets.q1Group },
+      ],
+      value: party,
+      set: (v: string) => { setParty(v as PartySize); setStep(1); if (step === 0) track('start_ticket_recommendation', { party: v }); },
+    },
+    {
+      key: 'length',
+      title: t.tickets.q2,
+      options: [
+        { id: 'one' as StayLength, label: t.tickets.q2One },
+        { id: 'weekend' as StayLength, label: t.tickets.q2Weekend },
+        { id: 'week' as StayLength, label: t.tickets.q2Week },
+        { id: 'season' as StayLength, label: t.tickets.q2Season },
+      ],
+      value: length,
+      set: (v: string) => { setLength(v as StayLength); setStep(2); },
+    },
+    {
+      key: 'ages',
+      title: t.tickets.q3,
+      options: [
+        { id: 'adult' as AgeMix, label: t.tickets.q3Adult },
+        { id: 'family' as AgeMix, label: t.tickets.q3Family },
+        { id: 'youth' as AgeMix, label: t.tickets.q3Youth },
+        { id: 'senior' as AgeMix, label: t.tickets.q3Senior },
+      ],
+      value: ages,
+      set: (v: string) => {
+        setAges(v as AgeMix);
+        setStep(3);
+        track('complete_ticket_recommendation', { party: party ?? '', length: length ?? '', ages: v });
+      },
+    },
+  ];
 
-function OptionRow<T extends string | number>({
-  legend,
-  hint,
-  options,
-  value,
-  onChange,
-  renderLabel,
-  step,
-}: {
-  legend: string;
-  hint: string;
-  options: T[];
-  value: T;
-  onChange: (value: T) => void;
-  renderLabel: (option: T) => string;
-  step: number;
-}) {
+  const restart = () => { setStep(0); setParty(null); setLength(null); setAges(null); };
+
+  const result = step === 3 && party && length && ages ? recommendTicket(party, length, ages) : null;
+  const ticket = result ? ticketTypes.find((item) => item.id === result.ticketId) ?? null : null;
+  const unitPrice = ticket && result ? ticket.prices[result.ageGroup] ?? ticket.prices.adult ?? 0 : 0;
+
+  const reasonText = result
+    ? {
+      season: 'Ennyi síelési napnál a szezonbérlet napi ára már jóval a napijegy alatt van, és az esti síelés is benne van.',
+      'multi-day': 'A többnapos bérlet napi bontásban olcsóbb a napijegynél, és a sítárolás is jár hozzá.',
+      family: 'A családi jegy két felnőttet és két gyereket fed le egyetlen jegyen, külön váltva ez drágább lenne.',
+      group: '10 fő felett a csoportos kedvezmény minden jegyre él, és a csoportvezetőnek külön pénztári sávot nyitunk.',
+      'single-day': 'Egy napra a napijegy a legegyszerűbb: minden nyitott felvonóra érvényes, és az esti síelésre is jó.',
+    }[result.reasonKey]
+    : '';
+
   return (
-    <fieldset className="border-b border-deep-100 pb-5 last:border-0 last:pb-0">
-      <legend className="flex items-center gap-2 text-[0.95rem] font-semibold text-deep-900">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-deep-800 text-[0.7rem] font-bold text-white">
-          {step}
+    <div className="overflow-hidden rounded-panel border border-night-100 bg-white shadow-card">
+      <div className="flex items-center gap-3 border-b border-night-100 bg-frost-100 px-6 py-4">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-night-950 text-glacier-300">
+          <Sparkles aria-hidden="true" className="h-5 w-5" />
         </span>
-        {legend}
-      </legend>
-      <p className="ml-8 mt-1 text-xs text-deep-500">{hint}</p>
-      <div className="ml-0 mt-3 flex flex-wrap gap-2 sm:ml-8">
-        {options.map((option) => (
-          <button
-            key={String(option)}
-            type="button"
-            onClick={() => onChange(option)}
-            aria-pressed={value === option}
-            className={cn(
-              'min-h-[44px] rounded-pill border px-4 text-sm font-semibold transition-colors',
-              value === option
-                ? 'border-deep-800 bg-deep-800 text-white'
-                : 'border-deep-200 bg-white text-deep-700 hover:border-deep-300 hover:bg-deep-50',
-            )}
-          >
-            {renderLabel(option)}
-          </button>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
-
-export function TicketAdvisor() {
-  const [people, setPeople] = useState(2);
-  const [days, setDays] = useState(1);
-  const [ageGroup, setAgeGroup] = useState<AgeGroup>('adult');
-
-  const recommendation = useMemo(() => recommendTicket(people, days, ageGroup), [people, days, ageGroup]);
-
-  return (
-    <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
-      <div className="rounded-panel border border-deep-100 bg-white p-5 sm:p-6">
-        <div className="space-y-5">
-          <OptionRow
-            step={1}
-            legend="Hányan jöttök?"
-            hint="A jegyek darabszámát ez határozza meg."
-            options={peopleOptions}
-            value={people}
-            onChange={setPeople}
-            renderLabel={(option) => (option === 6 ? '6+ fő' : `${option} fő`)}
-          />
-          <OptionRow
-            step={2}
-            legend="Hány napra?"
-            hint="Egymást követő síelt napok száma."
-            options={dayOptions}
-            value={days}
-            onChange={setDays}
-            renderLabel={(option) => (option === 8 ? '8+ nap' : `${option} nap`)}
-          />
-          <OptionRow
-            step={3}
-            legend="Melyik korosztály?"
-            hint="A pontos korhatárokat a végleges árlista tartalmazza."
-            options={ageOptions}
-            value={ageGroup}
-            onChange={setAgeGroup}
-            renderLabel={(option) => ageGroupLabels[option]}
-          />
+        <div className="min-w-0 flex-1">
+          <h3 className="font-display text-base font-extrabold text-night-950">{t.tickets.advisorTitle}</h3>
+          <p className="mt-0.5 text-[0.8125rem] text-night-600">{t.tickets.advisorLead}</p>
         </div>
+        {step > 0 ? (
+          <button
+            type="button"
+            onClick={restart}
+            className="tap-target inline-flex shrink-0 items-center gap-1.5 rounded-pill px-3 text-[0.8125rem] font-semibold text-night-600 transition-colors hover:bg-white hover:text-night-950"
+          >
+            <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t.tickets.restart}</span>
+          </button>
+        ) : null}
       </div>
 
-      {/* AJÁNLOTT JEGY + AZONNALI VÁSÁRLÁS (drótváz 05/03) */}
-      <div className="flex flex-col rounded-panel border border-glacier-200 bg-glacier-50/60 p-5 sm:p-6">
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-pill bg-glacier-600 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.08em] text-white">
-          <Sparkles aria-hidden="true" className="h-3.5 w-3.5" />
-          Ajánlott jegytípus
-        </span>
+      {/* Lépésjelző */}
+      <ol className="flex gap-1.5 px-6 pt-5">
+        {[0, 1, 2].map((i) => (
+          <li key={i} className="flex-1">
+            <span className="sr-only">{t.tickets.step} {i + 1}</span>
+            <span
+              aria-hidden="true"
+              className={cn('block h-1.5 rounded-pill transition-colors duration-300', step > i ? 'bg-glacier-400' : step === i ? 'bg-night-300' : 'bg-night-100')}
+            />
+          </li>
+        ))}
+      </ol>
 
-        <h3 className="mt-3 text-h2" aria-live="polite">
-          {recommendation.product.name}
-        </h3>
-        <p className="mt-2 text-sm leading-relaxed text-deep-700">{recommendation.reason}</p>
+      {step < 3 ? (
+        <div className="p-6">
+          <p className="text-[0.75rem] font-bold uppercase tracking-wider text-glacier-600">
+            {step + 1}. {t.tickets.step}
+          </p>
+          <h4 className="mt-2 font-display text-xl font-extrabold text-night-950">{questions[step].title}</h4>
 
-        <ul className="mt-4 space-y-2">
-          {recommendation.product.highlights.map((highlight) => (
-            <li key={highlight} className="flex items-start gap-2 text-sm text-deep-800">
-              <Check aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-glacier-600" />
-              {highlight}
-            </li>
-          ))}
-        </ul>
+          <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
+            {questions[step].options.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => questions[step].set(option.id)}
+                className={cn(
+                  'tap-target flex items-center justify-between gap-3 rounded-card border px-5 py-4 text-left text-[0.9375rem] font-semibold transition-all duration-200',
+                  questions[step].value === option.id
+                    ? 'border-glacier-400 bg-frost-200 text-night-950'
+                    : 'border-night-200 bg-white text-night-800 hover:border-glacier-400 hover:bg-frost-100',
+                )}
+              >
+                {option.label}
+                {questions[step].value === option.id ? <Check aria-hidden="true" className="h-4 w-4 text-glacier-600" /> : null}
+              </button>
+            ))}
+          </div>
 
-        <div className="mt-5 rounded-card border border-white bg-white p-4">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-deep-500">
-                {ageGroupLabels[ageGroup]} · {days} nap
+          {step > 0 ? (
+            <button
+              type="button"
+              onClick={() => setStep((v) => v - 1)}
+              className="tap-target mt-5 inline-flex items-center gap-1.5 rounded-pill px-3 text-sm font-semibold text-night-600 transition-colors hover:bg-frost-100 hover:text-night-950"
+            >
+              <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+              {t.common.back}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {step === 3 && ticket && result ? (
+        <div className="animate-fade-in p-6">
+          <p className="text-[0.75rem] font-bold uppercase tracking-wider text-glacier-600">{t.tickets.resultTitle}</p>
+          <h4 className="mt-2 font-display text-2xl font-extrabold text-night-950">{L(ticket.name)}</h4>
+
+          <div className="mt-5 flex flex-wrap items-end gap-x-6 gap-y-2 rounded-card bg-frost-100 px-5 py-4">
+            <p className="font-display text-3xl font-extrabold text-night-950">{formatPrice(unitPrice, locale)}</p>
+            <p className="text-[0.875rem] text-night-600">
+              {result.quantity > 1 ? `${result.quantity} ${t.common.person} · ${formatPrice(unitPrice * result.quantity, locale)}` : t.common.perPerson}
+            </p>
+            {result.savingsEur > 0 ? (
+              <p className="ml-auto inline-flex items-center gap-1.5 rounded-pill bg-state-openBg px-3 py-1.5 text-[0.8125rem] font-bold text-state-openInk">
+                <Check aria-hidden="true" className="h-3.5 w-3.5" />
+                −{formatPrice(result.savingsEur, locale)}
               </p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-deep-900">
-                {formatCurrency(recommendation.unitPrice, currency)}
-              </p>
-              <p className="text-xs text-deep-500">/ fő</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-semibold uppercase tracking-wide text-deep-500">{people} főre</p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-glacier-700">
-                {formatCurrency(recommendation.totalPrice, currency)}
-              </p>
-            </div>
+            ) : null}
+          </div>
+
+          <div className="mt-5">
+            <p className="text-[0.8125rem] font-bold uppercase tracking-wider text-night-500">{t.tickets.resultWhy}</p>
+            <p className="mt-2 text-[0.9375rem] leading-relaxed text-night-700">{reasonText}</p>
+          </div>
+
+          <ul className="mt-5 space-y-2">
+            {ticket.benefits.map((benefit, i) => (
+              <li key={i} className="flex items-start gap-2 text-[0.9375rem] text-night-700">
+                <Check aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-glacier-500" />
+                {L(benefit)}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button
+              size="lg"
+              onClick={() => { track('begin_ticket_checkout', { ticket: ticket.id, source: 'advisor' }); onCheckout?.(ticket.id); }}
+            >
+              <Ticket aria-hidden="true" className="h-4 w-4" />
+              {t.cta.buyNow}
+            </Button>
+            <Button variant="secondary" size="lg" onClick={restart}>
+              <RotateCcw aria-hidden="true" className="h-4 w-4" />
+              {t.tickets.restart}
+            </Button>
           </div>
         </div>
-
-        <div className="mt-auto pt-5">
-          {ONLINE_CHECKOUT_ENABLED ? (
-            <PrimaryButton size="lg" fullWidth iconRight={<ArrowRight aria-hidden="true" className="h-4 w-4" />}>
-              Vásárlás
-            </PrimaryButton>
-          ) : (
-            <>
-              <PrimaryButton
-                size="lg"
-                fullWidth
-                disabled
-                title={checkoutUnavailableMessage}
-                iconRight={<ArrowRight aria-hidden="true" className="h-4 w-4" />}
-              >
-                Vásárlás
-              </PrimaryButton>
-              <p className="mt-2 text-center text-xs text-deep-600">{checkoutUnavailableMessage}</p>
-              <p className="mt-3 text-center text-sm">
-                <a href={`${routes.info}#kapcsolat`} className="font-semibold text-glacier-700 link-underline">
-                  Kérdésed van? Írj vagy hívj minket.
-                </a>
-              </p>
-            </>
-          )}
-          <DemoNotice className="mt-4" message="Az árak demó értékek a döntéstámogató bemutatásához. Végleges árlista: src/data/tickets.ts" />
-        </div>
-      </div>
+      ) : null}
     </div>
   );
 }

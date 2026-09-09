@@ -1,22 +1,15 @@
-import type { NewsletterPayload, ServiceResult } from '@/types';
-import { isValidEmail } from '@/lib/format';
-import { mockDelay } from './apiClient';
+import type { SubmitResult } from '@/types';
+import { isLiveBackend, mockResponse, request } from './apiClient';
 
 /**
- * HÓRIASZTÓ FELIRATKOZÁS
- * INTEGRÁCIÓ: POST /newsletter/subscribe (vagy külső lista-szolgáltató).
- * Jelenleg demó: az e-mail cím nem hagyja el a böngészőt.
+ * HÓÉRTESÍTŐ FELIRATKOZÁS
+ * ----------------------------------------------------------------------------
+ * ÉLESÍTÉS: POST /newsletter — a hírlevélszolgáltató (pl. Mailchimp, Brevo)
+ * kulcsa kizárólag szerveroldalon használható.
  */
-export async function subscribeToSnowAlert(
-  payload: NewsletterPayload,
-): Promise<ServiceResult> {
-  if (!isValidEmail(payload.email)) {
-    return { ok: false, message: 'Kérünk, adj meg egy érvényes e-mail címet.' };
+export async function subscribeToSnowAlert(email: string): Promise<SubmitResult> {
+  if (isLiveBackend) {
+    return request<SubmitResult>('/newsletter', { method: 'POST', body: JSON.stringify({ email }) });
   }
-
-  // INTEGRÁCIÓ: return apiFetch('/newsletter/subscribe', { method: 'POST', ... });
-  return mockDelay({
-    ok: true,
-    message: 'Feliratkoztunk! Szólunk, amint friss hó érkezik.',
-  });
+  return mockResponse({ ok: true }, 700);
 }

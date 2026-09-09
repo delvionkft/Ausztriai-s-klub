@@ -1,58 +1,34 @@
-import { CableCar, Route, Snowflake, TrendingUp } from 'lucide-react';
-import { resortInfo } from '@/data/site.config';
-import { Section } from '@/components/ui/Section';
-import { StatGrid, type StatItem } from '@/components/features/StatGrid';
+'use client';
 
-/** 06 · A HEGY SZÁMOKBAN (drótváz 01/05) — minden érték az adatmodellből. */
+import { CableCar, Route, Snowflake, TrendingUp } from 'lucide-react';
+import { useI18n } from '@/i18n/LocaleProvider';
+import { mountainStats } from '@/data/homepage';
+import { MetricCard } from '@/components/features/MetricCard';
+import { Section } from '@/components/ui/Section';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+
+const ICONS = { route: Route, 'trending-up': TrendingUp, 'cable-car': CableCar, snowflake: Snowflake } as const;
+
+/** A HEGY SZÁMOKBAN — animált számlálókkal. */
 export function MountainStats() {
-  const items: StatItem[] = [
-    {
-      id: 'slope-length',
-      label: 'Pályahossz',
-      value: resortInfo.totalSlopeLengthKm,
-      suffix: ' km',
-      icon: Route,
-      hint: 'Összes pályahossz megadása szükséges',
-    },
-    {
-      id: 'vertical',
-      label: 'Szintkülönbség',
-      value: resortInfo.verticalDropM,
-      suffix: ' m',
-      icon: TrendingUp,
-      hint: 'Szintkülönbség megadása szükséges',
-    },
-    {
-      id: 'lifts',
-      label: 'Felvonók',
-      value: resortInfo.liftCount,
-      icon: CableCar,
-      hint: 'Felvonók száma megadásra vár',
-    },
-    {
-      id: 'snowmaking',
-      label: 'Hóágyúzott',
-      value: resortInfo.snowmakingCoveragePercent,
-      suffix: '%',
-      icon: Snowflake,
-      hint: 'Hóágyúzott arány megadása szükséges',
-    },
-  ];
+  const { t, L } = useI18n();
 
   return (
-    <Section tone="deep" labelledBy="szamok-cim">
-      <div className="flex flex-col gap-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-glacier-300">A hegy számokban</p>
-        <h2 id="szamok-cim" className="text-h1 text-white">
-          Amit a terepről tudni érdemes
-        </h2>
-        <p className="max-w-prose text-[0.98rem] leading-relaxed text-ice-200/80">
-          Ezek az adatok a síközpont hivatalos pályakönyvéből származnak majd. Amíg nem érkeznek meg, jelöltként
-          jelennek meg — kitalált számokat nem írunk ki.
-        </p>
+    <Section tone="white">
+      <SectionHeading title={t.home.statsTitle} lead={t.home.statsLead} align="center" />
+      <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {mountainStats.map((stat) => {
+          const Icon = ICONS[stat.icon as keyof typeof ICONS] ?? Route;
+          return (
+            <MetricCard
+              key={stat.id}
+              value={stat.value}
+              label={L(stat.label)}
+              icon={<Icon aria-hidden="true" className="h-5 w-5" />}
+            />
+          );
+        })}
       </div>
-
-      <StatGrid items={items} columns={4} tone="dark" className="mt-8" />
     </Section>
   );
 }

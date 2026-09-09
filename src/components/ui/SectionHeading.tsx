@@ -1,45 +1,41 @@
-import type { ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
-interface SectionHeadingProps {
-  eyebrow?: string;
-  title: string;
-  description?: string;
-  align?: 'left' | 'center';
-  as?: 'h2' | 'h3';
-  action?: ReactNode;
-  id?: string;
-  className?: string;
-}
-
+/**
+ * SZEKCIÓCÍM
+ * ----------------------------------------------------------------------------
+ * Egységes kicker + címsor + bevezető hármas. A `level` a helyes H2/H3
+ * hierarchia miatt állítható.
+ */
 export function SectionHeading({
-  eyebrow,
-  title,
-  description,
-  align = 'left',
-  as: Tag = 'h2',
-  action,
-  id,
-  className,
-}: SectionHeadingProps) {
+  kicker, title, lead, align = 'left', invert = false, level = 2, className, id,
+}: {
+  kicker?: string;
+  title: string;
+  lead?: string;
+  align?: 'left' | 'center';
+  invert?: boolean;
+  level?: 2 | 3;
+  className?: string;
+  id?: string;
+}) {
+  const Tag = level === 2 ? 'h2' : 'h3';
+
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between',
-        align === 'center' && 'sm:flex-col sm:items-center',
-        className,
-      )}
-    >
-      <div className={cn('max-w-prose', align === 'center' && 'text-center')}>
-        {eyebrow ? (
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-glacier-600">{eyebrow}</p>
-        ) : null}
-        <Tag id={id} className={Tag === 'h2' ? 'text-h1' : 'text-h2'}>
-          {title}
-        </Tag>
-        {description ? <p className="mt-3 text-[0.98rem] leading-relaxed text-deep-600">{description}</p> : null}
-      </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
+    <div className={cn('max-w-2xl', align === 'center' && 'mx-auto text-center', className)}>
+      {kicker ? (
+        <p className={cn(
+          'mb-3 text-[0.8125rem] font-bold uppercase tracking-[0.14em]',
+          invert ? 'text-glacier-300' : 'text-glacier-600',
+        )}>
+          {kicker}
+        </p>
+      ) : null}
+      <Tag id={id} className={cn(level === 2 ? 'text-h2' : 'text-h3', invert && 'text-white')}>
+        {title}
+      </Tag>
+      {lead ? (
+        <p className={cn('mt-4 text-lead', invert ? 'text-frost-200' : 'text-night-600')}>{lead}</p>
+      ) : null}
     </div>
   );
 }

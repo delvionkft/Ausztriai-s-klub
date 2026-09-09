@@ -1,89 +1,124 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Mountain } from 'lucide-react';
-import { difficultyLabels } from '@/data/slopes';
-import { getSlopes } from '@/services/statusService';
-import { useAsyncData } from '@/hooks/useAsyncData';
+import { Lightbulb, Snowflake } from 'lucide-react';
+import type { Slope, SlopeDifficulty, SlopeStatus } from '@/types';
+import { useI18n } from '@/i18n/LocaleProvider';
+import { slopes } from '@/data/slopes';
+import { formatLength } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import { EmptyState, ErrorState, Skeleton } from '@/components/ui/States';
-import { SlopeListHeader, SlopeRow } from './SlopeRow';
-import type { Slope, SlopeDifficulty } from '@/types';
+import { StatusBadge, type BadgeTone } from '@/components/ui/StatusBadge';
 
-type Filter = 'all' | 'open' | SlopeDifficulty;
+export function useDifficultyLabel() {
+  const { t } = useI18n();
+  return (d: SlopeDifficulty, short = false) => {
+    if (short) {
+      return d === 'blue' ? t.difficulty.blueShort : d === 'red' ? t.difficulty.redShort : d === 'black' ? t.difficulty.blackShort : t.difficulty.skirouteShort;
+    }
+    return d === 'blue' ? t.difficulty.blue : d === 'red' ? t.difficulty.red : d === 'black' ? t.difficulty.black : t.difficulty.skiroute;
+  };
+}
 
-const filters: Array<{ id: Filter; label: string }> = [
-  { id: 'all', label: 'Mind' },
-  { id: 'open', label: 'Csak nyitott' },
-  { id: 'easy', label: difficultyLabels.easy },
-  { id: 'intermediate', label: difficultyLabels.intermediate },
-  { id: 'advanced', label: difficultyLabels.advanced },
-];
+export function slopeTone(status: SlopeStatus): BadgeTone {
+  if (status === 'groomed') return 'open';
+  if (status === 'open') return 'open';
+  if (status === 'preparing') return 'warn';
+  return 'closed';
+}
 
-export function SlopeList({ selectable = false }: { selectable?: boolean }) {
-  const [filter, setFilter] = useState<Filter>('all');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { data, state, error, reload } = useAsyncData<Slope[]>(getSlopes, []);
+export function useSlopeStatusLabel() {
+  const { t } = useI18n();
+  return (s: SlopeStatus) =>
+    s === 'groomed' ? t.status.groomed : s === 'open' ? t.status.open : s === 'preparing' ? t.status.preparing : t.status.closed;
+}
 
-  const visible = useMemo(() => {
-    if (!data) return [];
-    if (filter === 'all') return data;
-    if (filter === 'open') return data.filter((slope) => slope.status === 'open');
-    return data.filter((slope) => slope.difficulty === filter);
-  }, [data, filter]);
+export const DIFFICULTY_DOT: Record<SlopeDifficulty, string> = {
+  blue: 'bg-piste-blue',
+  red: 'bg-piste-red',
+  black: 'bg-piste-black',
+  skiroute: 'bg-piste-skiroute',
+};
+
+/**
+ * PÁLYALISTA
+ * ----------------------------------------------------------------------------
+ * Asztali nézetben táblázat, mobilon kártyanézet — vízszintes görgetés nélkül.
+ */
+export function SlopeList({ invert = false, items = slopes }: { invert?: boolean; items?: Slope[] }) {
+  const { t, L, locale } = useI18n();
+  const difficultyLabel = useDifficultyLabel();
+  const statusLabel = useSlopeStatusLabel();
 
   return (
     <div>
-      <div className="scroll-x">
-        <ul className="flex gap-2 whitespace-nowrap pb-1" role="group" aria-label="Pályák szűrése">
-          {filters.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => setFilter(item.id)}
-                aria-pressed={filter === item.id}
-                className={cn(
-                  'min-h-[44px] rounded-pill border px-4 text-sm font-semibold transition-colors',
-                  filter === item.id
-                    ? 'border-deep-800 bg-deep-800 text-white'
-                    : 'border-deep-200 bg-white text-deep-700 hover:bg-deep-50',
-                )}
-              >
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <h2 className={cn('mb-4 font-display text-lg font-extrabold', invert ? 'text-white' : 'text-night-950')}>
+        {t.snow.slopesTitle}
+      </h2>
 
-      <div className="mt-5">
-        {state === 'loading' ? (
-          <div className="space-y-2" aria-busy="true">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <Skeleton key={index} className="h-[62px] w-full rounded-xl" />
+      {/* Mobil: kártyák */}
+      <ul className="space-y-3 lg:hidden">
+        {items.map((slope) => (
+          <li
+            key={slope.id}
+            className={cn('rounded-card border p-4', invert ? 'border-white/12 bg-white/[0.05]' : 'border-night-100 bg-white shadow-subtle')}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <span aria-hidden="true" className={cn('mt-1.5 h-3 w-3 shrink-0 rounded-full', DIFFICULTY_DOT[slope.difficulty])} />
+                <div>
+                  <p className={cn('font-semibold', invert ? 'text-white' : 'text-night-950')}>
+                    <span className="mr-1.5 opacity-60">{slope.number}.</span>{slope.name}
+                  </p>
+                  <p className={cn('mt-0.5 text-[0.8125rem]', invert ? 'text-frost-300/70' : 'text-night-500')}>
+                    {difficultyLabel(slope.difficulty)} · {formatLength(slope.lengthM, locale)}
+                  </p>
+                </div>
+              </div>
+              <StatusBadge invert={invert} size="sm" tone={slopeTone(slope.status)} label={statusLabel(slope.status)} />
+            </div>
+            <p className={cn('mt-3 text-[0.875rem] leading-snug', invert ? 'text-frost-300/80' : 'text-night-600')}>
+              {L(slope.description)}
+            </p>
+          </li>
+        ))}
+      </ul>
+
+      {/* Asztali: táblázat */}
+      <div className={cn('hidden overflow-hidden rounded-card border lg:block', invert ? 'border-white/12' : 'border-night-100')}>
+        <table className="w-full text-left text-[0.9375rem]">
+          <thead>
+            <tr className={cn('text-[0.75rem] uppercase tracking-wider', invert ? 'bg-white/[0.06] text-frost-300/70' : 'bg-frost-100 text-night-500')}>
+              <th scope="col" className="px-5 py-3 font-bold">{t.snow.tableSlope}</th>
+              <th scope="col" className="px-5 py-3 font-bold">{t.difficulty.label}</th>
+              <th scope="col" className="px-5 py-3 font-bold">{t.snow.tableLength}</th>
+              <th scope="col" className="px-5 py-3 font-bold">{t.map.verticalDrop}</th>
+              <th scope="col" className="px-5 py-3 font-bold">{t.snow.tableStatus}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((slope) => (
+              <tr key={slope.id} className={cn('border-t', invert ? 'border-white/10 bg-white/[0.03]' : 'border-night-100 bg-white')}>
+                <th scope="row" className={cn('px-5 py-3.5 font-semibold', invert ? 'text-white' : 'text-night-950')}>
+                  <span className="mr-2 opacity-55">{slope.number}.</span>{slope.name}
+                  <span className="ml-2 inline-flex gap-1 align-middle">
+                    {slope.snowmaking ? <Snowflake aria-label="Hóágyúzott" className="h-3.5 w-3.5 text-glacier-400" /> : null}
+                    {slope.floodlit ? <Lightbulb aria-label="Kivilágított" className="h-3.5 w-3.5 text-state-warn" /> : null}
+                  </span>
+                </th>
+                <td className={cn('px-5 py-3.5', invert ? 'text-frost-200' : 'text-night-700')}>
+                  <span className="inline-flex items-center gap-2">
+                    <span aria-hidden="true" className={cn('h-2.5 w-2.5 rounded-full', DIFFICULTY_DOT[slope.difficulty])} />
+                    {difficultyLabel(slope.difficulty, true)}
+                  </span>
+                </td>
+                <td className={cn('px-5 py-3.5 tabular-nums', invert ? 'text-frost-200' : 'text-night-700')}>{formatLength(slope.lengthM, locale)}</td>
+                <td className={cn('px-5 py-3.5 tabular-nums', invert ? 'text-frost-200' : 'text-night-700')}>{slope.verticalM} m</td>
+                <td className="px-5 py-3.5">
+                  <StatusBadge invert={invert} size="sm" tone={slopeTone(slope.status)} label={statusLabel(slope.status)} />
+                </td>
+              </tr>
             ))}
-          </div>
-        ) : state === 'error' ? (
-          <ErrorState description={error ?? undefined} onRetry={reload} />
-        ) : visible.length === 0 ? (
-          <EmptyState
-            icon={<Mountain aria-hidden="true" className="h-5 w-5" />}
-            title="Nincs a szűrőnek megfelelő pálya"
-            description="Válassz másik nehézségi szintet, vagy nézd meg az összes pályát."
-          />
-        ) : (
-          <ul className="space-y-2">
-            <SlopeListHeader />
-            {visible.map((slope) => (
-              <SlopeRow
-                key={slope.id}
-                slope={slope}
-                selected={selectable && selectedId === slope.id}
-                onSelect={selectable ? (id) => setSelectedId(id === selectedId ? null : id) : undefined}
-              />
-            ))}
-          </ul>
-        )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

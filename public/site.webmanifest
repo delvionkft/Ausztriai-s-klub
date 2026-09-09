@@ -1,10 +1,13 @@
 {
-  "name": "Síközpont — hóhelyzet, jegyek és szállás",
-  "short_name": "Síközpont",
-  "description": "Aktuális hóhelyzet, pályák és felvonók állapota, jegyárak és teljes ház szállás.",
+  "name": "Silbergrat Skiarena",
+  "short_name": "Silbergrat",
+  "description": "Hóhelyzet, pályák és felvonók élő állapota, jegyárak, síiskola és vendégház egy helyen.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F7FAFC",
-  "theme_color": "#0E2540",
-  "icons": []
+  "background_color": "#07111F",
+  "theme_color": "#07111F",
+  "lang": "hu",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
 }

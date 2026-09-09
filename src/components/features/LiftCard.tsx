@@ -1,78 +1,173 @@
-import { CableCar, Clock, MoveUp, Users } from 'lucide-react';
-import { liftTypeLabels } from '@/data/lifts';
-import { formatLength, formatNumber } from '@/lib/format';
-import { Card } from '@/components/ui/Card';
-import { PendingValue } from '@/components/ui/PendingValue';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import type { Lift } from '@/types';
+'use client';
 
-/** Egy felvonó kártyanézete (drótváz 04/03). */
+import { useMemo, useState } from 'react';
+import { ArrowUpRight, CableCar, Clock, Moon, Users } from 'lucide-react';
+import type { Lift, LiftStatus } from '@/types';
+import { useI18n } from '@/i18n/LocaleProvider';
+import { lifts } from '@/data/lifts';
+import { formatNumber } from '@/lib/format';
+import { cn } from '@/lib/cn';
+import { Media } from '@/components/ui/Media';
+import { StatusBadge, type BadgeTone } from '@/components/ui/StatusBadge';
+import { EmptyState } from '@/components/ui/States';
+import { Reveal } from '@/components/ui/Reveal';
+
+export function liftTone(status: LiftStatus): BadgeTone {
+  if (status === 'running') return 'open';
+  if (status === 'maintenance') return 'warn';
+  if (status === 'stopped') return 'warn';
+  return 'closed';
+}
+
+export function useLiftStatusLabel() {
+  const { t } = useI18n();
+  return (status: LiftStatus) =>
+    status === 'running' ? t.status.running
+      : status === 'stopped' ? t.status.stopped
+        : status === 'maintenance' ? t.status.maintenance
+          : t.status.closed;
+}
+
+/** Egy felvonó kártyája — kép, típus, üzemidő, állapot. */
 export function LiftCard({ lift }: { lift: Lift }) {
+  const { t, L } = useI18n();
+  const label = useLiftStatusLabel();
+
   return (
-    <Card as="li" className="flex h-full flex-col p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <span className="inline-flex items-center gap-1.5 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-glacier-600">
-            <CableCar aria-hidden="true" className="h-3.5 w-3.5" />
-            {liftTypeLabels[lift.type]}
-          </span>
-          <h3 className="mt-1.5 text-[1.05rem] font-semibold text-deep-900">{lift.name}</h3>
+    <article className="group overflow-hidden rounded-card border border-night-100 bg-white shadow-subtle transition-all duration-300 ease-smooth hover:-translate-y-1 hover:shadow-lift">
+      <Media
+        mediaKey={lift.imageKey}
+        className="aspect-[16/9]"
+        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+        imgClassName="transition-transform duration-500 ease-smooth group-hover:scale-105"
+      />
+      <div className="p-5">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <h3 className="font-display text-[1.0625rem] font-extrabold text-night-950">{lift.name}</h3>
+          <StatusBadge size="sm" tone={liftTone(lift.status)} label={label(lift.status)} icon={lift.status === 'maintenance' ? 'wrench' : undefined} />
         </div>
-        <StatusBadge status={lift.status} pulse={lift.status === 'open'} />
+
+        <p className="mt-1 text-[0.8125rem] font-semibold uppercase tracking-wide text-glacier-600">
+          {t.liftType[lift.type]}
+        </p>
+
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-night-600">{L(lift.note)}</p>
+
+        <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-night-100 pt-4 text-[0.8125rem]">
+          <div className="flex items-center gap-1.5">
+            <Clock aria-hidden="true" className="h-4 w-4 shrink-0 text-night-400" />
+            <dt className="sr-only">{t.snow.tableHours}</dt>
+            <dd className="font-semibold text-night-800">{lift.operatingHours}</dd>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0 text-night-400" />
+            <dt className="sr-only">{t.map.altitude}</dt>
+            <dd className="font-semibold text-night-800">{formatNumber(lift.baseAltitudeM)} – {formatNumber(lift.topAltitudeM)} m</dd>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Users aria-hidden="true" className="h-4 w-4 shrink-0 text-night-400" />
+            <dt className="sr-only">{t.map.capacity}</dt>
+            <dd className="font-semibold text-night-800">{formatNumber(lift.capacityPerHour)} fő/óra</dd>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CableCar aria-hidden="true" className="h-4 w-4 shrink-0 text-night-400" />
+            <dt className="sr-only">{t.map.rideTime}</dt>
+            <dd className="font-semibold text-night-800">{lift.rideTimeMin} perc</dd>
+          </div>
+          {lift.nightOperation ? (
+            <div className="col-span-2 flex items-center gap-1.5">
+              <Moon aria-hidden="true" className="h-4 w-4 shrink-0 text-glacier-500" />
+              <dt className="sr-only">{t.status.nightSkiing}</dt>
+              <dd className="font-semibold text-glacier-700">{lift.nightOperation}</dd>
+            </div>
+          ) : null}
+        </dl>
+      </div>
+    </article>
+  );
+}
+
+type Filter = 'all' | 'running' | 'stopped' | 'maintenance';
+
+/** Szűrhető felvonólista. */
+export function LiftGrid() {
+  const { t } = useI18n();
+  const [filter, setFilter] = useState<Filter>('all');
+
+  const filters: Array<{ id: Filter; label: string; count: number }> = useMemo(() => [
+    { id: 'all', label: t.lifts.filterAll, count: lifts.length },
+    { id: 'running', label: t.lifts.filterRunning, count: lifts.filter((l) => l.status === 'running').length },
+    { id: 'stopped', label: t.lifts.filterStopped, count: lifts.filter((l) => l.status === 'stopped').length },
+    { id: 'maintenance', label: t.lifts.filterMaintenance, count: lifts.filter((l) => l.status === 'maintenance').length },
+  ], [t]);
+
+  const visible = filter === 'all' ? lifts : lifts.filter((l) => l.status === filter);
+
+  return (
+    <div>
+      <div className="no-scrollbar mb-8 flex gap-2 overflow-x-auto pb-1" role="group" aria-label={t.common.filter}>
+        {filters.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setFilter(item.id)}
+            aria-pressed={filter === item.id}
+            className={cn(
+              'tap-target inline-flex shrink-0 items-center gap-2 rounded-pill px-4 text-sm font-semibold transition-all',
+              filter === item.id
+                ? 'bg-night-950 text-white shadow-subtle'
+                : 'border border-night-200 bg-white text-night-700 hover:border-glacier-400 hover:bg-frost-100',
+            )}
+          >
+            {item.label}
+            <span className={cn('rounded-pill px-1.5 py-0.5 text-[0.6875rem] font-bold', filter === item.id ? 'bg-white/20' : 'bg-night-100 text-night-600')}>
+              {item.count}
+            </span>
+          </button>
+        ))}
       </div>
 
-      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-deep-100 pt-4 text-sm">
-        <div>
-          <dt className="flex items-center gap-1.5 text-xs text-deep-500">
-            <Clock aria-hidden="true" className="h-3.5 w-3.5" />
-            Üzemidő
-          </dt>
-          <dd className="mt-0.5 font-semibold text-deep-900">
-            <PendingValue value={lift.operatingHours} hint="Üzemidő megadása szükséges" />
-          </dd>
-        </div>
-        <div>
-          <dt className="flex items-center gap-1.5 text-xs text-deep-500">
-            <Users aria-hidden="true" className="h-3.5 w-3.5" />
-            Kapacitás
-          </dt>
-          <dd className="mt-0.5 font-semibold text-deep-900">
-            {lift.capacityPerHour === null ? (
-              <PendingValue value={null} hint="Kapacitás megadása szükséges" />
-            ) : (
-              formatNumber(lift.capacityPerHour, ' fő/óra')
-            )}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-xs text-deep-500">Hossz</dt>
-          <dd className="mt-0.5 font-semibold text-deep-900">
-            {lift.lengthM === null ? <PendingValue value={null} hint="Hossz megadása szükséges" /> : formatLength(lift.lengthM)}
-          </dd>
-        </div>
-        <div>
-          <dt className="flex items-center gap-1.5 text-xs text-deep-500">
-            <MoveUp aria-hidden="true" className="h-3.5 w-3.5" />
-            Szintkülönbség
-          </dt>
-          <dd className="mt-0.5 font-semibold text-deep-900">
-            {lift.verticalM === null ? (
-              <PendingValue value={null} hint="Szintkülönbség megadása szükséges" />
-            ) : (
-              formatNumber(lift.verticalM, ' m')
-            )}
-          </dd>
-        </div>
-      </dl>
+      {visible.length === 0 ? (
+        <EmptyState title={t.lifts.emptyTitle} text={t.lifts.emptyText} />
+      ) : (
+        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((lift, index) => (
+            <Reveal key={lift.id} as="li" delay={index * 60}>
+              <LiftCard lift={lift} />
+            </Reveal>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
-      <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
-        {lift.nightSkiing ? (
-          <span className="rounded-pill bg-deep-50 px-2.5 py-1 text-[0.7rem] font-semibold text-deep-700">
-            Esti síelés
-          </span>
-        ) : null}
-        {lift.note ? <p className="text-xs text-deep-500">{lift.note}</p> : null}
-      </div>
-    </Card>
+/** Kompakt felvonólista a hójelentés oldalra — mobilon kártyanézet. */
+export function LiftStatusList() {
+  const { t } = useI18n();
+  const label = useLiftStatusLabel();
+
+  return (
+    <div>
+      <h2 className="mb-4 font-display text-lg font-extrabold text-white">{t.snow.liftsTitle}</h2>
+      <ul className="overflow-hidden rounded-card border border-white/12">
+        {lifts.map((lift) => (
+          <li key={lift.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-white/10 bg-white/[0.04] px-5 py-4 last:border-b-0">
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold text-white">{lift.name}</p>
+              <p className="mt-0.5 text-[0.8125rem] text-frost-300/70">
+                {t.liftType[lift.type]} · {lift.operatingHours}
+              </p>
+            </div>
+            <StatusBadge
+              invert size="sm"
+              tone={liftTone(lift.status)}
+              label={label(lift.status)}
+              icon={lift.status === 'maintenance' ? 'wrench' : undefined}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

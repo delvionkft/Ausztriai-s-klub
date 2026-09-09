@@ -1,30 +1,31 @@
-import { BellRing } from 'lucide-react';
-import { newsletterCopy } from '@/data/homepage';
-import { Section } from '@/components/ui/Section';
+'use client';
+
+import { useI18n } from '@/i18n/LocaleProvider';
+import { Media } from '@/components/ui/Media';
 import { NewsletterForm } from '@/components/features/NewsletterForm';
+import { Reveal } from '@/components/ui/Reveal';
 
-/** 10 · HÓRIASZTÓ FELIRATKOZÁS (drótváz 01/09). */
+/** HÓÉRTESÍTŐ — látványos feliratkozási szekció. */
 export function SnowAlertSection() {
-  return (
-    <Section tone="deep" spacing="md" labelledBy="horiaszto-cim">
-      <div className="grid items-center gap-8 lg:grid-cols-2">
-        <div>
-          <span className="inline-flex items-center gap-2 rounded-pill bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-glacier-200 ring-1 ring-inset ring-white/20">
-            <BellRing aria-hidden="true" className="h-3.5 w-3.5" />
-            {newsletterCopy.eyebrow}
-          </span>
-          <h2 id="horiaszto-cim" className="mt-4 text-h1 text-white">
-            {newsletterCopy.title}
-          </h2>
-          <p className="mt-3 max-w-prose text-[0.98rem] leading-relaxed text-ice-200/85">
-            {newsletterCopy.description}
-          </p>
-        </div>
+  const { t } = useI18n();
 
-        <div className="rounded-panel border border-white/15 bg-white/10 p-5 backdrop-blur-sm sm:p-6">
-          <NewsletterForm tone="dark" />
-        </div>
+  return (
+    <section className="relative isolate overflow-hidden py-20 lg:py-28">
+      <div className="absolute inset-0 -z-10">
+        <Media mediaKey="newsletter-bg" overlay="strong" sizes="100vw" className="h-full w-full" />
       </div>
-    </Section>
+
+      <div className="container-page">
+        <Reveal>
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-h2 text-white">{t.home.alertTitle}</h2>
+            <p className="mx-auto mt-4 max-w-xl text-lead text-frost-200">{t.home.alertLead}</p>
+            <div className="mt-9 text-left">
+              <NewsletterForm invert />
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
   );
 }

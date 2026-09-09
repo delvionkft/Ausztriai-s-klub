@@ -1,188 +1,148 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { ChevronDown, Menu, Phone, Snowflake, Ticket, X } from 'lucide-react';
-import { mainNavigation, routes } from '@/data/navigation';
-import { contactInfo } from '@/data/contact';
+import Link from 'next/link';
+import { ChevronDown, Mail, MessageCircle, Phone, Ticket, X } from 'lucide-react';
+import { useI18n } from '@/i18n/LocaleProvider';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
+import { buildMainNav, routes } from '@/data/navigation';
+import { contactInfo } from '@/data/contact';
+import { toTelHref, toWhatsAppHref } from '@/lib/format';
+import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
-import { toDialString } from '@/lib/format';
+import { Logo } from './Logo';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 /**
  * MOBIL NAVIGÁCIÓ
- * A menü hamburgerikon mögött, nagy érintőfelületekkel (min. 48px),
- * erős kontraszttal. A státuszsáv és a fő CTA-k soha nem csukódnak össze.
+ * ----------------------------------------------------------------------------
+ * Teljes képernyős panel, egykezes használatra: a menüpontok az alsó
+ * kétharmadban kezdődnek, minden sor legalább 48 pixel magas.
  */
-export function MobileNavigation() {
-  const [open, setOpen] = useState(false);
+export function MobileNavigation({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useI18n();
+  const nav = buildMainNav(t);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const pathname = usePathname();
 
   useLockBodyScroll(open);
 
-  useEffect(() => setMounted(true), []);
-
   useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+    if (!open) return undefined;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [open]);
+  if (!open) return null;
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-expanded={open}
-        aria-controls="mobile-menu"
-        className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-deep-200 text-deep-800 transition-colors hover:bg-deep-50 lg:hidden"
-      >
-        <Menu aria-hidden="true" className="h-5 w-5" />
-        <span className="sr-only">Menü megnyitása</span>
-      </button>
+    <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label={t.common.menu}>
+      {/* Háttér-fedőréteg: kattintásra zár, de a képernyőolvasó elől rejtett —
+          a bezárást a fejléc X gombja és az Escape billentyű is elvégzi. */}
+      <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-night-950/70 backdrop-blur-sm" />
 
-      {/*
-        A fejléc `backdrop-blur`-je saját stacking contextet hoz létre, ezért a
-        menüt portállal a <body> alá rendereljük — így biztosan a tapadó fejléc
-        és az élő státuszsáv FÖLÖTT jelenik meg.
-      */}
-      {open && mounted
-        ? createPortal(
-        <div className="fixed inset-0 z-[70] lg:hidden">
+      <div className="absolute inset-0 flex animate-fade-in flex-col bg-white">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-night-100 px-4">
+          <Logo compact />
           <button
             type="button"
-            aria-label="Menü bezárása"
-            onClick={() => setOpen(false)}
-            className="absolute inset-0 h-full w-full cursor-default bg-deep-950/55 backdrop-blur-sm"
-          />
-
-          <nav
-            id="mobile-menu"
-            aria-label="Mobil főmenü"
-            className="absolute inset-y-0 right-0 flex w-[min(22rem,92vw)] animate-fade-in flex-col bg-white shadow-lift"
+            onClick={onClose}
+            aria-label={t.a11y.closeMenu}
+            className="tap-target inline-grid place-items-center rounded-pill px-2 text-night-700 hover:bg-night-50"
           >
-            <div className="flex items-center justify-between border-b border-deep-100 px-4 py-3">
-              <span className="text-sm font-bold uppercase tracking-[0.14em] text-deep-500">Menü</span>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-deep-200 text-deep-800 transition-colors hover:bg-deep-50"
-              >
-                <X aria-hidden="true" className="h-5 w-5" />
-                <span className="sr-only">Bezárás</span>
-              </button>
-            </div>
+            <X aria-hidden="true" className="h-6 w-6" />
+          </button>
+        </div>
 
-            <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-3">
-              <ul className="space-y-1">
-                {mainNavigation.map((item) => {
-                  const isOpenGroup = expanded === item.label;
-                  const active = pathname === item.href || item.children?.some((c) => c.href === pathname);
+        <nav aria-label={t.a11y.mainNavigation} className="flex-1 overflow-y-auto overscroll-contain px-4 py-4">
+          <ul className="space-y-1">
+            {nav.map((item) => (
+              <li key={item.label}>
+                {item.children ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpanded((v) => (v === item.label ? null : item.label))}
+                      aria-expanded={expanded === item.label}
+                      className="flex w-full items-center justify-between gap-3 rounded-card px-4 py-3.5 text-left text-[1.0625rem] font-bold text-night-950 transition-colors hover:bg-frost-100"
+                    >
+                      {item.label}
+                      <ChevronDown
+                        aria-hidden="true"
+                        className={cn('h-5 w-5 text-night-400 transition-transform duration-200', expanded === item.label && 'rotate-180')}
+                      />
+                    </button>
+                    {expanded === item.label ? (
+                      <ul className="mb-2 ml-3 animate-slide-down space-y-0.5 border-l-2 border-frost-300 pl-3">
+                        {item.children.map((child) => (
+                          <li key={child.href}>
+                            <Link
+                              href={child.href}
+                              onClick={onClose}
+                              className="block rounded-card px-4 py-3 text-[0.9375rem] font-medium text-night-700 transition-colors hover:bg-frost-100 hover:text-night-950"
+                            >
+                              {child.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </>
+                ) : (
+                  <Link
+                    href={item.href}
+                    onClick={onClose}
+                    className="block rounded-card px-4 py-3.5 text-[1.0625rem] font-bold text-night-950 transition-colors hover:bg-frost-100"
+                  >
+                    {item.label}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
 
-                  return (
-                    <li key={item.label}>
-                      {item.children ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => setExpanded(isOpenGroup ? null : item.label)}
-                            aria-expanded={isOpenGroup}
-                            className={cn(
-                              'flex min-h-[52px] w-full items-center justify-between rounded-xl px-3 text-left text-[1.02rem] font-semibold transition-colors',
-                              active ? 'bg-deep-50 text-deep-900' : 'text-deep-800 hover:bg-deep-50',
-                            )}
-                          >
-                            {item.label}
-                            <ChevronDown
-                              aria-hidden="true"
-                              className={cn('h-4 w-4 text-deep-500 transition-transform', isOpenGroup && 'rotate-180')}
-                            />
-                          </button>
-                          {isOpenGroup ? (
-                            <ul className="mb-1 ml-3 space-y-0.5 border-l border-deep-100 pl-3">
-                              {item.children.map((child) => (
-                                <li key={child.href}>
-                                  <Link
-                                    href={child.href}
-                                    aria-current={pathname === child.href ? 'page' : undefined}
-                                    className={cn(
-                                      'flex min-h-[48px] items-center rounded-lg px-3 text-[0.95rem] transition-colors',
-                                      pathname === child.href
-                                        ? 'bg-glacier-50 font-semibold text-glacier-700'
-                                        : 'text-deep-700 hover:bg-deep-50',
-                                    )}
-                                  >
-                                    {child.label}
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : null}
-                        </>
-                      ) : (
-                        <Link
-                          href={item.href}
-                          aria-current={pathname === item.href ? 'page' : undefined}
-                          className={cn(
-                            'flex min-h-[52px] items-center rounded-xl px-3 text-[1.02rem] font-semibold transition-colors',
-                            pathname === item.href ? 'bg-deep-50 text-deep-900' : 'text-deep-800 hover:bg-deep-50',
-                          )}
-                        >
-                          {item.label}
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <a
+              href={toTelHref(contactInfo.phone)}
+              onClick={() => track('click_phone', { source: 'mobile-menu' })}
+              className="tap-target inline-flex items-center justify-center gap-2 rounded-pill border border-night-200 px-4 text-sm font-semibold text-night-800"
+            >
+              <Phone aria-hidden="true" className="h-4 w-4" /> {t.cta.call}
+            </a>
+            <a
+              href={toWhatsAppHref(contactInfo.whatsapp)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track('click_whatsapp', { source: 'mobile-menu' })}
+              className="tap-target inline-flex items-center justify-center gap-2 rounded-pill border border-night-200 px-4 text-sm font-semibold text-night-800"
+            >
+              <MessageCircle aria-hidden="true" className="h-4 w-4" /> {t.cta.whatsapp}
+            </a>
+            <a
+              href={`mailto:${contactInfo.email}`}
+              onClick={() => track('click_email', { source: 'mobile-menu' })}
+              className="tap-target col-span-2 inline-flex items-center justify-center gap-2 rounded-pill border border-night-200 px-4 text-sm font-semibold text-night-800"
+            >
+              <Mail aria-hidden="true" className="h-4 w-4" /> {contactInfo.email}
+            </a>
+          </div>
+        </nav>
 
-            <div className="space-y-2 border-t border-deep-100 bg-frost px-3 py-3">
-              <Link
-                href={routes.tickets}
-                className="flex min-h-[52px] items-center justify-center gap-2 rounded-pill bg-deep-800 px-4 font-semibold text-white transition-colors hover:bg-deep-700"
-              >
-                <Ticket aria-hidden="true" className="h-4 w-4" />
-                Jegyvásárlás
-              </Link>
-              <Link
-                href={routes.snowReport}
-                className="flex min-h-[52px] items-center justify-center gap-2 rounded-pill border border-deep-200 bg-white px-4 font-semibold text-deep-800 transition-colors hover:bg-deep-50"
-              >
-                <Snowflake aria-hidden="true" className="h-4 w-4" />
-                Hójelentés
-              </Link>
-              {contactInfo.phone ? (
-                <a
-                  href={`tel:${toDialString(contactInfo.phone)}`}
-                  className="flex min-h-[52px] items-center justify-center gap-2 rounded-pill border border-deep-200 bg-white px-4 font-semibold text-deep-800 transition-colors hover:bg-deep-50"
-                >
-                  <Phone aria-hidden="true" className="h-4 w-4" />
-                  {contactInfo.phone}
-                </a>
-              ) : null}
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-deep-500">Nyelv</span>
-                <LanguageSwitcher />
-              </div>
-            </div>
-          </nav>
-        </div>,
-        document.body,
-      )
-        : null}
-    </>
+        <div className="shrink-0 space-y-3 border-t border-night-100 bg-frost-50 px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+          <Link
+            href={routes.tickets}
+            onClick={onClose}
+            className="tap-target flex w-full items-center justify-center gap-2 rounded-pill bg-sky-400 px-5 text-[0.95rem] font-bold text-night-950 shadow-glow"
+          >
+            <Ticket aria-hidden="true" className="h-4 w-4" />
+            {t.cta.buyTicket}
+          </Link>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-night-600">{t.footer.language}</span>
+            <LanguageSwitcher variant="inline" />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

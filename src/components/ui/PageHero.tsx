@@ -1,66 +1,59 @@
-import type { ReactNode } from 'react';
 import { Media } from './Media';
+import { Breadcrumbs, type Crumb } from './Breadcrumbs';
 import { cn } from '@/lib/cn';
 
 /**
- * OLDAL FEJLÉCKÉP — minden aloldal tetején egységes.
- * A kép a `src/data/media.ts`-ből jön; ha nincs, dizájnolt helyőrző.
+ * ALOLDALI FEJLÉCKÉP
+ * ----------------------------------------------------------------------------
+ * Nagy fotó, olvashatóságot biztosító átmenettel, morzsamenüvel és
+ * opcionális gyorsadatokkal vagy CTA-kkal.
  */
-interface PageHeroProps {
-  eyebrow: string;
-  title: string;
-  description?: string;
-  mediaKey: string;
-  actions?: ReactNode;
-  aside?: ReactNode;
-  size?: 'sm' | 'md';
-  className?: string;
-}
-
 export function PageHero({
-  eyebrow,
-  title,
-  description,
-  mediaKey,
-  actions,
-  aside,
-  size = 'sm',
-  className,
-}: PageHeroProps) {
+  imageKey, kicker, title, lead, crumbs, children, stats, align = 'left', height = 'md',
+}: {
+  imageKey: string;
+  kicker?: string;
+  title: string;
+  lead?: string;
+  crumbs?: Crumb[];
+  children?: React.ReactNode;
+  stats?: Array<{ label: string; value: string }>;
+  align?: 'left' | 'center';
+  height?: 'sm' | 'md' | 'lg';
+}) {
+  const minHeight =
+    height === 'sm' ? 'min-h-[320px] lg:min-h-[380px]'
+      : height === 'lg' ? 'min-h-[520px] lg:min-h-[640px]'
+        : 'min-h-[420px] lg:min-h-[500px]';
+
   return (
-    <section className={cn('relative isolate overflow-hidden', className)}>
-      {/* Háttérkép: külön abszolút pozicionált réteg, hogy a Media saját
-          `relative` alapállapota ne ütközzön a pozicionálással. */}
-      <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <Media
-          mediaKey={mediaKey}
-          priority
-          showHint={false}
-          overlay="strong"
-          sizes="100vw"
-          className="h-full w-full"
-        />
+    <header className={cn('relative isolate flex items-end overflow-hidden', minHeight)}>
+      <div className="absolute inset-0 -z-10">
+        <Media mediaKey={imageKey} priority overlay="strong" sizes="100vw" className="h-full w-full" />
       </div>
 
-      <div className="container-page">
-        <div
-          className={cn(
-            'flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between',
-            size === 'sm' ? 'py-12 sm:py-16' : 'py-16 sm:py-24',
-          )}
-        >
-          <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-glacier-200">{eyebrow}</p>
-            <h1 className={cn('mt-3 text-white', size === 'sm' ? 'text-h1' : 'text-display')}>{title}</h1>
-            {description ? (
-              <p className="mt-4 max-w-prose text-[1.02rem] leading-relaxed text-ice-100/90">{description}</p>
-            ) : null}
-            {actions ? <div className="mt-7 flex flex-wrap gap-3">{actions}</div> : null}
-          </div>
+      <div className="container-page w-full pb-12 pt-28 lg:pb-16 lg:pt-36">
+        <div className={cn('max-w-3xl', align === 'center' && 'mx-auto text-center')}>
+          {crumbs ? <Breadcrumbs items={crumbs} invert className="mb-5" /> : null}
+          {kicker ? (
+            <p className="mb-3 text-[0.8125rem] font-bold uppercase tracking-[0.16em] text-glacier-300">{kicker}</p>
+          ) : null}
+          <h1 className="text-display-lg text-white">{title}</h1>
+          {lead ? <p className="mt-5 max-w-2xl text-lead text-frost-200">{lead}</p> : null}
+          {children ? <div className="mt-8 flex flex-wrap items-center gap-3">{children}</div> : null}
 
-          {aside ? <div className="w-full lg:w-auto lg:max-w-sm">{aside}</div> : null}
+          {stats && stats.length > 0 ? (
+            <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+              {stats.map((stat) => (
+                <div key={stat.label}>
+                  <dt className="text-[0.75rem] font-semibold uppercase tracking-wider text-frost-300/80">{stat.label}</dt>
+                  <dd className="mt-1 font-display text-2xl font-extrabold text-white">{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
         </div>
       </div>
-    </section>
+    </header>
   );
 }

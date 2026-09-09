@@ -1,36 +1,28 @@
-import { discounts, seasonalPriceBands, ticketProducts } from '@/data/tickets';
-import type { AgeGroup, Discount, SeasonalPriceBand, TicketProduct } from '@/types';
-import { recommendTicket, type TicketRecommendation } from '@/lib/pricing';
-import { mockDelay } from './apiClient';
+import type { SubmitResult } from '@/types';
+import { isLiveBackend, mockResponse, request } from './apiClient';
 
 /**
- * JEGYSZOLGÁLTATÁS
- * INTEGRÁCIÓ: az online jegyértékesítő rendszer (pl. Skidata / Axess / saját
- * webshop) API-ját ide kell bekötni. A `startCheckout` jelenleg csak a jegyek
- * oldalra irányít — nincs fizetési folyamat.
+ * JEGYÉRTÉKESÍTÉS
+ * ----------------------------------------------------------------------------
+ * ÉLESÍTÉS: itt indul a fizetési folyamat. A jegyértékesítő rendszer
+ * (pl. Skidata, Axess, Skipass-webshop) `checkoutUrl`-t ad vissza, a felület
+ * pedig oda irányít. A fizetési kulcs SOHA nem kerül a böngészőbe.
  */
-
-export async function getTicketProducts(): Promise<TicketProduct[]> {
-  return mockDelay(ticketProducts, 200);
+export interface CheckoutRequest {
+  ticketId: string;
+  quantity: number;
+  date: string;
+  ageGroup: string;
 }
 
-export async function getSeasonalPriceBands(): Promise<SeasonalPriceBand[]> {
-  return mockDelay(seasonalPriceBands, 200);
+export interface CheckoutResponse extends SubmitResult {
+  checkoutUrl?: string;
 }
 
-export async function getDiscounts(): Promise<Discount[]> {
-  return mockDelay(discounts, 200);
+export async function startTicketCheckout(payload: CheckoutRequest): Promise<CheckoutResponse> {
+  if (isLiveBackend) {
+    return request<CheckoutResponse>('/checkout', { method: 'POST', body: JSON.stringify(payload) });
+  }
+  // Mock: működő demo-folyamat valós fizetés nélkül.
+  return mockResponse({ ok: true, reference: `DEMO-${payload.ticketId.toUpperCase()}` }, 850);
 }
-
-export function getRecommendation(people: number, days: number, ageGroup: AgeGroup): TicketRecommendation {
-  return recommendTicket(people, days, ageGroup);
-}
-
-/**
- * INTEGRÁCIÓ: itt indul majd az online vásárlás.
- * Amíg nincs bekötve, a UI ezt jelzi is a felhasználónak.
- */
-export const ONLINE_CHECKOUT_ENABLED = false;
-
-export const checkoutUnavailableMessage =
-  'Az online jegyvásárlás bekötése folyamatban. A jegy jelenleg a pénztárnál váltható meg.';

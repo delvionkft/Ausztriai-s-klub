@@ -1,80 +1,124 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { ChevronDown, Snowflake, Ticket } from 'lucide-react';
-import { mainNavigation, routes } from '@/data/navigation';
+import { ChevronDown, Menu, Snowflake, Ticket } from 'lucide-react';
+import { useI18n } from '@/i18n/LocaleProvider';
+import { buildMainNav, routes } from '@/data/navigation';
+import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
-import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { LiveStatusBar } from './LiveStatusBar';
 import { MobileNavigation } from './MobileNavigation';
 
 /**
- * FEJLÉC (drótváz 13/01)
- * Asztali: logó · 6 menüpont · Jegyvásárlás · Hójelentés · DE/EN/HU.
- * Tapad a képernyő tetejéhez, de tömör marad (68px).
+ * GLOBÁLIS FEJLÉC
+ * ----------------------------------------------------------------------------
+ * Görgetéskor kompaktabbá válik, de a jegyvásárlás, a hójelentés és a menü
+ * mindig elérhető marad. A státuszsáv minden oldalon a fejléc alatt ül.
  */
 export function Header() {
+  const { t } = useI18n();
   const pathname = usePathname();
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const nav = buildMainNav(t);
+  const [scrolled, setScrolled] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+    setOpenGroup(null);
+  }, [pathname]);
+
+  const isActive = (href: string) => {
+    const clean = href.split('#')[0];
+    if (clean === routes.home) return pathname === routes.home;
+    return pathname === clean || pathname.startsWith(`${clean}/`);
+  };
 
   return (
-    <header className="border-b border-deep-100 bg-white/95 backdrop-blur-md">
-      <div className="container-page">
-        <div className="flex h-[68px] items-center justify-between gap-4">
-          <Logo />
+    <>
+      <a
+        href="#fotartalom"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-pill focus:bg-sky-400 focus:px-5 focus:py-3 focus:font-semibold focus:text-night-950"
+      >
+        {t.common.skipToContent}
+      </a>
 
-          <nav aria-label="Főmenü" className="hidden lg:block">
-            <ul className="flex items-center gap-0.5">
-              {mainNavigation.map((item) => {
-                const active = pathname === item.href || item.children?.some((child) => child.href === pathname);
-                const hasChildren = Boolean(item.children?.length);
+      <header className="fixed inset-x-0 top-0 z-50">
+        <div
+          className={cn(
+            'border-b transition-all duration-300 ease-smooth',
+            scrolled
+              ? 'border-night-100 bg-white shadow-subtle'
+              : 'border-transparent bg-gradient-to-b from-night-950/80 via-night-950/50 to-transparent',
+          )}
+        >
+          <div className="container-page">
+            <div className={cn('flex items-center gap-4 transition-all duration-300 ease-smooth', scrolled ? 'h-16' : 'h-16 lg:h-[76px]')}>
+              <Logo invert={!scrolled} compact={scrolled} />
 
-                return (
-                  <li
+              <nav aria-label={t.a11y.mainNavigation} className="ml-2 hidden items-center gap-0.5 lg:flex xl:ml-4">
+                {nav.map((item) => (
+                  <div
                     key={item.label}
                     className="relative"
-                    onMouseEnter={() => hasChildren && setOpenMenu(item.label)}
-                    onMouseLeave={() => hasChildren && setOpenMenu(null)}
+                    onMouseEnter={() => item.children && setOpenGroup(item.label)}
+                    onMouseLeave={() => setOpenGroup(null)}
                   >
-                    <Link
-                      href={item.href}
-                      aria-current={pathname === item.href ? 'page' : undefined}
-                      aria-expanded={hasChildren ? openMenu === item.label : undefined}
-                      onFocus={() => hasChildren && setOpenMenu(item.label)}
-                      className={cn(
-                        'inline-flex min-h-[42px] items-center gap-1 rounded-lg px-3 text-[0.92rem] font-semibold transition-colors',
-                        active ? 'text-glacier-700' : 'text-deep-700 hover:bg-deep-50 hover:text-deep-900',
-                      )}
-                    >
-                      {item.label}
-                      {hasChildren ? (
+                    {item.children ? (
+                      <button
+                        type="button"
+                        aria-expanded={openGroup === item.label}
+                        onClick={() => setOpenGroup((v) => (v === item.label ? null : item.label))}
+                        className={cn(
+                          'inline-flex h-11 items-center gap-1 whitespace-nowrap rounded-pill px-2.5 text-[0.875rem] font-semibold transition-colors xl:px-3 xl:text-[0.9375rem]',
+                          scrolled
+                            ? isActive(item.href) ? 'bg-frost-200 text-night-950' : 'text-night-700 hover:bg-night-50 hover:text-night-950'
+                            : isActive(item.href) ? 'bg-white/15 text-white' : 'text-frost-100 hover:bg-white/10 hover:text-white',
+                        )}
+                      >
+                        {item.label}
                         <ChevronDown
                           aria-hidden="true"
-                          className={cn(
-                            'h-3.5 w-3.5 text-deep-500 transition-transform',
-                            openMenu === item.label && 'rotate-180',
-                          )}
+                          className={cn('h-4 w-4 transition-transform duration-200', openGroup === item.label && 'rotate-180')}
                         />
-                      ) : null}
-                    </Link>
+                      </button>
+                    ) : (
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          'inline-flex h-11 items-center whitespace-nowrap rounded-pill px-2.5 text-[0.875rem] font-semibold transition-colors xl:px-3 xl:text-[0.9375rem]',
+                          scrolled
+                            ? isActive(item.href) ? 'bg-frost-200 text-night-950' : 'text-night-700 hover:bg-night-50 hover:text-night-950'
+                            : isActive(item.href) ? 'bg-white/15 text-white' : 'text-frost-100 hover:bg-white/10 hover:text-white',
+                        )}
+                      >
+                        {item.label}
+                      </Link>
+                    )}
 
-                    {hasChildren && openMenu === item.label ? (
-                      <div className="absolute left-0 top-full z-50 w-72 pt-2">
-                        <ul className="overflow-hidden rounded-card border border-deep-100 bg-white p-1.5 shadow-lift">
-                          {item.children!.map((child) => (
+                    {item.children && openGroup === item.label ? (
+                      <div className="absolute left-0 top-full z-50 w-[22rem] animate-slide-down pt-2">
+                        <ul className="overflow-hidden rounded-panel border border-night-100 bg-white p-2 shadow-lift">
+                          {item.children.map((child) => (
                             <li key={child.href}>
                               <Link
                                 href={child.href}
-                                className={cn(
-                                  'block rounded-lg px-3 py-2.5 transition-colors',
-                                  pathname === child.href ? 'bg-glacier-50' : 'hover:bg-deep-50',
-                                )}
+                                className="block rounded-card px-4 py-3 transition-colors hover:bg-frost-100"
                               >
-                                <span className="block text-sm font-semibold text-deep-900">{child.label}</span>
+                                <span className="block text-[0.9375rem] font-bold text-night-950">{child.label}</span>
                                 {child.description ? (
-                                  <span className="mt-0.5 block text-xs text-deep-500">{child.description}</span>
+                                  <span className="mt-0.5 block text-[0.8125rem] leading-snug text-night-500">{child.description}</span>
                                 ) : null}
                               </Link>
                             </li>
@@ -82,32 +126,59 @@ export function Header() {
                         </ul>
                       </div>
                     ) : null}
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+                  </div>
+                ))}
+              </nav>
 
-          <div className="flex items-center gap-2">
-            <Link
-              href={routes.snowReport}
-              className="hidden min-h-[42px] items-center gap-1.5 rounded-pill border border-deep-200 px-3.5 text-sm font-semibold text-deep-800 transition-colors hover:border-deep-300 hover:bg-deep-50 md:inline-flex"
-            >
-              <Snowflake aria-hidden="true" className="h-4 w-4 text-glacier-600" />
-              Hójelentés
-            </Link>
-            <Link
-              href={routes.tickets}
-              className="hidden min-h-[42px] items-center gap-1.5 rounded-pill bg-deep-800 px-4 text-sm font-semibold text-white shadow-subtle transition-all hover:bg-deep-700 hover:shadow-card md:inline-flex"
-            >
-              <Ticket aria-hidden="true" className="h-4 w-4" />
-              Jegyvásárlás
-            </Link>
-            <LanguageSwitcher className="hidden lg:block" />
-            <MobileNavigation />
+              <div className="ml-auto flex items-center gap-2">
+                <Link
+                  href={routes.snowReport}
+                  onClick={() => track('view_snow_report', { source: 'header' })}
+                  className={cn(
+                    'tap-target hidden items-center gap-1.5 whitespace-nowrap rounded-pill px-3.5 text-sm font-semibold transition-colors md:inline-flex',
+                    scrolled
+                      ? 'border border-night-200 text-night-800 hover:border-glacier-400 hover:bg-frost-100'
+                      : 'border border-white/30 text-white hover:border-white/60 hover:bg-white/10',
+                  )}
+                >
+                  <Snowflake aria-hidden="true" className="h-4 w-4" />
+                  {t.cta.snowReport}
+                </Link>
+
+                <Link
+                  href={routes.tickets}
+                  onClick={() => track('begin_ticket_checkout', { source: 'header' })}
+                  className="tap-target inline-flex items-center gap-1.5 rounded-pill bg-sky-400 px-4 text-sm font-bold text-night-950 shadow-glow transition-all hover:bg-glacier-300 hover:shadow-lift"
+                >
+                  <Ticket aria-hidden="true" className="h-4 w-4" />
+                  <span className="hidden whitespace-nowrap sm:inline">{t.cta.buyTicket}</span>
+                  <span className="sm:hidden">Jegy</span>
+                </Link>
+
+                <div className="hidden lg:block">
+                  <LanguageSwitcher invert={!scrolled} />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(true)}
+                  aria-label={t.a11y.openMenu}
+                  className={cn(
+                    'tap-target inline-grid place-items-center rounded-pill px-2 transition-colors lg:hidden',
+                    scrolled ? 'text-night-800 hover:bg-night-50' : 'text-white hover:bg-white/10',
+                  )}
+                >
+                  <Menu aria-hidden="true" className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+
+        <LiveStatusBar />
+      </header>
+
+      <MobileNavigation open={mobileOpen} onClose={() => setMobileOpen(false)} />
+    </>
   );
 }

@@ -1,34 +1,67 @@
-import { ArrowRight, Sparkles } from 'lucide-react';
+'use client';
+
+import { ArrowRight, Check } from 'lucide-react';
+import { useI18n } from '@/i18n/LocaleProvider';
 import { currentOffer } from '@/data/homepage';
-import { Section } from '@/components/ui/Section';
-import { PrimaryButton } from '@/components/ui/Button';
+import { formatPrice } from '@/lib/format';
+import { track } from '@/lib/analytics';
+import { Media } from '@/components/ui/Media';
+import { ButtonLink } from '@/components/ui/Button';
+import { Reveal } from '@/components/ui/Reveal';
 
-/** 05 · AKTUÁLIS AJÁNLAT / SZEZONBÉRLET (drótváz 01/04). */
+/** AKTUÁLIS AJÁNLAT — nagy képes blokk, előnyökkel és árral. */
 export function CurrentOffer() {
-  return (
-    <Section tone="default" spacing="sm">
-      <div className="overflow-hidden rounded-panel border border-glacier-200 bg-glacier-50/70">
-        <div className="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 rounded-pill bg-glacier-600 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-white">
-              <Sparkles aria-hidden="true" className="h-3.5 w-3.5" />
-              {currentOffer.eyebrow}
-            </span>
-            <h2 className="mt-3 text-h1">{currentOffer.title}</h2>
-            <p className="mt-2.5 text-[0.98rem] leading-relaxed text-deep-700">{currentOffer.description}</p>
-            <p className="mt-2 text-xs text-deep-500">{currentOffer.note}</p>
-          </div>
+  const { t, L, locale } = useI18n();
 
-          <PrimaryButton
-            href={currentOffer.ctaHref}
-            size="lg"
-            className="shrink-0"
-            iconRight={<ArrowRight aria-hidden="true" className="h-4 w-4" />}
-          >
-            {currentOffer.ctaLabel}
-          </PrimaryButton>
-        </div>
+  return (
+    <section className="surface-night py-16 lg:py-24">
+      <div className="container-page">
+        <Reveal>
+          <div className="grid overflow-hidden rounded-panel border border-white/12 bg-white/[0.05] lg:grid-cols-2">
+            <Media
+              mediaKey={currentOffer.imageKey}
+              className="min-h-[280px] lg:min-h-[440px]"
+              sizes="(min-width: 1024px) 50vw, 100vw"
+            />
+
+            <div className="flex flex-col justify-center p-8 lg:p-12">
+              <p className="inline-flex w-fit items-center rounded-pill bg-glacier-400 px-3.5 py-1.5 text-[0.75rem] font-bold uppercase tracking-wider text-night-950">
+                {L(currentOffer.badge)}
+              </p>
+              <p className="mt-5 text-[0.8125rem] font-bold uppercase tracking-[0.14em] text-glacier-300">{t.home.offerKicker}</p>
+              <h2 className="mt-2 text-h2 text-white">{L(currentOffer.title)}</h2>
+              <p className="mt-4 max-w-lg text-[1rem] leading-relaxed text-frost-200">{L(currentOffer.text)}</p>
+
+              <ul className="mt-6 space-y-2.5">
+                {currentOffer.bullets.map((bullet, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-[0.9375rem] text-frost-200">
+                    <Check aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-glacier-300" />
+                    {L(bullet)}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8 flex flex-wrap items-end gap-x-6 gap-y-4">
+                <div>
+                  <p className="font-display text-[2.5rem] font-extrabold leading-none text-white">
+                    {formatPrice(currentOffer.priceEur, locale)}
+                  </p>
+                  <p className="mt-1.5 text-[0.875rem] text-frost-300/80">{L(currentOffer.priceNote)}</p>
+                </div>
+                <ButtonLink
+                  href={currentOffer.href}
+                  size="lg"
+                  className="ml-auto"
+                  onClick={() => track('begin_ticket_checkout', { source: 'home-offer' })}
+                >
+                  {t.cta.seeMore}
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </ButtonLink>
+              </div>
+            </div>
+          </div>
+        </Reveal>
       </div>
-    </Section>
+    </section>
   );
 }

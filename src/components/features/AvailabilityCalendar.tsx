@@ -1,47 +1,22 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { availabilityLegend, availabilitySeason, pricingRules } from '@/data/availability';
-import { buildAvailabilityMap, getAvailabilityState, validateRange } from '@/lib/availability';
-import { HU_WEEKDAYS_SHORT, daysInMonth, monthLabel, shiftMonth, weekdayIndex } from '@/lib/date';
+import { CalendarDays, ChevronLeft, ChevronRight, TriangleAlert } from 'lucide-react';
+import type { AvailabilityDay } from '@/types';
+import { useI18n } from '@/i18n/LocaleProvider';
+import { useMounted } from '@/hooks/useLiveTimestamp';
+import { fill } from '@/i18n';
+import { getAvailabilityDay, getAvailabilityMonth } from '@/data/availability';
+import { buildMonthGrid, formatDate, monthLabel, toISODate } from '@/lib/date';
 import { cn } from '@/lib/cn';
-import type { AvailabilityState } from '@/types';
 
-/**
- * FOGLALTSÁGI NAPTÁR (drótváz 09/02–03)
- * Kliensoldali demó: az állapotok a `src/data/availability.ts`-ből számolódnak.
- * INTEGRÁCIÓ: `src/services/bookingService.ts` → `getAvailability()`.
- */
+const WEEKDAYS = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
 
-/**
- * FONTOS: ezek EGYMÁST KIZÁRÓ osztálysorok. Sosem fűzünk hozzájuk további
- * szín-/háttérosztályt, mert a Tailwind kimenetének sorrendje dönti el, melyik
- * nyer — a kiválasztott nap ettől láthatatlanná válhatna. A kiválasztás és a
- * tartomány saját, teljes osztálysort kap (lásd `cellClass`).
- */
-const stateStyles: Record<AvailabilityState, string> = {
-  free: 'bg-white text-deep-900 border-deep-200 hover:border-glacier-400 hover:bg-glacier-50',
-  booked: 'bg-status-closedBg text-status-closed border-status-closed/25 cursor-not-allowed',
-  option: 'bg-status-warnBg text-status-warn border-status-warn/25 cursor-not-allowed',
-  'min-stay-blocked': 'bg-status-neutralBg text-status-neutral border-deep-200 cursor-not-allowed',
-};
-
-const SELECTED_EDGE_STYLE = 'border-deep-800 bg-deep-800 font-bold text-white hover:bg-deep-800';
-const IN_RANGE_STYLE = 'border-glacier-300 bg-glacier-100 text-glacier-800 hover:bg-glacier-100';
-
-/** Egyetlen, ütközésmentes osztálysort ad vissza a naptárcellának. */
-function cellClass(state: AvailabilityState, isEdge: boolean, inRange: boolean): string {
-  if (isEdge) return SELECTED_EDGE_STYLE;
-  if (inRange) return IN_RANGE_STYLE;
-  return stateStyles[state];
-}
-
-const legendDot: Record<string, string> = {
-  free: 'bg-white border border-deep-300',
-  booked: 'bg-status-closed',
-  option: 'bg-status-warn',
-  'min-stay-blocked': 'bg-status-neutral',
+const STATE_STYLE: Record<AvailabilityDay['state'], string> = {
+  free: 'bg-state-openBg text-state-openInk hover:ring-2 hover:ring-glacier-400',
+  booked: 'bg-state-closedBg text-state-closedInk/60 cursor-not-allowed',
+  option: 'bg-state-warnBg text-state-warnInk',
+  'blocked-min-nights': 'bg-night-100 text-night-400 cursor-not-allowed',
 };
 
 export interface DateRange {
@@ -49,169 +24,201 @@ export interface DateRange {
   departure: string | null;
 }
 
-interface AvailabilityCalendarProps {
-  value?: DateRange;
-  onChange?: (range: DateRange) => void;
-  /** Hány hónapot mutasson egyszerre nagy képernyőn. */
-  months?: 1 | 2;
-}
+/**
+ * FOGLALTSÁGI NAPTÁR
+ * ----------------------------------------------------------------------------
+ * Két hónap egymás mellett asztali nézetben, egy hónap mobilon.
+ * Az érkezés és a távozás két koppintással választható, a jelmagyarázat
+ * mindig látható. Minden állapotot szín ÉS szöveg jelöl.
+ */
+export function AvailabilityCalendar({
+  value, onChange, months = 2,
+}: {
+  value: DateRange;
+  onChange: (next: DateRange) => void;
+  months?: number;
+}) {
+  const { t, locale } = useI18n();
+  // A naptár a mai naptól indul, ezért csak a hidratálás után rendereljük ki —
+  // különben a szerveren (build időben) és a böngészőben más hónap jelenne meg.
+  const mounted = useMounted();
+  const today = new Date();
+  const [cursor, setCursor] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const todayISO = toISODate(today);
 
-export function AvailabilityCalendar({ value, onChange, months = 2 }: AvailabilityCalendarProps) {
-  const availabilityMap = useMemo(() => buildAvailabilityMap(), []);
-  const [visibleMonth, setVisibleMonth] = useState<string>(availabilitySeason.defaultMonth);
-  const [internal, setInternal] = useState<DateRange>({ arrival: null, departure: null });
-
-  const range = value ?? internal;
-  const setRange = (next: DateRange) => {
-    if (!value) setInternal(next);
-    onChange?.(next);
+  const shift = (delta: number) => {
+    setCursor((prev) => {
+      const d = new Date(prev.year, prev.month + delta, 1);
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
   };
 
-  const seasonFirstMonth = availabilitySeason.from.slice(0, 7);
-  const seasonLastMonth = availabilitySeason.to.slice(0, 7);
-  const canGoBack = visibleMonth > seasonFirstMonth;
-  const canGoForward = shiftMonth(visibleMonth, months) <= seasonLastMonth;
+  const canGoBack = new Date(cursor.year, cursor.month, 1) > new Date(today.getFullYear(), today.getMonth(), 1);
 
-  const validation =
-    range.arrival && range.departure ? validateRange(availabilityMap, range.arrival, range.departure) : null;
+  const pick = (iso: string, day: AvailabilityDay) => {
+    if (day.state === 'booked' || iso < todayISO) return;
 
-  function handleDayClick(iso: string) {
-    const state = getAvailabilityState(availabilityMap, iso);
-    if (state !== 'free') return;
-
-    // Első kattintás vagy újraindítás → érkezés.
-    if (!range.arrival || range.departure || iso <= range.arrival) {
-      setRange({ arrival: iso, departure: null });
+    if (!value.arrival || (value.arrival && value.departure)) {
+      onChange({ arrival: iso, departure: null });
       return;
     }
-    setRange({ arrival: range.arrival, departure: iso });
+    if (iso <= value.arrival) {
+      onChange({ arrival: iso, departure: null });
+      return;
+    }
+    onChange({ arrival: value.arrival, departure: iso });
+  };
+
+  const inRange = (iso: string) =>
+    Boolean(value.arrival && value.departure && iso > value.arrival && iso < value.departure);
+
+  const monthsToShow = Array.from({ length: months }, (_, i) => {
+    const d = new Date(cursor.year, cursor.month + i, 1);
+    return { year: d.getFullYear(), month: d.getMonth() };
+  });
+
+  const requiredMin = useMemo(() => {
+    if (!value.arrival) return null;
+    return getAvailabilityDay(value.arrival).minNights;
+  }, [value.arrival]);
+
+  if (!mounted) {
+    return (
+      <div className="overflow-hidden rounded-panel border border-night-100 bg-white shadow-subtle" role="status" aria-live="polite">
+        <div className="flex items-center gap-2 border-b border-night-100 px-5 py-4">
+          <CalendarDays aria-hidden="true" className="h-5 w-5 text-glacier-600" />
+          <span className="font-display text-base font-extrabold text-night-950">{t.availability.calendarTitle}</span>
+        </div>
+        <div className="grid gap-6 p-4 lg:grid-cols-2 lg:p-5">
+          <div className="skeleton h-[320px] rounded-card" />
+          <div className="skeleton hidden h-[320px] rounded-card lg:block" />
+        </div>
+        <span className="sr-only">{t.common.loading}</span>
+      </div>
+    );
   }
 
-  const monthsToRender = Array.from({ length: months }, (_, index) => shiftMonth(visibleMonth, index)).filter(
-    (month) => month <= seasonLastMonth,
-  );
-
   return (
-    <div>
-      <div className="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={() => canGoBack && setVisibleMonth(shiftMonth(visibleMonth, -1))}
-          disabled={!canGoBack}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-deep-200 text-deep-700 transition-colors hover:bg-deep-50 disabled:opacity-40"
-        >
-          <ChevronLeft aria-hidden="true" className="h-5 w-5" />
-          <span className="sr-only">Előző hónap</span>
-        </button>
-
-        <p aria-live="polite" className="text-center text-[0.95rem] font-semibold text-deep-900">
-          {monthsToRender.map((month) => monthLabel(month)).join(' – ')}
-        </p>
-
-        <button
-          type="button"
-          onClick={() => canGoForward && setVisibleMonth(shiftMonth(visibleMonth, 1))}
-          disabled={!canGoForward}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-deep-200 text-deep-700 transition-colors hover:bg-deep-50 disabled:opacity-40"
-        >
-          <ChevronRight aria-hidden="true" className="h-5 w-5" />
-          <span className="sr-only">Következő hónap</span>
-        </button>
+    <div className="overflow-hidden rounded-panel border border-night-100 bg-white shadow-subtle">
+      <div className="flex items-center justify-between gap-3 border-b border-night-100 px-5 py-4">
+        <h3 className="flex items-center gap-2 font-display text-base font-extrabold text-night-950">
+          <CalendarDays aria-hidden="true" className="h-5 w-5 text-glacier-600" />
+          {t.availability.calendarTitle}
+        </h3>
+        <div className="flex items-center gap-1">
+          <button
+            type="button" onClick={() => shift(-1)} disabled={!canGoBack} aria-label={t.common.previous}
+            className="tap-target inline-grid place-items-center rounded-pill px-2 text-night-600 transition-colors hover:bg-frost-100 disabled:opacity-30"
+          >
+            <ChevronLeft aria-hidden="true" className="h-5 w-5" />
+          </button>
+          <button
+            type="button" onClick={() => shift(1)} aria-label={t.common.next}
+            className="tap-target inline-grid place-items-center rounded-pill px-2 text-night-600 transition-colors hover:bg-frost-100"
+          >
+            <ChevronRight aria-hidden="true" className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
-      <div className={cn('mt-5 grid gap-6', months === 2 && 'lg:grid-cols-2')}>
-        {monthsToRender.map((month, monthIndex) => (
-          <div key={month} className={cn(monthIndex > 0 && 'hidden lg:block')}>
-            <p className="mb-2 text-sm font-semibold text-deep-700">{monthLabel(month)}</p>
-            <div role="grid" aria-label={`${monthLabel(month)} foglaltsági naptár`}>
-              <div role="row" className="grid grid-cols-7 gap-1 pb-1">
-                {HU_WEEKDAYS_SHORT.map((day) => (
-                  <div
-                    key={day}
-                    role="columnheader"
-                    className="py-1 text-center text-[0.68rem] font-bold uppercase text-deep-500"
-                  >
-                    {day}
-                  </div>
-                ))}
-              </div>
+      <div className="grid gap-6 p-4 lg:grid-cols-2 lg:p-5">
+        {monthsToShow.map((m, monthIndex) => {
+          const cells = buildMonthGrid(m.year, m.month);
+          const monthData = getAvailabilityMonth(m.year, m.month);
+
+          return (
+            <div key={`${m.year}-${m.month}`} className={cn(monthIndex > 0 && 'hidden lg:block')}>
+              <p className="mb-3 text-center font-display text-[0.9375rem] font-extrabold capitalize text-night-900">
+                {monthLabel(m.year, m.month, locale)}
+              </p>
               <div className="grid grid-cols-7 gap-1">
-                {Array.from({ length: weekdayIndex(`${month}-01`) }).map((_, index) => (
-                  <div key={`pad-${index}`} aria-hidden="true" />
+                {WEEKDAYS.map((d) => (
+                  <div key={d} className="pb-1.5 text-center text-[0.6875rem] font-bold uppercase text-night-400">{d}</div>
                 ))}
-                {daysInMonth(month).map((iso) => {
-                  const state = getAvailabilityState(availabilityMap, iso);
-                  const dayNumber = Number(iso.slice(8));
-
-                  if (state === 'out-of-season') {
-                    return (
-                      <div
-                        key={iso}
-                        className="flex min-h-[42px] items-center justify-center rounded-lg border border-transparent text-sm text-deep-200"
-                      >
-                        {dayNumber}
-                      </div>
-                    );
-                  }
-
-                  const isArrival = range.arrival === iso;
-                  const isDeparture = range.departure === iso;
-                  const inRange =
-                    range.arrival && range.departure && iso > range.arrival && iso < range.departure;
+                {cells.map((iso, index) => {
+                  if (!iso) return <div key={`e-${index}`} aria-hidden="true" />;
+                  const day = monthData.find((d) => d.date === iso)!;
+                  const isPast = iso < todayISO;
+                  const isArrival = value.arrival === iso;
+                  const isDeparture = value.departure === iso;
+                  const isBetween = inRange(iso);
+                  const disabled = isPast || day.state === 'booked';
 
                   return (
                     <button
                       key={iso}
                       type="button"
-                      role="gridcell"
-                      onClick={() => handleDayClick(iso)}
-                      disabled={state !== 'free'}
-                      aria-label={`${iso} — ${availabilityLegend.find((l) => l.state === state)?.label ?? ''}`}
-                      aria-selected={isArrival || isDeparture || Boolean(inRange)}
+                      disabled={disabled}
+                      onClick={() => pick(iso, day)}
+                      aria-label={
+                        isPast
+                          ? formatDate(iso, locale)
+                          : `${formatDate(iso, locale)} — ${day.state === 'free' ? t.availability.free : day.state === 'booked' ? t.availability.booked : t.availability.option}`
+                      }
+                      aria-pressed={isArrival || isDeparture}
                       className={cn(
-                        'flex min-h-[42px] items-center justify-center rounded-lg border text-sm font-medium transition-colors',
-                        cellClass(state, isArrival || isDeparture, Boolean(inRange)),
+                        'flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-lg text-center transition-all',
+                        isPast && 'cursor-not-allowed bg-transparent text-night-200',
+                        !isPast && STATE_STYLE[day.state],
+                        isBetween && 'bg-frost-300 text-night-900',
+                        (isArrival || isDeparture) && 'bg-night-950 text-white ring-2 ring-glacier-400',
                       )}
                     >
-                      {dayNumber}
+                      <span className="text-[0.8125rem] font-bold leading-none">{Number(iso.slice(8, 10))}</span>
+                      {!isPast && day.state === 'free' ? (
+                        <span className="text-[0.625rem] font-semibold leading-none tabular-nums opacity-80">{day.priceEur} €</span>
+                      ) : null}
                     </button>
                   );
                 })}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Jelmagyarázat (drótváz 09/03) */}
-      <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 border-t border-deep-100 pt-4">
-        {availabilityLegend.map((item) => (
-          <li key={item.state} className="flex items-center gap-2 text-xs text-deep-600">
-            <span aria-hidden="true" className={cn('h-3 w-3 rounded', legendDot[item.state])} />
-            {item.label}
-          </li>
-        ))}
-      </ul>
+      {value.arrival && !value.departure ? (
+        <p className="flex items-start gap-2 border-t border-night-100 bg-frost-100 px-5 py-3.5 text-[0.875rem] text-night-700">
+          <CalendarDays aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-glacier-600" />
+          <span>
+            {t.availability.selectDeparture}
+            {requiredMin ? ` — ${fill(t.availability.minNightsWarning, { n: requiredMin })}` : ''}
+          </span>
+        </p>
+      ) : null}
 
-      <div aria-live="polite" className="mt-4">
-        {!range.arrival ? (
-          <p className="text-sm text-deep-600">
-            Válaszd ki az érkezés napját, majd a távozásét. Minimum {pricingRules.minStayNights} éjszaka.
-          </p>
-        ) : !range.departure ? (
-          <p className="text-sm text-deep-600">
-            Érkezés kiválasztva: <strong className="text-deep-900">{range.arrival}</strong>. Most válaszd ki a távozás napját.
-          </p>
-        ) : validation?.ok ? (
-          <p className="rounded-lg bg-status-openBg px-3 py-2 text-sm font-medium text-status-open">
-            {range.arrival} → {range.departure} · {validation.nights} éjszaka
-          </p>
-        ) : (
-          <p role="alert" className="rounded-lg bg-status-closedBg px-3 py-2 text-sm font-medium text-status-closed">
-            {validation?.error}
-          </p>
-        )}
+      {value.arrival && value.departure ? (
+        <p className="flex items-center gap-2 border-t border-night-100 bg-frost-100 px-5 py-3.5 text-[0.875rem] font-semibold text-night-800">
+          <CalendarDays aria-hidden="true" className="h-4 w-4 shrink-0 text-glacier-600" />
+          {formatDate(value.arrival, locale)} — {formatDate(value.departure, locale)}
+        </p>
+      ) : null}
+
+      {/* Jelmagyarázat — mindig látható */}
+      <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-night-100 px-5 py-3.5 text-[0.75rem]">
+        <span className="font-bold uppercase tracking-wide text-night-500">{t.availability.legend}</span>
+        {[
+          { key: 'free', label: t.availability.free },
+          { key: 'option', label: t.availability.option },
+          { key: 'booked', label: t.availability.booked },
+          { key: 'blocked-min-nights', label: t.availability.blocked },
+        ].map((item) => (
+          <span key={item.key} className="inline-flex items-center gap-1.5 font-medium text-night-600">
+            <span aria-hidden="true" className={cn('h-3 w-3 rounded', STATE_STYLE[item.key as AvailabilityDay['state']].split(' ')[0])} />
+            {item.label}
+          </span>
+        ))}
       </div>
     </div>
+  );
+}
+
+/** Figyelmeztetés, ha a kiválasztott tartomány nem foglalható. */
+export function RangeWarning({ message }: { message: string }) {
+  return (
+    <p className="flex items-start gap-2 rounded-card border border-state-warn/30 bg-state-warnBg px-4 py-3 text-[0.875rem] text-state-warnInk" role="alert">
+      <TriangleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+      {message}
+    </p>
   );
 }

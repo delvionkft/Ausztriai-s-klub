@@ -1,117 +1,93 @@
-import { CableCar, Mountain, RefreshCw, Snowflake, Thermometer } from 'lucide-react';
-import { liveStatus } from '@/data/status';
-import { DEMO_DATA_ENABLED } from '@/data/placeholders';
-import { formatDateTimeHu } from '@/lib/date';
-import { formatNumber, formatRatio, formatTemperature } from '@/lib/format';
+'use client';
+
+import Link from 'next/link';
+import {
+  ArrowRight, CableCar, CircleCheck, CircleX, Clock, Mountain, Snowflake, Thermometer, TriangleAlert,
+} from 'lucide-react';
+import { useI18n } from '@/i18n/LocaleProvider';
+import { routes } from '@/data/navigation';
+import { getResortStatusSync } from '@/services/statusService';
+import { formatCm, formatTemperature } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import { resortStatusLabels } from '@/components/ui/StatusBadge';
+import { UpdatedAt } from '@/components/ui/UpdatedAt';
 
 /**
- * ÉLŐ STÁTUSZ SÁV — minden releváns oldalon, EGYETLEN adatforrásból.
- * Forrás: `src/data/status.ts` → `src/services/statusService.ts`.
- * Szerveroldalon renderelődik (azonnali megjelenés, jó CLS/LCP).
+ * ÉLŐ STÁTUSZSÁV
+ * ----------------------------------------------------------------------------
+ * Minden oldalon ugyanabból az adatforrásból (`statusService`) dolgozik.
+ * Az állapotot szín, ikon ÉS szöveg együtt jelzi.
+ * Mobilon vízszintesen görgethető, de a legfontosabb két adat mindig látszik.
  */
+export function LiveStatusBar() {
+  const { t, L, locale } = useI18n();
+  const status = getResortStatusSync();
 
-const statusTone = {
-  open: 'bg-status-open',
-  closed: 'bg-status-closed',
-  maintenance: 'bg-status-warn',
-  preparing: 'bg-status-neutral',
-} as const;
+  const tone =
+    status.status === 'open' ? 'open' : status.status === 'closed' ? 'closed' : 'warn';
+  const StateIcon = tone === 'open' ? CircleCheck : tone === 'closed' ? CircleX : TriangleAlert;
+  const stateLabel =
+    status.status === 'open' ? t.status.open
+      : status.status === 'closed' ? t.status.closed
+        : status.status === 'maintenance' ? t.status.maintenance
+          : status.status === 'preparing' ? t.status.preparing
+            : t.status.partial;
 
-interface Metric {
-  id: string;
-  label: string;
-  value: string;
-  icon: typeof Snowflake;
-}
-
-export function LiveStatusBar({ className }: { className?: string }) {
-  const metrics: Metric[] = [
-    {
-      id: 'snow',
-      label: 'Hó a hegyen',
-      value: formatNumber(liveStatus.snowDepthMountainCm, ' cm'),
-      icon: Snowflake,
-    },
-    {
-      id: 'temp',
-      label: 'Hőmérséklet',
-      value: formatTemperature(liveStatus.temperatureC),
-      icon: Thermometer,
-    },
-    {
-      id: 'lifts',
-      label: 'Felvonó',
-      value: formatRatio(liveStatus.liftsOpen, liveStatus.liftsTotal),
-      icon: CableCar,
-    },
-    {
-      id: 'slopes',
-      label: 'Pálya',
-      value: formatRatio(liveStatus.slopesOpen, liveStatus.slopesTotal),
-      icon: Mountain,
-    },
+  const items = [
+    { icon: Snowflake, label: t.status.snowMountain, value: formatCm(status.snowDepthMountainCm, locale), hideBelowXl: false },
+    { icon: Mountain, label: t.status.snowValley, value: formatCm(status.snowDepthValleyCm, locale), hideBelowXl: true },
+    { icon: Thermometer, label: t.status.temperature, value: formatTemperature(status.temperatureMountainC, locale), hideBelowXl: false },
+    { icon: CableCar, label: t.status.liftsOpen, value: `${status.liftsOpen}/${status.liftsTotal}`, hideBelowXl: false },
+    { icon: Mountain, label: t.status.slopesOpen, value: `${status.slopesOpen}/${status.slopesTotal}`, hideBelowXl: false },
   ];
 
   return (
     <div
-      className={cn('border-b border-deep-100 bg-white/95 backdrop-blur-md', className)}
-      aria-label="Élő státusz"
+      role="region"
+      aria-label={t.a11y.statusRegion}
+      className="border-b border-white/10 bg-night-950/95 text-frost-100 backdrop-blur-md"
     >
       <div className="container-page">
-        {/* Asztali és tablet: egy sor */}
-        <div className="hidden items-center justify-between gap-4 py-2 lg:flex">
-          <div className="flex items-center gap-4">
-            <span className="inline-flex items-center gap-2 rounded-pill bg-deep-50 px-3 py-1 text-sm font-semibold text-deep-900">
-              <span
-                aria-hidden="true"
-                className={cn('h-2 w-2 rounded-full', statusTone[liveStatus.resortStatus], 'animate-pulse-dot')}
-              />
-              A síközpont {resortStatusLabels[liveStatus.resortStatus].toLowerCase()}
-            </span>
-            <ul className="flex items-center gap-4">
-              {metrics.map((metric) => (
-                <li key={metric.id} className="flex items-center gap-1.5 text-sm text-deep-700">
-                  <metric.icon aria-hidden="true" className="h-4 w-4 text-glacier-600" />
-                  <span className="sr-only">{metric.label}: </span>
-                  <span className="font-semibold text-deep-900">{metric.value}</span>
-                  <span className="text-deep-500">{metric.label.toLowerCase()}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <p className="flex items-center gap-1.5 whitespace-nowrap text-xs text-deep-500">
-            <RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />
-            Frissítve: {formatDateTimeHu(liveStatus.updatedAt)}
-            {DEMO_DATA_ENABLED ? <span className="rounded bg-ice-200 px-1.5 py-0.5 font-medium text-deep-700">demó</span> : null}
-          </p>
-        </div>
+        <div className="no-scrollbar flex h-10 items-center gap-4 overflow-x-auto lg:h-11 lg:gap-6">
+          <span
+            className={cn(
+              'inline-flex shrink-0 items-center gap-1.5 rounded-pill px-2.5 py-1 text-[0.75rem] font-bold uppercase tracking-wide',
+              tone === 'open' && 'bg-state-open/20 text-state-open',
+              tone === 'warn' && 'bg-state-warn/20 text-state-warn',
+              tone === 'closed' && 'bg-state-closed/20 text-state-closed',
+            )}
+          >
+            <StateIcon aria-hidden="true" className="h-3.5 w-3.5" />
+            {stateLabel}
+          </span>
 
-        {/* Mobil: két tömör sor, vízszintes görgetés nélkül */}
-        <div className="py-1.5 lg:hidden">
-          <div className="flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1.5 text-[0.8rem] font-bold text-deep-900">
-              <span
-                aria-hidden="true"
-                className={cn('h-2 w-2 rounded-full', statusTone[liveStatus.resortStatus], 'animate-pulse-dot')}
-              />
-              {resortStatusLabels[liveStatus.resortStatus]}
+          <span className="sr-only">{L(status.message)}</span>
+
+          {items.map((item) => (
+            <span
+              key={item.label}
+              className={cn(
+                'shrink-0 items-center gap-1.5 whitespace-nowrap text-[0.8125rem]',
+                item.hideBelowXl ? 'hidden xl:flex' : 'flex',
+              )}
+            >
+              <item.icon aria-hidden="true" className="h-3.5 w-3.5 text-glacier-400" />
+              <span className="text-frost-300/80">{item.label}:</span>
+              <strong className="font-semibold text-white">{item.value}</strong>
             </span>
-            <span className="truncate text-[0.7rem] text-deep-500">
-              {formatDateTimeHu(liveStatus.updatedAt)}
-              {DEMO_DATA_ENABLED ? ' · demó' : ''}
-            </span>
-          </div>
-          <ul className="mt-1 grid grid-cols-4 gap-1 sm:gap-2">
-            {metrics.map((metric) => (
-              <li key={metric.id} className="flex flex-col items-center rounded-md bg-deep-50/70 px-1 py-1 sm:flex-row sm:justify-center sm:gap-1.5 sm:px-2 sm:py-1.5">
-                <metric.icon aria-hidden="true" className="h-3.5 w-3.5 text-glacier-600" />
-                <span className="mt-0.5 text-[0.78rem] font-bold leading-none text-deep-900 sm:mt-0 sm:text-sm">{metric.value}</span>
-                <span className="mt-0.5 max-w-full truncate text-[0.6rem] leading-none text-deep-500 sm:mt-0 sm:text-xs">{metric.label}</span>
-              </li>
-            ))}
-          </ul>
+          ))}
+
+          <span className="hidden shrink-0 items-center gap-1.5 whitespace-nowrap text-[0.8125rem] text-frost-300/70 lg:flex">
+            <Clock aria-hidden="true" className="h-3.5 w-3.5" />
+            {t.status.lastUpdate}: <UpdatedAt iso={status.updatedAt} minutesAgo={12} />
+          </span>
+
+          <Link
+            href={routes.snowReport}
+            className="ml-auto hidden shrink-0 items-center gap-1 rounded-pill px-2.5 py-1 text-[0.8125rem] font-semibold text-glacier-300 transition-colors hover:bg-white/10 hover:text-white lg:inline-flex"
+          >
+            {t.cta.snowReport}
+            <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </div>
     </div>

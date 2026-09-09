@@ -1,369 +1,405 @@
 /**
- * Központi adatmodell.
- * Ezek a típusok írják le a teljes weboldal adatszerződését.
- * A backend (Emergent) integrációkor ugyanezeket a shape-eket kell visszaadni.
+ * KÖZPONTI TÍPUSOK
+ * ----------------------------------------------------------------------------
+ * Minden üzleti adat ezekre a típusokra épül. Az adatforrás cseréjekor
+ * (mock -> éles API) csak a `src/services/*` rétegnek kell ugyanezt visszaadnia.
  */
-
-/** Olyan érték, ami még tulajdonosi adatra vár. `null` = helyőrző jelenik meg. */
-export type Pending<T> = T | null;
 
 export type Locale = 'hu' | 'de' | 'en';
 
-export type OperationalStatus = 'open' | 'closed' | 'maintenance' | 'preparing';
+/** Nyelvfüggő szöveg. A `hu` kötelező, ez a visszaesési nyelv. */
+export interface Localized {
+  hu: string;
+  de?: string;
+  en?: string;
+}
 
-export type Season = 'winter' | 'summer';
-
-/* ---------------------------------- Síközpont ---------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*  Síközpont és státusz                                                      */
+/* -------------------------------------------------------------------------- */
 
 export interface ResortInfo {
-  /** Márkanév — tulajdonosi adat. */
-  name: Pending<string>;
-  shortName: Pending<string>;
-  tagline: string;
-  region: Pending<string>;
-  country: Pending<string>;
-  altitudeValleyM: Pending<number>;
-  altitudePeakM: Pending<number>;
-  totalSlopeLengthKm: Pending<number>;
-  verticalDropM: Pending<number>;
-  liftCount: Pending<number>;
-  snowmakingCoveragePercent: Pending<number>;
+  name: string;
+  shortName: string;
+  legalName: string;
+  tagline: Localized;
+  region: string;
+  country: string;
+  altitudeValleyM: number;
+  altitudePeakM: number;
+  totalSlopeLengthKm: number;
+  verticalDropM: number;
+  liftCount: number;
+  slopeCount: number;
+  snowmakingCoveragePercent: number;
+  seasonStart: string;
+  seasonEnd: string;
 }
 
-/* ------------------------------- Élő státusz ------------------------------- */
+export type OperationalStatus = 'open' | 'partial' | 'closed' | 'maintenance' | 'preparing';
 
-export interface LiveStatus {
-  resortStatus: OperationalStatus;
-  snowDepthMountainCm: Pending<number>;
-  snowDepthValleyCm: Pending<number>;
-  temperatureC: Pending<number>;
-  liftsOpen: Pending<number>;
-  liftsTotal: Pending<number>;
-  slopesOpen: Pending<number>;
-  slopesTotal: Pending<number>;
-  /** ISO 8601 időbélyeg. */
+export interface ResortStatus {
+  status: OperationalStatus;
+  message: Localized;
+  snowDepthMountainCm: number;
+  snowDepthValleyCm: number;
+  freshSnow24hCm: number;
+  freshSnow48hCm: number;
+  freshSnow72hCm: number;
+  temperatureMountainC: number;
+  temperatureValleyC: number;
+  windSpeedKmh: number;
+  windDirection: string;
+  snowCondition: Localized;
+  liftsOpen: number;
+  liftsTotal: number;
+  slopesOpen: number;
+  slopesTotal: number;
+  slopeKmOpen: number;
+  avalancheLevel: 1 | 2 | 3 | 4 | 5;
+  nightSkiingToday: boolean;
   updatedAt: string;
-  season: Season;
-}
-
-export interface SnowReport {
-  freshSnow24hCm: Pending<number>;
-  freshSnow48hCm: Pending<number>;
-  freshSnow72hCm: Pending<number>;
-  windSpeedKmh: Pending<number>;
-  windDirection: Pending<string>;
-  snowQuality: Pending<string>;
-  avalancheLevel: Pending<number>;
 }
 
 export interface ForecastDay {
-  /** ISO dátum (YYYY-MM-DD). */
   date: string;
-  label: string;
-  icon: 'sun' | 'cloud-sun' | 'cloud' | 'snow' | 'wind';
-  summary: string;
-  tempMinC: Pending<number>;
-  tempMaxC: Pending<number>;
-  freshSnowCm: Pending<number>;
+  label: Localized;
+  icon: 'sun' | 'partly' | 'cloud' | 'snow' | 'heavy-snow' | 'wind';
+  summary: Localized;
+  tempMinC: number;
+  tempMaxC: number;
+  newSnowCm: number;
+  windKmh: number;
+  sunHours: number;
 }
 
-/* --------------------------------- Felvonók --------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*  Pályák és felvonók                                                        */
+/* -------------------------------------------------------------------------- */
 
-export type LiftType = 'gondola' | 'chairlift' | 'draglift' | 'carpet' | 'funicular';
+export type SlopeDifficulty = 'blue' | 'red' | 'black' | 'skiroute';
+export type SlopeStatus = 'open' | 'closed' | 'groomed' | 'preparing';
+
+export interface Slope {
+  id: string;
+  number: string;
+  name: string;
+  difficulty: SlopeDifficulty;
+  lengthM: number;
+  verticalM: number;
+  status: SlopeStatus;
+  snowmaking: boolean;
+  floodlit: boolean;
+  lastGroomed: string;
+  description: Localized;
+  /** SVG útvonal a pályatérképen (viewBox 0 0 1200 800). */
+  path: string;
+  /** Címke pozíciója a térképen. */
+  labelAt: { x: number; y: number };
+}
+
+export type LiftType = 'gondola' | 'chairlift-6' | 'chairlift-4' | 'tbar' | 'carpet';
+export type LiftStatus = 'running' | 'stopped' | 'maintenance' | 'closed';
 
 export interface Lift {
   id: string;
   name: string;
   type: LiftType;
-  status: OperationalStatus;
-  /** Üzemidő szövegesen, pl. "09:00 – 16:00". `null` = helyőrző. */
-  operatingHours: Pending<string>;
-  capacityPerHour: Pending<number>;
-  lengthM: Pending<number>;
-  verticalM: Pending<number>;
-  nightSkiing: boolean;
-  note: Pending<string>;
+  status: LiftStatus;
+  capacityPerHour: number;
+  rideTimeMin: number;
+  baseAltitudeM: number;
+  topAltitudeM: number;
+  operatingHours: string;
+  nightOperation: string | null;
+  note: Localized;
+  imageKey: string;
+  /** SVG vonal a pályatérképen. */
+  path: string;
+  labelAt: { x: number; y: number };
 }
 
-/* ---------------------------------- Pályák ---------------------------------- */
-
-export type SlopeDifficulty = 'easy' | 'intermediate' | 'advanced' | 'freeride' | 'toboggan';
-
-export interface Slope {
+export interface MountainPoi {
   id: string;
   name: string;
-  difficulty: SlopeDifficulty;
-  status: OperationalStatus;
-  lengthM: Pending<number>;
-  verticalM: Pending<number>;
-  snowmaking: boolean;
-  nightSkiing: boolean;
-  servedByLiftIds: string[];
-  note: Pending<string>;
+  kind: 'restaurant' | 'hut' | 'ski-school' | 'rental' | 'parking' | 'closed-area';
+  at: { x: number; y: number };
+  description: Localized;
+  openingHours?: string;
 }
 
-/* -------------------------------- Webkamerák -------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*  Webkamerák                                                                */
+/* -------------------------------------------------------------------------- */
 
 export interface Webcam {
   id: string;
   name: string;
-  location: Pending<string>;
-  altitudeM: Pending<number>;
-  /** Kép URL. `null` esetén helyőrző jelenik meg. */
-  imageUrl: Pending<string>;
-  streamUrl: Pending<string>;
-  updatedAt: Pending<string>;
+  location: string;
+  altitudeM: number;
+  imageKey: string;
+  /** Éles streamhez: a szolgáltató URL-je. Amíg üres, az imageKey kép jelenik meg. */
+  streamUrl: string | null;
+  updatedAt: string;
 }
 
-/* ---------------------------- Jegyek és bérletek ---------------------------- */
+/* -------------------------------------------------------------------------- */
+/*  Nyitvatartás                                                              */
+/* -------------------------------------------------------------------------- */
 
-export type AgeGroup = 'child' | 'youth' | 'adult' | 'senior';
-export type TicketDuration = 'halfday' | 'day' | 'multiday' | 'season';
-
-export interface TicketProduct {
+export interface OpeningRule {
   id: string;
-  name: string;
+  label: Localized;
+  detail: Localized;
+  hours: string;
+  icon: 'clock' | 'moon' | 'calendar' | 'alert' | 'snowflake';
+  highlight?: boolean;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Jegyek                                                                    */
+/* -------------------------------------------------------------------------- */
+
+export type AgeGroup = 'adult' | 'youth' | 'child' | 'student' | 'senior';
+export type TicketDuration = 'half-day' | 'day' | 'multi-day' | 'season' | 'night' | 'points';
+
+export interface TicketType {
+  id: string;
+  name: Localized;
   duration: TicketDuration;
-  description: string;
-  /** Demó ár — a végleges árlistát a tulajdonos adja meg. */
-  priceByAgeGroup: Record<AgeGroup, Pending<number>>;
-  highlights: string[];
-  recommendedFor: string;
+  description: Localized;
+  /** Ár korosztályonként, EUR-ban, főszezoni alapár. */
+  prices: Partial<Record<AgeGroup, number>>;
+  /** Többnapos jegynél a napok száma. */
+  days?: number;
+  popular?: boolean;
+  benefits: Localized[];
 }
 
-export interface SeasonalPriceBand {
+export interface SeasonPricePeriod {
   id: string;
-  label: string;
-  /** Szorzó a bázisárhoz képest. */
-  multiplier: number;
-  colorToken: 'low' | 'mid' | 'high';
-  /** ISO dátumtartományok (YYYY-MM-DD). */
-  ranges: Array<{ from: string; to: string }>;
+  label: Localized;
+  from: string;
+  to: string;
+  tier: 'low' | 'mid' | 'high' | 'peak';
+  adultDayPrice: number;
 }
 
 export interface Discount {
   id: string;
-  title: string;
-  description: string;
-  requirement: Pending<string>;
-  /** Kedvezmény mértéke százalékban. `null` = tulajdonosi adat. */
-  percent: Pending<number>;
+  title: Localized;
+  description: Localized;
+  icon: 'users' | 'graduation-cap' | 'heart' | 'building-2' | 'baby' | 'calendar-check';
+  value: Localized;
 }
 
-/* ------------------------------- Nyitvatartás ------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*  Síiskola és kölcsönző                                                     */
+/* -------------------------------------------------------------------------- */
 
-export interface OpeningPeriod {
+export interface SkiSchoolPackage {
   id: string;
-  label: string;
-  /** ISO dátum vagy `null`, ha még nincs kihirdetve. */
-  from: Pending<string>;
-  to: Pending<string>;
-  note: Pending<string>;
+  name: Localized;
+  audience: Localized;
+  durationLabel: Localized;
+  includes: Localized[];
+  priceEur: number;
+  priceNote: Localized;
+  featured?: boolean;
+  imageKey: string;
 }
 
-export interface DailyOpeningHours {
+export interface Instructor {
   id: string;
-  label: string;
-  hours: Pending<string>;
-  days: string;
-  note: Pending<string>;
+  /** Demonstrációs profil — a végleges oktatói adatokat a síiskola adja meg. */
+  displayName: string;
+  role: Localized;
+  languages: string[];
+  levels: Localized[];
+  bio: Localized;
+  imageKey: string;
+  certification: Localized;
 }
 
-/* -------------------------------- Események -------------------------------- */
-
-export interface ResortEvent {
+export interface RentalItem {
   id: string;
-  title: string;
-  /** ISO dátum. `null` = időpont még nincs kitűzve. */
-  date: Pending<string>;
-  endDate: Pending<string>;
-  category: 'event' | 'news' | 'race' | 'family' | 'gastro';
-  season: Season | 'all';
-  excerpt: string;
-  location: Pending<string>;
-  imageKey: Pending<string>;
+  category: Localized;
+  level: Localized;
+  includes: Localized[];
+  pricePerDayEur: number;
+  pricePerWeekEur: number;
+  sizes: string;
+  icon: 'skis' | 'snowboard' | 'boots' | 'helmet' | 'poles' | 'kids';
 }
 
-/* ---------------------------- Élmény / programok ---------------------------- */
-
-export interface ExperienceItem {
+export interface ServiceItem {
   id: string;
-  title: string;
-  season: Season | 'all';
-  description: string;
-  icon: string;
-  detail: Pending<string>;
-  imageKey: Pending<string>;
+  name: Localized;
+  description: Localized;
+  priceEur: number | null;
+  priceLabel: Localized;
 }
 
-/* ---------------------------------- Szállás ---------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*  Vendégház                                                                 */
+/* -------------------------------------------------------------------------- */
 
-export interface AccommodationFact {
+export interface Guesthouse {
+  name: string;
+  lead: Localized;
+  description: Localized[];
+  maxGuests: number;
+  bedrooms: number;
+  bathrooms: number;
+  distanceToSlopeM: number;
+  parkingSpaces: number;
+  sizeSqm: number;
+  checkIn: string;
+  checkOut: string;
+  minNights: number;
+  addressLine: string;
+  coordinates: { lat: number; lng: number };
+}
+
+export interface RoomBed {
+  type: Localized;
+  count: number;
+}
+
+export interface Room {
   id: string;
-  label: string;
-  value: Pending<string>;
-  icon: string;
+  name: Localized;
+  floor: 'ground' | 'first' | 'attic';
+  sizeSqm: number;
+  sleeps: number;
+  beds: RoomBed[];
+  ensuite: boolean;
+  features: Localized[];
+  imageKey: string;
 }
 
-export interface RoomLayoutFloor {
-  id: string;
-  floor: string;
-  rooms: Array<{
-    id: string;
-    name: Pending<string>;
-    beds: Pending<number>;
-    note: Pending<string>;
-  }>;
+export interface FloorPlan {
+  id: 'ground' | 'first' | 'attic';
+  label: Localized;
+  summary: Localized;
+  rooms: Localized[];
+  beds: number;
 }
 
-export interface AccommodationBenefit {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-}
-
-export interface GroupType {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  points: string[];
-}
-
-export interface ProcessStep {
-  id: string;
-  step: number;
-  title: string;
-  description: string;
-}
-
-/* --------------------------------- Galéria --------------------------------- */
-
-export type GalleryCategory = 'common' | 'bedroom' | 'bathroom-kitchen' | 'skiroom' | 'exterior';
-
-export interface GalleryImage {
-  id: string;
-  category: GalleryCategory;
-  caption: string;
-  /** `null` esetén dizájnolt helyőrző jelenik meg. */
-  src: Pending<string>;
-  alt: string;
-}
-
-/* -------------------------------- Foglaltság -------------------------------- */
-
-export type AvailabilityState = 'free' | 'booked' | 'option' | 'min-stay-blocked';
+export type AvailabilityState = 'free' | 'booked' | 'option' | 'blocked-min-nights' | 'past';
 
 export interface AvailabilityDay {
-  /** ISO dátum (YYYY-MM-DD). */
   date: string;
-  state: AvailabilityState;
+  state: Exclude<AvailabilityState, 'past'>;
+  /** Éjszakánkénti ár EUR-ban a teljes házra. */
+  priceEur: number;
+  minNights: number;
+  seasonLabel: Localized;
 }
 
-export interface PricingRules {
-  /** Demó bázisár / éjszaka (teljes ház). */
-  baseNightlyPrice: Pending<number>;
-  cleaningFee: Pending<number>;
-  touristTaxPerPersonPerNight: Pending<number>;
-  extraMandatoryFees: Array<{ id: string; label: string; amount: Pending<number>; note: Pending<string> }>;
-  deposit: Pending<number>;
-  currency: string;
-  minStayNights: number;
-  maxGuests: Pending<number>;
-  seasonalMultipliers: Array<{ id: string; label: string; multiplier: number; ranges: Array<{ from: string; to: string }> }>;
+export interface AccommodationFees {
+  cleaningFeeEur: number;
+  touristTaxPerPersonPerNightEur: number;
+  linenFeePerPersonEur: number;
+  depositEur: number;
+  petFeePerNightEur: number;
 }
 
-export interface BookingTerms {
+/* -------------------------------------------------------------------------- */
+/*  Élmények, események, hírek                                                */
+/* -------------------------------------------------------------------------- */
+
+export type Season = 'winter' | 'summer' | 'all-year';
+
+export interface Experience {
   id: string;
-  label: string;
-  value: Pending<string>;
-  icon: string;
+  title: Localized;
+  description: Localized;
+  season: Season;
+  imageKey: string;
+  href: string;
+  duration?: Localized;
 }
 
-/* --------------------------------- Vélemények --------------------------------- */
-
-export interface Review {
+export interface EventItem {
   id: string;
-  author: Pending<string>;
-  groupType: string;
-  quote: string;
-  date: Pending<string>;
-  rating: Pending<number>;
+  title: Localized;
+  date: string;
+  endDate?: string;
+  category: Localized;
+  location: string;
+  excerpt: Localized;
+  imageKey: string;
+  href: string;
 }
 
-/* ------------------------------------ GYIK ------------------------------------ */
+export interface NewsItem {
+  id: string;
+  title: Localized;
+  date: string;
+  category: Localized;
+  excerpt: Localized;
+  imageKey: string;
+  href: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  GYIK, kapcsolat                                                           */
+/* -------------------------------------------------------------------------- */
+
+export type FaqCategory =
+  | 'tickets' | 'slopes' | 'ski-school' | 'rental'
+  | 'accommodation' | 'arrival' | 'payment' | 'booking';
 
 export interface FaqItem {
   id: string;
-  question: string;
-  answer: string;
-  topic: 'general' | 'accommodation' | 'tickets' | 'access' | 'skiing';
-}
-
-/* ---------------------------------- Kapcsolat ---------------------------------- */
-
-export interface ContactInfo {
-  phone: Pending<string>;
-  whatsapp: Pending<string>;
-  email: Pending<string>;
-  addressLine: Pending<string>;
-  postalCode: Pending<string>;
-  city: Pending<string>;
-  country: Pending<string>;
-  gpsLat: Pending<number>;
-  gpsLng: Pending<number>;
-  officeHours: Pending<string>;
-  mapEmbedUrl: Pending<string>;
-  social: Array<{ id: string; label: string; url: Pending<string>; icon: string }>;
+  category: FaqCategory;
+  question: Localized;
+  answer: Localized;
 }
 
 export interface TravelOption {
   id: string;
-  mode: 'car' | 'skibus' | 'train' | 'plane';
-  title: string;
-  description: string;
-  distance: Pending<string>;
-  duration: Pending<string>;
+  mode: 'car' | 'bus' | 'train' | 'plane';
+  title: Localized;
+  detail: Localized;
+  distance: string;
+  duration: string;
+  hub: string;
 }
 
-/* ---------------------------------- Oktatás ---------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*  Galéria                                                                   */
+/* -------------------------------------------------------------------------- */
 
-export interface Instructor {
+export type GalleryCategory =
+  | 'common' | 'bedrooms' | 'bathrooms' | 'kitchen' | 'ski-storage' | 'exterior';
+
+export interface GalleryImage {
   id: string;
-  name: Pending<string>;
-  languages: string[];
-  levels: string[];
-  specialty: Pending<string>;
+  imageKey: string;
+  category: GalleryCategory;
+  caption: Localized;
 }
 
-export interface RentalCategory {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  items: Array<{ id: string; label: string; detail: Pending<string>; price: Pending<number> }>;
-}
+/* -------------------------------------------------------------------------- */
+/*  Űrlapok                                                                   */
+/* -------------------------------------------------------------------------- */
 
-/* ---------------------------------- Űrlapok ---------------------------------- */
-
-export interface QuoteRequestPayload {
+export interface InquiryPayload {
   arrival: string;
   departure: string;
   guests: number;
   groupType: string;
-  contactName: string;
+  name: string;
   email: string;
   phone: string;
-  message?: string;
-}
-
-export interface NewsletterPayload {
-  email: string;
-}
-
-export interface ServiceResult<T = undefined> {
-  ok: boolean;
   message: string;
-  data?: T;
+  consent: boolean;
+}
+
+export interface SubmitResult {
+  ok: boolean;
+  reference?: string;
+  error?: string;
 }

@@ -1,461 +1,493 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Download, Layers, Map as MapIcon, Minus, Plus, RotateCcw, WifiOff } from 'lucide-react';
-import { difficultyColors, difficultyLabels, slopes } from '@/data/slopes';
-import { liftTypeLabels, lifts } from '@/data/lifts';
-import { PLACEHOLDER_MEDIA } from '@/data/placeholders';
+import { useCallback, useRef, useState } from 'react';
+import {
+  CableCar, Download, Info, Maximize, Minus, Mountain, Plus, Printer, Utensils, X,
+} from 'lucide-react';
+import type { Lift, MountainPoi, Slope } from '@/types';
+import { useI18n } from '@/i18n/LocaleProvider';
+import { lifts } from '@/data/lifts';
+import { mountainPois, slopes } from '@/data/slopes';
 import { formatLength, formatNumber } from '@/lib/format';
+import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
-import { PendingValue } from '@/components/ui/PendingValue';
+import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { SecondaryButton } from '@/components/ui/Button';
-import type { Lift, Slope, SlopeDifficulty } from '@/types';
+import { liftTone, useLiftStatusLabel } from './LiftCard';
+import { slopeTone, useDifficultyLabel, useSlopeStatusLabel } from './SlopeList';
 
 /**
- * INTERAKTÍV PÁLYATÉRKÉP (drótváz 03/02–05)
- * ----------------------------------------------------------------------------
- * FONTOS: ez SEMATIKUS ÁBRA, nem valós domborzati térkép. Valós pályanyomvonalat
- * nem találunk ki. Amint megérkezik a végleges térkép (SVG vagy nagy felbontású
- * kép), a `src/data/media.ts` → `slope-map` bejegyzésébe kell beírni, és a
- * `MapCanvas` tartalma cserélhető — a rétegvezérlő és az infópanel marad.
+ * ============================================================================
+ *  INTERAKTÍV PÁLYATÉRKÉP
+ * ============================================================================
+ *  Rétegvezérlés, nagyítás, mobilos érintésvezérlés és kattintható elemek.
+ *
+ *  A terep és a nyomvonalak SVG-ben készültek (viewBox 0 0 1200 800). Végleges
+ *  térkép esetén elég a `src/data/slopes.ts` és `src/data/lifts.ts` `path`
+ *  mezőit lecserélni — a felület logikája változatlan marad.
+ * ============================================================================
  */
 
-type LayerId = 'difficulty' | 'lifts' | 'snowmaking' | 'restaurants' | 'closures';
-
-const layerConfig: Array<{ id: LayerId; label: string }> = [
-  { id: 'difficulty', label: 'Nehézség' },
-  { id: 'lifts', label: 'Felvonók' },
-  { id: 'snowmaking', label: 'Hóágyúzott' },
-  { id: 'restaurants', label: 'Éttermek' },
-  { id: 'closures', label: 'Zárások' },
-];
-
-/** Sematikus elrendezés — geometriai pozíciók, nem földrajzi koordináták. */
-const slopeGeometry: Record<string, { x: number; y: number }[]> = {
-  'slope-1': [{ x: 150, y: 90 }, { x: 140, y: 200 }, { x: 165, y: 320 }, { x: 150, y: 430 }],
-  'slope-2': [{ x: 250, y: 140 }, { x: 262, y: 250 }, { x: 240, y: 360 }, { x: 255, y: 430 }],
-  'slope-3': [{ x: 360, y: 70 }, { x: 380, y: 190 }, { x: 350, y: 300 }, { x: 365, y: 430 }],
-  'slope-4': [{ x: 470, y: 60 }, { x: 455, y: 180 }, { x: 480, y: 300 }, { x: 465, y: 430 }],
-  'slope-5': [{ x: 575, y: 70 }, { x: 595, y: 190 }, { x: 565, y: 310 }, { x: 580, y: 430 }],
-  'slope-6': [{ x: 680, y: 110 }, { x: 665, y: 230 }, { x: 690, y: 340 }, { x: 675, y: 430 }],
-  'slope-7': [{ x: 780, y: 150 }, { x: 800, y: 260 }, { x: 770, y: 350 }, { x: 785, y: 430 }],
-  'slope-8': [{ x: 875, y: 300 }, { x: 885, y: 370 }, { x: 870, y: 430 }],
-  'slope-9': [{ x: 945, y: 350 }, { x: 950, y: 430 }],
-  'slope-10': [{ x: 60, y: 120 }, { x: 45, y: 260 }, { x: 70, y: 430 }],
-  'slope-11': [{ x: 1030, y: 250 }, { x: 1045, y: 340 }, { x: 1025, y: 430 }],
+const DIFFICULTY_STROKE: Record<Slope['difficulty'], string> = {
+  blue: '#2563EB',
+  red: '#DC2626',
+  black: '#111827',
+  skiroute: '#F97316',
 };
 
-const liftGeometry: Record<string, { x1: number; y1: number; x2: number; y2: number }> = {
-  'lift-a': { x1: 200, y1: 455, x2: 205, y2: 95 },
-  'lift-b': { x1: 415, y1: 455, x2: 420, y2: 70 },
-  'lift-c': { x1: 630, y1: 455, x2: 628, y2: 65 },
-  'lift-d': { x1: 830, y1: 455, x2: 828, y2: 155 },
-  'lift-e': { x1: 910, y1: 455, x2: 906, y2: 300 },
-  'lift-f': { x1: 975, y1: 455, x2: 972, y2: 350 },
-};
+const MIN_SCALE = 1;
+const MAX_SCALE = 4;
 
-const difficultyStroke: Record<SlopeDifficulty, string> = {
-  easy: '#3B82F6',
-  intermediate: '#EF4444',
-  advanced: '#0F172A',
-  freeride: '#F59E0B',
-  toboggan: '#22959D',
-};
+type Selection =
+  | { kind: 'slope'; item: Slope }
+  | { kind: 'lift'; item: Lift }
+  | { kind: 'poi'; item: MountainPoi }
+  | null;
 
-const restaurantPoints = [
-  { id: 'rest-1', x: 300, y: 430, label: 'Völgyállomás — étterem' },
-  { id: 'rest-2', x: 520, y: 220, label: 'Hütte — középállomás' },
-  { id: 'rest-3', x: 700, y: 95, label: 'Panoráma büfé' },
-];
+export function SlopeMap({ pdfHref = '/dokumentumok/palyaterkep.pdf' }: { pdfHref?: string }) {
+  const { t, L, locale } = useI18n();
+  const difficultyLabel = useDifficultyLabel();
+  const slopeStatus = useSlopeStatusLabel();
+  const liftStatus = useLiftStatusLabel();
 
-function toPath(points: { x: number; y: number }[]): string {
-  return points.map((point, index) => `${index === 0 ? 'M' : 'L'}${point.x} ${point.y}`).join(' ');
-}
-
-type Selection = { kind: 'slope'; item: Slope } | { kind: 'lift'; item: Lift } | null;
-
-export function SlopeMap() {
-  const [layers, setLayers] = useState<Record<LayerId, boolean>>({
-    difficulty: true,
-    lifts: true,
-    snowmaking: false,
-    restaurants: true,
-    closures: true,
+  const [layers, setLayers] = useState({
+    difficulty: true, lifts: true, snowmaking: false, food: true, closures: true,
   });
-  const [zoom, setZoom] = useState(1);
   const [selection, setSelection] = useState<Selection>(null);
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
 
-  const closedSlopes = useMemo(() => slopes.filter((slope) => slope.status !== 'open'), []);
+  const dragState = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
+  const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const pinchStart = useRef<{ dist: number; scale: number } | null>(null);
 
-  const toggleLayer = (id: LayerId) => setLayers((current) => ({ ...current, [id]: !current[id] }));
+  const clampOffset = useCallback((next: { x: number; y: number }, s: number) => {
+    const limitX = (600 * (s - 1)) / s;
+    const limitY = (400 * (s - 1)) / s;
+    return {
+      x: Math.max(-limitX, Math.min(limitX, next.x)),
+      y: Math.max(-limitY, Math.min(limitY, next.y)),
+    };
+  }, []);
+
+  const zoomTo = useCallback((next: number) => {
+    const clamped = Math.max(MIN_SCALE, Math.min(MAX_SCALE, next));
+    setScale(clamped);
+    setOffset((prev) => clampOffset(prev, clamped));
+  }, [clampOffset]);
+
+  const reset = () => { setScale(1); setOffset({ x: 0, y: 0 }); setSelection(null); };
+
+  const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 1) {
+      dragState.current = { x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y };
+    } else if (pointers.current.size === 2) {
+      const [a, b] = Array.from(pointers.current.values());
+      pinchStart.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), scale };
+      dragState.current = null;
+    }
+  };
+
+  const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (!pointers.current.has(e.pointerId)) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointers.current.size === 2 && pinchStart.current) {
+      const [a, b] = Array.from(pointers.current.values());
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      zoomTo(pinchStart.current.scale * (dist / pinchStart.current.dist));
+      return;
+    }
+
+    const drag = dragState.current;
+    if (!drag || scale === 1) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dx = ((e.clientX - drag.x) / rect.width) * 1200 / scale;
+    const dy = ((e.clientY - drag.y) / rect.height) * 800 / scale;
+    setOffset(clampOffset({ x: drag.ox + dx, y: drag.oy + dy }, scale));
+  };
+
+  const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinchStart.current = null;
+    if (pointers.current.size === 0) dragState.current = null;
+  };
+
+  const selectSlope = (slope: Slope) => {
+    setSelection({ kind: 'slope', item: slope });
+    track('select_slope', { slope: slope.id, difficulty: slope.difficulty });
+  };
+
+  const layerToggles = [
+    { id: 'difficulty' as const, label: t.map.layerDifficulty },
+    { id: 'lifts' as const, label: t.map.layerLifts },
+    { id: 'snowmaking' as const, label: t.map.layerSnowmaking },
+    { id: 'food' as const, label: t.map.layerFood },
+    { id: 'closures' as const, label: t.map.layerClosures },
+  ];
+
+  const closures = mountainPois.filter((p) => p.kind === 'closed-area');
+  const foodPois = mountainPois.filter((p) => p.kind === 'restaurant' || p.kind === 'hut');
+  const servicePois = mountainPois.filter((p) => p.kind === 'ski-school' || p.kind === 'rental' || p.kind === 'parking');
 
   return (
-    <div className="space-y-5">
-      {/* 02 · RÉTEGVEZÉRLŐ */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-deep-500">
-          <Layers aria-hidden="true" className="h-4 w-4" />
-          Rétegek
-        </span>
-        {layerConfig.map((layer) => (
-          <button
-            key={layer.id}
-            type="button"
-            onClick={() => toggleLayer(layer.id)}
-            aria-pressed={layers[layer.id]}
-            className={cn(
-              'min-h-[42px] rounded-pill border px-4 text-sm font-semibold transition-colors',
-              layers[layer.id]
-                ? 'border-deep-800 bg-deep-800 text-white'
-                : 'border-deep-200 bg-white text-deep-600 hover:bg-deep-50',
-            )}
-          >
-            {layer.label}
-          </button>
-        ))}
-      </div>
-
-      {/* 03 · TÉRKÉP */}
-      <div className="relative overflow-hidden rounded-panel border border-deep-100 bg-ice-50">
-        <div className="absolute right-3 top-3 z-10 flex flex-col gap-1 rounded-xl border border-deep-100 bg-white/95 p-1 shadow-subtle">
-          <button
-            type="button"
-            onClick={() => setZoom((value) => Math.min(2.5, Number((value + 0.25).toFixed(2))))}
-            disabled={zoom >= 2.5}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-deep-700 transition-colors hover:bg-deep-50 disabled:opacity-40"
-          >
-            <Plus aria-hidden="true" className="h-4 w-4" />
-            <span className="sr-only">Nagyítás</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setZoom((value) => Math.max(1, Number((value - 0.25).toFixed(2))))}
-            disabled={zoom <= 1}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-deep-700 transition-colors hover:bg-deep-50 disabled:opacity-40"
-          >
-            <Minus aria-hidden="true" className="h-4 w-4" />
-            <span className="sr-only">Kicsinyítés</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setZoom(1)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-deep-700 transition-colors hover:bg-deep-50"
-          >
-            <RotateCcw aria-hidden="true" className="h-4 w-4" />
-            <span className="sr-only">Nagyítás visszaállítása</span>
-          </button>
+    <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+      <div className="space-y-4">
+        {/* Rétegvezérlők */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-[0.75rem] font-bold uppercase tracking-wider text-frost-300/70">{t.map.layers}</span>
+          {layerToggles.map((layer) => (
+            <button
+              key={layer.id}
+              type="button"
+              onClick={() => setLayers((prev) => ({ ...prev, [layer.id]: !prev[layer.id] }))}
+              aria-pressed={layers[layer.id]}
+              className={cn(
+                'tap-target inline-flex items-center gap-2 rounded-pill px-3.5 text-[0.8125rem] font-semibold transition-all',
+                layers[layer.id]
+                  ? 'bg-glacier-400 text-night-950'
+                  : 'border border-white/20 text-frost-200 hover:border-glacier-400/60 hover:bg-white/10',
+              )}
+            >
+              <span aria-hidden="true" className={cn('h-2 w-2 rounded-full', layers[layer.id] ? 'bg-night-950' : 'bg-white/40')} />
+              {layer.label}
+            </button>
+          ))}
         </div>
 
-        <p className="absolute left-3 top-3 z-10 max-w-[62%] rounded-lg bg-white/95 px-3 py-2 text-[0.7rem] font-medium leading-snug text-deep-600 shadow-subtle">
-          Sematikus ábra a felvonók és pályák viszonyáról. {PLACEHOLDER_MEDIA.slopeMap}
-        </p>
-
-        <div className={cn('overflow-auto', zoom > 1 && 'cursor-grab')}>
+        <div className="relative overflow-hidden rounded-panel border border-white/12 bg-night-900">
           <svg
-            viewBox="0 0 1100 500"
+            viewBox="0 0 1200 800"
+            className={cn('block h-auto w-full touch-none select-none', scale > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-default')}
             role="img"
-            aria-label="Sematikus pályatérkép — kattintható pályák és felvonók"
-            className="block h-auto w-full min-w-[680px] origin-top-left transition-transform duration-200"
-            style={{ transform: `scale(${zoom})`, transformOrigin: '0 0' }}
+            aria-label={t.map.title}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            onPointerLeave={onPointerUp}
           >
             <defs>
-              <pattern id="snowmaking-hatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-                <line x1="0" y="0" x2="0" y2="8" stroke="#43B4BB" strokeWidth="3" opacity="0.35" />
-              </pattern>
+              <linearGradient id="map-sky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0B1D33" />
+                <stop offset="100%" stopColor="#16304C" />
+              </linearGradient>
+              <linearGradient id="map-snowfield" x1="0" y1="0" x2="0.3" y2="1">
+                <stop offset="0%" stopColor="#F2F8FF" />
+                <stop offset="100%" stopColor="#C9DEF0" />
+              </linearGradient>
+              <linearGradient id="map-rock" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3E5772" />
+                <stop offset="100%" stopColor="#22384F" />
+              </linearGradient>
             </defs>
 
-            {/* Háttér: gerinc és völgy sávok */}
-            <rect width="1100" height="500" fill="#F6FBFE" />
-            <path d="M0 60 H1100 V120 H0 Z" fill="#D5E9F6" opacity="0.55" />
-            <path d="M0 430 H1100 V500 H0 Z" fill="#DEEAF5" opacity="0.8" />
-            <text x="16" y="46" fill="#5A8FBF" fontSize="13" fontWeight="700" letterSpacing="1">
-              GERINC / CSÚCS
-            </text>
-            <text x="16" y="478" fill="#5A8FBF" fontSize="13" fontWeight="700" letterSpacing="1">
-              VÖLGYÁLLOMÁS
-            </text>
+            <g transform={`scale(${scale}) translate(${offset.x} ${offset.y})`} style={{ transformOrigin: '600px 400px' }}>
+              {/* Terep */}
+              <rect width="1200" height="800" fill="url(#map-sky)" />
+              <path d="M0 300 L150 190 L280 250 L420 130 L560 220 L700 110 L840 210 L980 140 L1120 240 L1200 190 L1200 800 L0 800 Z" fill="url(#map-rock)" opacity="0.75" />
+              <path
+                d="M0 380 L140 270 L300 340 L450 190 L600 100 L760 200 L900 150 L1050 260 L1200 210 L1200 800 L0 800 Z"
+                fill="url(#map-snowfield)"
+              />
+              <path d="M600 100 L668 176 L634 190 L566 176 Z" fill="#FFFFFF" />
+              <path d="M450 190 L502 250 L474 262 L420 246 Z" fill="#FFFFFF" opacity="0.9" />
 
-            {/* Hóágyúzott réteg */}
-            {layers.snowmaking
-              ? slopes
-                  .filter((slope) => slope.snowmaking && slopeGeometry[slope.id])
-                  .map((slope) => (
-                    <path
-                      key={`snow-${slope.id}`}
-                      d={toPath(slopeGeometry[slope.id])}
-                      stroke="url(#snowmaking-hatch)"
-                      strokeWidth="18"
-                      fill="none"
-                      strokeLinecap="round"
-                    />
-                  ))
-              : null}
+              {/* Erdősávok */}
+              <g fill="#1E4F42" opacity="0.35">
+                <path d="M40 560 C 140 520 220 560 300 540 C 360 524 400 552 430 580 L430 800 L40 800 Z" />
+                <path d="M980 520 C 1060 496 1120 528 1200 512 L1200 800 L980 800 Z" />
+                <path d="M540 660 C 620 636 700 668 780 648 L800 800 L540 800 Z" />
+              </g>
 
-            {/* Felvonók */}
-            {layers.lifts
-              ? lifts.map((lift) => {
-                  const geo = liftGeometry[lift.id];
-                  if (!geo) return null;
-                  const active = selection?.kind === 'lift' && selection.item.id === lift.id;
+              {/* Hóágyúzott szakaszok kiemelése */}
+              {layers.snowmaking
+                ? slopes.filter((s) => s.snowmaking).map((slope) => (
+                  <path key={`sm-${slope.id}`} d={slope.path} stroke="#19C3E6" strokeWidth="18" strokeOpacity="0.28" fill="none" strokeLinecap="round" />
+                ))
+                : null}
+
+              {/* Pályák */}
+              {layers.difficulty
+                ? slopes.map((slope) => {
+                  const isSelected = selection?.kind === 'slope' && selection.item.id === slope.id;
                   return (
-                    <g
-                      key={lift.id}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`${lift.name} felvonó kiválasztása`}
-                      onClick={() => setSelection({ kind: 'lift', item: lift })}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          setSelection({ kind: 'lift', item: lift });
-                        }
-                      }}
-                      className="cursor-pointer outline-none"
-                    >
-                      <line
-                        x1={geo.x1}
-                        y1={geo.y1}
-                        x2={geo.x2}
-                        y2={geo.y2}
-                        stroke="transparent"
-                        strokeWidth="22"
-                      />
-                      <line
-                        x1={geo.x1}
-                        y1={geo.y1}
-                        x2={geo.x2}
-                        y2={geo.y2}
-                        stroke={lift.status === 'open' ? '#0E2540' : '#94A3B8'}
-                        strokeWidth={active ? 5 : 3}
-                        strokeDasharray="1 10"
+                    <g key={slope.id}>
+                      <path d={slope.path} stroke="#FFFFFF" strokeWidth="10" strokeOpacity="0.9" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d={slope.path}
+                        stroke={DIFFICULTY_STROKE[slope.difficulty]}
+                        strokeWidth={isSelected ? 8 : 5}
+                        strokeDasharray={slope.difficulty === 'skiroute' ? '14 10' : undefined}
+                        strokeOpacity={slope.status === 'closed' ? 0.35 : 1}
+                        fill="none"
                         strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
-                      <circle cx={geo.x2} cy={geo.y2} r={active ? 9 : 7} fill={lift.status === 'open' ? '#22959D' : '#94A3B8'} />
-                      <circle cx={geo.x1} cy={geo.y1} r={active ? 9 : 7} fill={lift.status === 'open' ? '#0E2540' : '#94A3B8'} />
+                      {/* Kattintási sáv — vastagabb, hogy ujjal is eltalálható legyen */}
+                      <path
+                        d={slope.path}
+                        stroke="transparent"
+                        strokeWidth="28"
+                        fill="none"
+                        className="cursor-pointer"
+                        onClick={() => selectSlope(slope)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${slope.number}. ${slope.name}`}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSlope(slope); } }}
+                      />
+                      <g transform={`translate(${slope.labelAt.x} ${slope.labelAt.y})`} className="pointer-events-none">
+                        <circle r="12" fill="#FFFFFF" stroke={DIFFICULTY_STROKE[slope.difficulty]} strokeWidth="2.5" />
+                        <text textAnchor="middle" dy="4.5" fontSize="12" fontWeight="700" fill="#07111F">{slope.number}</text>
+                      </g>
                     </g>
                   );
                 })
-              : null}
+                : null}
 
-            {/* Pályák */}
-            {slopes.map((slope) => {
-              const geo = slopeGeometry[slope.id];
-              if (!geo) return null;
-              const active = selection?.kind === 'slope' && selection.item.id === slope.id;
-              const isClosed = slope.status !== 'open';
-              if (isClosed && !layers.closures) return null;
-
-              return (
-                <g
-                  key={slope.id}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`${slope.name} kiválasztása`}
-                  onClick={() => setSelection({ kind: 'slope', item: slope })}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      setSelection({ kind: 'slope', item: slope });
-                    }
-                  }}
-                  className="cursor-pointer outline-none"
-                >
-                  <path d={toPath(geo)} stroke="transparent" strokeWidth="26" fill="none" />
-                  <path
-                    d={toPath(geo)}
-                    stroke={layers.difficulty ? difficultyStroke[slope.difficulty] : '#64748B'}
-                    strokeWidth={active ? 8 : 5}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                    opacity={isClosed ? 0.35 : 1}
-                    strokeDasharray={isClosed ? '10 8' : undefined}
-                  />
-                  {isClosed && layers.closures ? (
-                    <g>
-                      <circle cx={geo[0].x} cy={geo[0].y - 16} r="10" fill="#B91C1C" />
+              {/* Felvonók */}
+              {layers.lifts
+                ? lifts.map((lift) => {
+                  const isSelected = selection?.kind === 'lift' && selection.item.id === lift.id;
+                  return (
+                    <g key={lift.id}>
+                      <path d={lift.path} stroke="#07111F" strokeWidth={isSelected ? 5 : 3.5} fill="none" strokeLinecap="round" />
+                      <path d={lift.path} stroke="#FFFFFF" strokeWidth="1.2" strokeDasharray="2 8" fill="none" />
                       <path
-                        d={`M${geo[0].x - 4} ${geo[0].y - 20} L${geo[0].x + 4} ${geo[0].y - 12} M${geo[0].x + 4} ${geo[0].y - 20} L${geo[0].x - 4} ${geo[0].y - 12}`}
-                        stroke="#fff"
-                        strokeWidth="2"
-                        strokeLinecap="round"
+                        d={lift.path}
+                        stroke="transparent"
+                        strokeWidth="26"
+                        fill="none"
+                        className="cursor-pointer"
+                        onClick={() => setSelection({ kind: 'lift', item: lift })}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={lift.name}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelection({ kind: 'lift', item: lift }); } }}
                       />
+                      <g transform={`translate(${lift.labelAt.x} ${lift.labelAt.y})`} className="pointer-events-none">
+                        <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#07111F" />
+                        <circle cx="0" cy="0" r="3.4" fill={lift.status === 'running' ? '#22C55E' : lift.status === 'maintenance' ? '#F59E0B' : '#EF4444'} />
+                      </g>
                     </g>
-                  ) : null}
-                </g>
-              );
-            })}
+                  );
+                })
+                : null}
 
-            {/* Éttermek */}
-            {layers.restaurants
-              ? restaurantPoints.map((point) => (
-                  <g key={point.id}>
-                    <circle cx={point.x} cy={point.y} r="11" fill="#fff" stroke="#245586" strokeWidth="2" />
-                    <path
-                      d={`M${point.x - 3} ${point.y - 5} v10 M${point.x} ${point.y - 5} v10 M${point.x + 3.5} ${point.y - 5} v4 a1.5 1.5 0 0 1 -3 0`}
-                      stroke="#245586"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      fill="none"
-                    />
-                    <title>{point.label}</title>
+              {/* Lezárások */}
+              {layers.closures
+                ? closures.map((poi) => (
+                  <g
+                    key={poi.id}
+                    transform={`translate(${poi.at.x} ${poi.at.y})`}
+                    className="cursor-pointer"
+                    onClick={() => setSelection({ kind: 'poi', item: poi })}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={poi.name}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelection({ kind: 'poi', item: poi }); } }}
+                  >
+                    <circle r="34" fill="#EF4444" fillOpacity="0.16" stroke="#EF4444" strokeWidth="2" strokeDasharray="6 5" />
+                    <path d="M-8 -8 L8 8 M8 -8 L-8 8" stroke="#EF4444" strokeWidth="3.5" strokeLinecap="round" />
                   </g>
                 ))
-              : null}
+                : null}
+
+              {/* Éttermek és hütték */}
+              {layers.food
+                ? foodPois.map((poi) => (
+                  <g
+                    key={poi.id}
+                    transform={`translate(${poi.at.x} ${poi.at.y})`}
+                    className="cursor-pointer"
+                    onClick={() => setSelection({ kind: 'poi', item: poi })}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={poi.name}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelection({ kind: 'poi', item: poi }); } }}
+                  >
+                    <circle r="13" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="2.5" />
+                    <path d="M-4 -5 v10 M-1.5 -5 v10 M4 -5 c0 3 -2 3 -2 5 v5" stroke="#07111F" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+                  </g>
+                ))
+                : null}
+
+              {/* Állandó szolgáltatáspontok */}
+              {servicePois.map((poi) => (
+                <g
+                  key={poi.id}
+                  transform={`translate(${poi.at.x} ${poi.at.y})`}
+                  className="cursor-pointer"
+                  onClick={() => setSelection({ kind: 'poi', item: poi })}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={poi.name}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelection({ kind: 'poi', item: poi }); } }}
+                >
+                  <circle r="11" fill="#0B1D33" stroke="#19C3E6" strokeWidth="2.5" />
+                  <circle r="3" fill="#19C3E6" />
+                </g>
+              ))}
+            </g>
           </svg>
-        </div>
-      </div>
 
-      {/* Jelmagyarázat */}
-      {layers.difficulty ? (
-        <ul className="flex flex-wrap gap-x-4 gap-y-2">
-          {(Object.keys(difficultyLabels) as SlopeDifficulty[]).map((key) => (
-            <li key={key} className="flex items-center gap-2 text-xs text-deep-600">
-              <span aria-hidden="true" className="h-1 w-6 rounded-full" style={{ backgroundColor: difficultyStroke[key] }} />
-              {difficultyLabels[key]}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      {/* 04 · KIVÁLASZTOTT ELEM PANEL */}
-      <div
-        aria-live="polite"
-        className="rounded-panel border border-deep-100 bg-white p-5 sm:p-6"
-      >
-        {selection === null ? (
-          <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <MapIcon aria-hidden="true" className="h-6 w-6 text-deep-300" />
-            <p className="font-semibold text-deep-800">Válassz ki egy pályát vagy felvonót</p>
-            <p className="max-w-md text-sm text-deep-600">
-              Kattints a térképen egy vonalra, és itt megjelennek az adatai: nehézség, hossz, szintkülönbség és aktuális státusz.
-            </p>
+          {/* Nagyítás vezérlők */}
+          <div className="absolute right-3 top-3 flex flex-col gap-1.5">
+            <button type="button" onClick={() => zoomTo(scale + 0.5)} aria-label={t.common.zoomIn} className="tap-target inline-grid place-items-center rounded-xl border border-white/20 bg-night-950/75 px-2 text-white backdrop-blur-sm transition-colors hover:bg-night-950">
+              <Plus aria-hidden="true" className="h-5 w-5" />
+            </button>
+            <button type="button" onClick={() => zoomTo(scale - 0.5)} aria-label={t.common.zoomOut} className="tap-target inline-grid place-items-center rounded-xl border border-white/20 bg-night-950/75 px-2 text-white backdrop-blur-sm transition-colors hover:bg-night-950">
+              <Minus aria-hidden="true" className="h-5 w-5" />
+            </button>
+            <button type="button" onClick={reset} aria-label={t.common.reset} className="tap-target inline-grid place-items-center rounded-xl border border-white/20 bg-night-950/75 px-2 text-white backdrop-blur-sm transition-colors hover:bg-night-950">
+              <Maximize aria-hidden="true" className="h-5 w-5" />
+            </button>
           </div>
-        ) : selection.kind === 'slope' ? (
-          <>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.1em] text-glacier-600">Kiválasztott pálya</p>
-                <h3 className="mt-1 text-h3">{selection.item.name}</h3>
-              </div>
-              <StatusBadge status={selection.item.status} size="md" />
-            </div>
-            <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-deep-100 pt-5 sm:grid-cols-4">
-              <div>
-                <dt className="text-xs text-deep-500">Nehézség</dt>
-                <dd className={cn('mt-1 font-semibold', difficultyColors[selection.item.difficulty].text)}>
-                  {difficultyLabels[selection.item.difficulty]}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-deep-500">Hossz</dt>
-                <dd className="mt-1 font-semibold text-deep-900">
-                  {selection.item.lengthM === null ? (
-                    <PendingValue value={null} hint="Pályahossz megadása szükséges" />
-                  ) : (
-                    formatLength(selection.item.lengthM)
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-deep-500">Szintkülönbség</dt>
-                <dd className="mt-1 font-semibold text-deep-900">
-                  {selection.item.verticalM === null ? (
-                    <PendingValue value={null} hint="Szintkülönbség megadása szükséges" />
-                  ) : (
-                    formatNumber(selection.item.verticalM, ' m')
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-deep-500">Hóágyúzott</dt>
-                <dd className="mt-1 font-semibold text-deep-900">{selection.item.snowmaking ? 'Igen' : 'Nem'}</dd>
-              </div>
-            </dl>
-            {selection.item.note ? <p className="mt-4 text-sm text-deep-600">{selection.item.note}</p> : null}
-          </>
-        ) : (
-          <>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.1em] text-glacier-600">Kiválasztott felvonó</p>
-                <h3 className="mt-1 text-h3">{selection.item.name}</h3>
-              </div>
-              <StatusBadge status={selection.item.status} size="md" />
-            </div>
-            <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-deep-100 pt-5 sm:grid-cols-4">
-              <div>
-                <dt className="text-xs text-deep-500">Típus</dt>
-                <dd className="mt-1 font-semibold text-deep-900">{liftTypeLabels[selection.item.type]}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-deep-500">Üzemidő</dt>
-                <dd className="mt-1 font-semibold text-deep-900">
-                  <PendingValue value={selection.item.operatingHours} hint="Üzemidő megadása szükséges" />
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-deep-500">Hossz</dt>
-                <dd className="mt-1 font-semibold text-deep-900">
-                  {selection.item.lengthM === null ? (
-                    <PendingValue value={null} hint="Hossz megadása szükséges" />
-                  ) : (
-                    formatLength(selection.item.lengthM)
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-deep-500">Esti síelés</dt>
-                <dd className="mt-1 font-semibold text-deep-900">{selection.item.nightSkiing ? 'Igen' : 'Nem'}</dd>
-              </div>
-            </dl>
-          </>
-        )}
-      </div>
 
-      {/* Zárások összefoglaló */}
-      {layers.closures && closedSlopes.length > 0 ? (
-        <div className="rounded-card border border-status-closed/20 bg-status-closedBg p-4">
-          <p className="text-sm font-semibold text-status-closed">
-            Jelenleg {closedSlopes.length} pálya nem üzemel
-          </p>
-          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-deep-700">
-            {closedSlopes.map((slope) => (
-              <li key={slope.id}>{slope.name}</li>
+          {/* Jelmagyarázat */}
+          <div className="absolute bottom-3 left-3 hidden flex-wrap gap-x-4 gap-y-1.5 rounded-card border border-white/15 bg-night-950/80 px-4 py-2.5 text-[0.75rem] text-frost-200 backdrop-blur-sm sm:flex">
+            {(['blue', 'red', 'black', 'skiroute'] as const).map((d) => (
+              <span key={d} className="inline-flex items-center gap-1.5">
+                <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: DIFFICULTY_STROKE[d] }} />
+                {difficultyLabel(d, true)}
+              </span>
             ))}
-          </ul>
-        </div>
-      ) : null}
-
-      {/* 05 · OFFLINE TARTALÉK */}
-      <div className="flex flex-col gap-4 rounded-panel border border-deep-100 bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <div className="flex items-start gap-3">
-          <WifiOff aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-glacier-600" />
-          <div>
-            <h3 className="font-semibold text-deep-900">Hálózat nélkül is elérhető</h3>
-            <p className="mt-1 max-w-md text-sm text-deep-600">
-              A hegyen gyakran nincs térerő. Töltsd le a térképet indulás előtt, hogy offline is kéznél legyen.
-            </p>
           </div>
         </div>
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <SecondaryButton
-            disabled
-            title="A letölthető PDF a végleges pályatérkép elkészülte után lesz elérhető."
-            icon={<Download aria-hidden="true" className="h-4 w-4" />}
-          >
-            PDF letöltés
-          </SecondaryButton>
-          <SecondaryButton
-            disabled
-            title="Az offline mentés a végleges térképfájl feltöltése után kapcsolható be."
-            icon={<WifiOff aria-hidden="true" className="h-4 w-4" />}
-          >
-            Offline mentés
-          </SecondaryButton>
+
+        {/* Offline lehetőség */}
+        <div className="flex flex-col gap-4 rounded-card border border-white/12 bg-white/[0.05] p-5 sm:flex-row sm:items-center">
+          <div className="flex-1">
+            <h3 className="font-display text-base font-extrabold text-white">{t.map.offlineTitle}</h3>
+            <p className="mt-1.5 text-[0.875rem] leading-snug text-frost-300/80">{t.map.offlineText}</p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-3">
+            <Button
+              variant="onDark"
+              onClick={() => { track('open_slope_map', { action: 'download-pdf' }); window.open(pdfHref, '_blank', 'noopener'); }}
+            >
+              <Download aria-hidden="true" className="h-4 w-4" />
+              {t.cta.downloadMap}
+            </Button>
+            <Button
+              variant="onDark"
+              onClick={() => { track('open_slope_map', { action: 'print-view' }); window.open('/palyaterkep/nyomtatas', '_blank', 'noopener'); }}
+            >
+              <Printer aria-hidden="true" className="h-4 w-4" />
+              Nyomtatható nézet
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Információs panel */}
+      <aside className="lg:sticky lg:top-32 lg:self-start">
+        {!selection ? (
+          <div className="rounded-panel border border-dashed border-white/20 bg-white/[0.04] p-8 text-center">
+            <Info aria-hidden="true" className="mx-auto h-8 w-8 text-glacier-400" />
+            <p className="mt-3 text-[0.9375rem] leading-relaxed text-frost-300/85">
+              <span className="hidden lg:inline">{t.map.selectHint}</span>
+              <span className="lg:hidden">{t.map.selectHintMobile}</span>
+            </p>
+          </div>
+        ) : (
+          <div className="animate-fade-in rounded-panel border border-white/12 bg-white/[0.07] p-6 backdrop-blur-md">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[0.75rem] font-bold uppercase tracking-wider text-glacier-300">
+                  {selection.kind === 'slope' ? t.snow.tableSlope : selection.kind === 'lift' ? t.snow.tableLift : t.map.layerFood}
+                </p>
+                <h3 className="mt-1 font-display text-xl font-extrabold text-white">
+                  {selection.kind === 'slope' ? `${selection.item.number}. ${selection.item.name}` : selection.item.name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelection(null)}
+                aria-label={t.common.close}
+                className="tap-target -mr-2 -mt-2 inline-grid place-items-center rounded-pill px-2 text-frost-300 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <X aria-hidden="true" className="h-5 w-5" />
+              </button>
+            </div>
+
+            {selection.kind === 'slope' ? (
+              <>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-2 rounded-pill border border-white/20 px-3 py-1.5 text-[0.8125rem] font-semibold text-white">
+                    <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: DIFFICULTY_STROKE[selection.item.difficulty] }} />
+                    {difficultyLabel(selection.item.difficulty)}
+                  </span>
+                  <StatusBadge invert size="sm" tone={slopeTone(selection.item.status)} label={slopeStatus(selection.item.status)} />
+                </div>
+                <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-white/10 pt-5 text-sm">
+                  <div>
+                    <dt className="text-[0.75rem] uppercase tracking-wide text-frost-300/60">{t.map.length}</dt>
+                    <dd className="mt-1 font-display text-lg font-extrabold text-white">{formatLength(selection.item.lengthM, locale)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[0.75rem] uppercase tracking-wide text-frost-300/60">{t.map.verticalDrop}</dt>
+                    <dd className="mt-1 font-display text-lg font-extrabold text-white">{selection.item.verticalM} m</dd>
+                  </div>
+                </dl>
+                <p className="mt-5 text-[0.9375rem] leading-relaxed text-frost-200">{L(selection.item.description)}</p>
+                {selection.item.lastGroomed !== '—' ? (
+                  <p className="mt-4 flex items-center gap-1.5 text-[0.8125rem] text-frost-300/70">
+                    <Mountain aria-hidden="true" className="h-4 w-4" />
+                    {t.status.groomed}: {selection.item.lastGroomed}
+                  </p>
+                ) : null}
+              </>
+            ) : null}
+
+            {selection.kind === 'lift' ? (
+              <>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-2 rounded-pill border border-white/20 px-3 py-1.5 text-[0.8125rem] font-semibold text-white">
+                    <CableCar aria-hidden="true" className="h-4 w-4 text-glacier-300" />
+                    {t.liftType[selection.item.type]}
+                  </span>
+                  <StatusBadge invert size="sm" tone={liftTone(selection.item.status)} label={liftStatus(selection.item.status)} />
+                </div>
+                <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-white/10 pt-5 text-sm">
+                  <div>
+                    <dt className="text-[0.75rem] uppercase tracking-wide text-frost-300/60">{t.map.altitude}</dt>
+                    <dd className="mt-1 font-semibold text-white">{formatNumber(selection.item.baseAltitudeM)} – {formatNumber(selection.item.topAltitudeM)} m</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[0.75rem] uppercase tracking-wide text-frost-300/60">{t.map.rideTime}</dt>
+                    <dd className="mt-1 font-semibold text-white">{selection.item.rideTimeMin} perc</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[0.75rem] uppercase tracking-wide text-frost-300/60">{t.map.capacity}</dt>
+                    <dd className="mt-1 font-semibold text-white">{formatNumber(selection.item.capacityPerHour)} fő/óra</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[0.75rem] uppercase tracking-wide text-frost-300/60">{t.snow.tableHours}</dt>
+                    <dd className="mt-1 font-semibold text-white">{selection.item.operatingHours}</dd>
+                  </div>
+                </dl>
+                <p className="mt-5 text-[0.9375rem] leading-relaxed text-frost-200">{L(selection.item.note)}</p>
+              </>
+            ) : null}
+
+            {selection.kind === 'poi' ? (
+              <>
+                <p className="mt-4 inline-flex items-center gap-2 rounded-pill border border-white/20 px-3 py-1.5 text-[0.8125rem] font-semibold text-white">
+                  <Utensils aria-hidden="true" className="h-4 w-4 text-glacier-300" />
+                  {selection.item.kind === 'closed-area' ? t.map.layerClosures : t.map.layerFood}
+                </p>
+                <p className="mt-5 text-[0.9375rem] leading-relaxed text-frost-200">{L(selection.item.description)}</p>
+                {selection.item.openingHours ? (
+                  <p className="mt-4 text-[0.8125rem] text-frost-300/75">{t.contact.openingHours}: {selection.item.openingHours}</p>
+                ) : null}
+              </>
+            ) : null}
+          </div>
+        )}
+      </aside>
     </div>
   );
 }
