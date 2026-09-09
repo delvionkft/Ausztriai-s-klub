@@ -747,8 +747,8 @@ function ramp(stops, p){
   }
   return hex(stops[stops.length-1][1]);
 }
-const SKY_TOP    = [[0,'#07120F'],[.45,'#0C2038'],[.78,'#4E7396'],[1,'#93B3CC']];
-const SKY_BOTTOM = [[0,'#0E2540'],[.45,'#2A4E73'],[.78,'#A9C4D8'],[1,'#E9F1F7']];
+const SKY_TOP    = [[0,'#07120F'],[.45,'#0A1B2C'],[1,'#0B2033']];
+const SKY_BOTTOM = [[0,'#0E2540'],[.5,'#1B4166'],[1,'#16385A']];
 const RIDGE_DARK = ['#12283F','#0D1F32','#081522','#040C14','#020609'];
 const RIDGE_LITE = ['#BACEDE','#93AFC7','#6C8CAA','#44627E','#2C4760'];
 
@@ -770,7 +770,7 @@ function paint(){
   root.style.setProperty('--sky-top', rgb(top));
   root.style.setProperty('--sky-bottom', rgb(bot));
 
-  const light = smooth(.72, .92, p);                    // sötét -> világos váltás
+  const light = 0;   /* a lap végig sötét marad — a szöveg kontrasztja nem csökken */
   const fg = mixc(hex('#E9F1F7'), hex('#08182B'), light);
   const f = `${fg[0]|0},${fg[1]|0},${fg[2]|0}`;
   root.style.setProperty('--fg', `rgb(${f})`);
@@ -893,7 +893,7 @@ window.addEventListener('pointermove', e => {
   function draw(s){
     ctx.clearRect(0,0,W,H);
     const p = s.p;
-    const lightF = smooth(.55, .95, p);
+    const lightF = smooth(.35, 1, p) * .26;
     const wind = (s.px - .5) * 2;
 
     for (let i=0;i<layers.length;i++){
@@ -978,7 +978,7 @@ window.addEventListener('pointermove', e => {
     }
 
     /* Hóesés — a csúcs fölött (a felhők felett) elfogy */
-    const snowAlpha = 1 - smooth(.58, .9, p);
+    const snowAlpha = 1 - smooth(.75, 1, p) * .2;
     if (snowAlpha > .01){
       ctx.fillStyle = `rgba(255,255,255,1)`;
       for (let i=0;i<flakes.length;i++){
