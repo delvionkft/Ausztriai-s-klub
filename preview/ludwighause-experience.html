@@ -375,7 +375,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 
 <!-- ============================ KOMPONENS: Nav ============================ -->
 <header class="nav" id="nav" data-stuck="false">
-  <a class="brand" href="#top">
+  <a class="brand" href="#/" data-route="home">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M2 20h20L14.5 5.5 11 12l-2.2-3.4L2 20Z" fill="#43B4BB"/>
       <path d="M14.5 5.5 11 12l1.8 2.8L16.2 9l-1.7-3.5Z" fill="#E9F1F7"/>
@@ -402,7 +402,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <button type="button" aria-pressed="false">NL</button>
     </div>
     <button class="toggle-motion" id="motion-toggle" type="button" aria-pressed="true">Mozgás: be</button>
-    <a class="btn" href="#foglalas">Időpontot foglalok</a>
+    <a class="btn" href="#/" data-anchor="foglalas">Időpontot foglalok</a>
   </div>
 </header>
 
@@ -434,8 +434,8 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     <div>
       <p class="lede">Fiatalos alpesi panzió, 45 vendégágy, bár a pincében — 600 méterre a Wildkogel sípályáktól.</p>
       <div class="hero-ctas">
-        <a class="btn" href="#foglalas" data-magnetic>Szabad időpontok megtekintése</a>
-        <a class="btn btn--ghost" href="#szallasunk" data-magnetic>Szállásunk</a>
+        <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Szabad időpontok megtekintése</a>
+        <a class="btn btn--ghost" href="#/" data-anchor="szallasunk" data-magnetic>Szállásunk</a>
       </div>
     </div>
   </div>
@@ -516,7 +516,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   </div>
   <div class="cards cards--wide rise" data-grid="bike"></div>
   <div class="inline-ctas rise">
-    <a class="btn" href="#foglalas" data-magnetic>Foglalj e-bike túrát →</a>
+    <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Foglalj e-bike túrát →</a>
     <a class="btn btn--ghost" href="#/galeria" data-route="galeria" data-magnetic>A környék galériája →</a>
   </div>
 </section>
@@ -610,7 +610,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <label class="check"><input id="f-whole" name="wholehouse" type="checkbox"> Teljes házat szeretnék foglalni</label>
       <div class="field"><label for="f-note">Megjegyzés (opcionális)</label><textarea id="f-note" name="note" rows="3"></textarea></div>
       <button class="btn" type="submit" data-magnetic>Foglalás leadása →</button>
-      <p class="fineprint">A foglalás elküldésével elfogadod az <a href="#adatkezeles">Adatkezelési tájékoztatót</a> és az <a href="#aszf">ÁSZF-et</a>.</p>
+      <p class="fineprint">A foglalás elküldésével elfogadod az <a href="#/" data-anchor="">Adatkezelési tájékoztatót</a> és az <a href="#/" data-anchor="">ÁSZF-et</a>.</p>
     </form>
   </div>
 </section>
@@ -697,7 +697,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 <footer class="foot wrap">
   <div class="foot-grid">
     <div>
-      <a class="brand" href="#top">
+      <a class="brand" href="#/" data-route="home">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M2 20h20L14.5 5.5 11 12l-2.2-3.4L2 20Z" fill="#43B4BB"/>
           <path d="M14.5 5.5 11 12l1.8 2.8L16.2 9l-1.7-3.5Z" fill="#E9F1F7"/>
@@ -705,9 +705,9 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
         <span>Ludwighaus<small>Alpesi panzió</small></span>
       </a>
     </div>
-    <div><h4>Az oldal</h4><ul><li><a href="#szallasunk">Szállásunk</a></li><li><a href="#szobak">Szobák</a></li><li><a href="#sipalyak">Sípályák</a></li><li><a href="#ebike">E-Bike</a></li></ul></div>
-    <div><h4>Foglalás</h4><ul><li><a href="#arak">Árak</a></li><li><a href="#galeria">Galéria</a></li><li><a href="#foglalas">Időpontot foglalok</a></li></ul></div>
-    <div><h4>Dokumentumok</h4><ul><li><a href="#aszf">ÁSZF</a></li><li><a href="#adatkezeles">Adatkezelés</a></li><li><a href="#foglalas">Kapcsolat</a></li></ul></div>
+    <div><h4>Az oldal</h4><ul><li><a href="#/" data-anchor="szallasunk">Szállásunk</a></li><li><a href="#/szobak" data-route="szobak">Szobák</a></li><li><a href="#/sipalyak" data-route="sipalyak">Sípályák</a></li><li><a href="#/" data-anchor="ebike">E-Bike</a></li></ul></div>
+    <div><h4>Foglalás</h4><ul><li><a href="#/" data-anchor="arak">Árak</a></li><li><a href="#/galeria" data-route="galeria">Galéria</a></li><li><a href="#/" data-anchor="foglalas">Időpontot foglalok</a></li></ul></div>
+    <div><h4>Dokumentumok</h4><ul><li><a href="#/" data-anchor="">ÁSZF</a></li><li><a href="#/" data-anchor="">Adatkezelés</a></li><li><a href="#/" data-anchor="foglalas">Kapcsolat</a></li></ul></div>
   </div>
   <div class="foot-bottom">
     <span>© 2025 Ludwighaus · sportclubhausamwildkogel.eu</span>
@@ -1383,10 +1383,14 @@ let renderScapes;
     sx.globalAlpha = 1;
   }
 
-  const nameOf = () => (location.hash.replace(/^#\/?/, '') || 'home');
-  const viewEl = n => views.find(v => v.dataset.view === n) || views[0];
+  const KNOWN = new Set(views.map(v => v.dataset.view));
+  /* Bármi ismeretlen (régi horgony, kézzel írt hash) a főoldalra esik vissza,
+     különben egyetlen nézet sem lenne aktív és a lap üresen beragadna. */
+  const nameOf = () => { const n = location.hash.replace(/^#\/?/, ''); return KNOWN.has(n) ? n : 'home'; };
+  const viewEl = n => views.find(v => v.dataset.view === n) || views.find(v => v.dataset.view === 'home') || views[0];
 
   function apply(name){
+    if (!KNOWN.has(name)) name = 'home';
     views.forEach(v => v.classList.toggle('is-active', v.dataset.view === name));
     document.querySelectorAll('[data-route]').forEach(a =>
       a.setAttribute('aria-current', a.dataset.route === name ? 'page' : 'false'));
@@ -1398,6 +1402,7 @@ let renderScapes;
 
   function go(name, anchorId){
     if (busy) return;
+    if (!KNOWN.has(name)) name = 'home';
     const cur = nameOf();
     if (name === cur){ if (anchorId) scrollToId(anchorId); return; }
     if (location.hash !== '#/' + (name === 'home' ? '' : name))
