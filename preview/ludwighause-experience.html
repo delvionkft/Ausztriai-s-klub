@@ -391,7 +391,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <li><a href="#/kikapcsolodas" data-route="kikapcsolodas">Kikapcsolódás</a></li>
       <li><a href="#/galeria" data-route="galeria">Galéria</a></li>
       <li><a href="#/" data-anchor="arak">Árak</a></li>
-      <li><a href="#/" data-anchor="foglalas">Foglalás</a></li>
+      <li><a href="#/kapcsolat" data-route="kapcsolat">Foglalás</a></li>
     </ul>
   </nav>
   <div class="nav-tools">
@@ -401,7 +401,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <button type="button" data-lang="de" aria-pressed="false">DE</button>
     </div>
     <button class="toggle-motion" id="motion-toggle" type="button" aria-pressed="true">Mozgás: be</button>
-    <a class="btn" href="#/" data-anchor="foglalas">Időpontot foglalok</a>
+    <a class="btn" href="#/kapcsolat" data-route="kapcsolat">Időpontot foglalok</a>
   </div>
 </header>
 
@@ -437,8 +437,8 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   </ul>
 
   <div class="hero-ctas" data-parallax="-0.24">
-    <a class="btn btn--lamp" href="#/" data-anchor="foglalas" data-preset="group" data-magnetic>Kérjetek csoportos ajánlatot</a>
-    <a class="btn btn--ghost" href="#/" data-anchor="foglalas" data-magnetic>Szabad időpontok</a>
+    <a class="btn btn--lamp" href="#/kapcsolat" data-route="kapcsolat" data-preset="group" data-magnetic>Kérjetek csoportos ajánlatot</a>
+    <a class="btn btn--ghost" href="#/kapcsolat" data-route="kapcsolat" data-magnetic>Szabad időpontok</a>
   </div>
 
   <div class="scroll-hint" data-parallax="-0.3"><i></i> Görgetés</div>
@@ -587,15 +587,135 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   <div class="cards cards--wide rise" data-grid="reviews"></div>
 </section>
 
-<!-- ========================= KOMPONENS: Booking =========================== -->
+<!-- ======================== KOMPONENS: BookingCTA ======================== -->
 <section class="band wrap" id="foglalas">
   <div class="head rise" data-parallax="0.07">
     <p class="eyebrow">Foglalás</p>
     <h2>Foglaljátok le<br>a szobátokat</h2>
-    <p class="lede">Rugalmas érkezés — bármely nap, akár este is. Töltsétek ki az űrlapot, és hamarosan visszajelzünk.</p>
+    <p class="lede">Rugalmas érkezés — bármely nap, akár este is. Írjátok meg a dátumot és a létszámot, és hamarosan visszajelzünk.</p>
   </div>
+  <div class="inline-ctas rise" data-parallax="0.05">
+    <a class="btn" href="#/kapcsolat" data-route="kapcsolat" data-magnetic>Időpontot foglalok</a>
+    <a class="btn btn--lamp" href="#/kapcsolat" data-route="kapcsolat" data-preset="group" data-magnetic>Kérjetek csoportos ajánlatot</a>
+  </div>
+</section>
 
-  <div class="two-col">
+</div><!-- /view: home -->
+
+<!-- ========================= ALOLDAL: Szobák ============================= -->
+<div class="view" data-view="szobak">
+  <section class="band subhero wrap">
+    <p class="eyebrow rise">Szobáink</p>
+    <h1 class="rise">Tizenkét szoba,<br>két emeleten.</h1>
+    <p class="lede rise">Az összkomfortos, többnyire erkélyes szobákból pazar kilátás nyílik a hegyekre. Minden szoba egyedi panorámával — Venediger vagy Wildkogel kilátással.</p>
+    <ul class="room-types rise">
+      <li>Családi szoba</li><li>Kétágyas szoba</li><li>Franciaágyas szoba</li>
+      <li>Ikerágyas szoba</li><li>Fürdőszoba</li>
+    </ul>
+  </section>
+  <section class="band band--tight wrap">
+    <div class="filters rise" id="room-filters" role="group" aria-label="Szobák szűrése">
+      <button type="button" data-filter="all" aria-pressed="true">Mind</button>
+      <button type="button" data-filter="f1" aria-pressed="false">1. emelet</button>
+      <button type="button" data-filter="f2" aria-pressed="false">2. emelet</button>
+      <button type="button" data-filter="terrace" aria-pressed="false">Terasszal</button>
+      <button type="button" data-filter="big" aria-pressed="false">4 főtől</button>
+      <span class="filter-count mono" id="room-count"></span>
+    </div>
+    <p class="hint rise">Kattintsatok a szobákra, és összeáll a csoportotok — alul futó összesítéssel.</p>
+    <div class="cards rise" data-grid="rooms" data-pickable="true"></div>
+  </section>
+  <section class="band wrap">
+    <div class="head rise"><p class="eyebrow">Minden szobában</p><h2>Ami jár hozzá.</h2></div>
+    <ul class="highlights rise">
+      <li><span aria-hidden="true">🛏️</span> Ágynemű, szappan, hajszárító minden szobában</li>
+      <li><span aria-hidden="true">🏔️</span> Venediger vagy Wildkogel panoráma, legtöbbször erkéllyel</li>
+      <li><span aria-hidden="true">📶</span> Korlátlan WiFi az egész házban</li>
+      <li><span aria-hidden="true">🎿</span> Fűtött sítároló a felszerelésnek</li>
+    </ul>
+    <div class="inline-ctas rise">
+      <a class="btn" href="#/kapcsolat" data-route="kapcsolat" data-magnetic>Időpontot foglalok</a>
+      <a class="btn btn--ghost" href="#/" data-anchor="arak" data-magnetic>Árak megtekintése</a>
+    </div>
+  </section>
+</div>
+
+<!-- ======================== ALOLDAL: Sípályák ============================ -->
+<div class="view" data-view="sipalyak">
+  <section class="band subhero wrap">
+    <p class="eyebrow rise">A környék</p>
+    <h1 class="rise">Három síterep,<br>egy szállásból</h1>
+    <p class="lede rise">A Ludwighaus 600 méterre van a Wildkogel sípályáktól, és onnan további két nagy síterep érhető el rövid autóúttal.</p>
+  </section>
+  <section class="band band--tight wrap">
+    <dl class="gauges rise">
+      <div class="gauge"><dd class="mono">402,7<u>km</u></dd><dt>Sípálya a régióban</dt></div>
+      <div class="gauge"><dd class="mono">600<u>m</u></dd><dt>Gyalog a Wildkogelig</dt></div>
+      <div class="gauge"><dd class="mono">14<u>km</u></dd><dt>A világ leghosszabb kivilágított szánkópályája</dt></div>
+      <div class="gauge"><dd class="mono">3.662<u>m</u></dd><dt>Großvenediger</dt></div>
+    </dl>
+  </section>
+  <section class="band wrap">
+    <div class="cards cards--wide rise" data-grid="ski"></div>
+  </section>
+
+  <section class="band wrap">
+    <div class="head rise">
+      <p class="eyebrow">Összehasonlítás</p>
+      <h2>Melyik terep<br>való nektek?</h2>
+      <p class="lede">A pályahossz nehézség szerinti megoszlása. Európai jelölés: kék könnyű, piros közepes, fekete nehéz.</p>
+    </div>
+    <div class="mixes rise" id="ski-mix"></div>
+    <p class="hint rise">A megadott kilométerek a síterepek saját adatai; a bontás összege helyenként pár tizeddel eltér a főszámtól.</p>
+    <div class="inline-ctas rise">
+      <a class="btn" href="#/kapcsolat" data-route="kapcsolat" data-magnetic>Időpontot foglalok</a>
+      <a class="btn btn--ghost" href="#/galeria" data-route="galeria" data-magnetic>Galéria →</a>
+    </div>
+  </section>
+</div>
+
+<!-- ====================== ALOLDAL: Kikapcsolódás ========================= -->
+<div class="view" data-view="kikapcsolodas">
+  <section class="band subhero wrap">
+    <p class="eyebrow rise">Kikapcsolódás</p>
+    <h1 class="rise">Nyáron és télen,<br>a ház körül.</h1>
+    <p class="lede rise">A Wildkogel-Aréna és a Hohe Tauern Nemzeti Park programjai. Kattintsatok a programokra a részletekért.</p>
+  </section>
+
+  <section class="band band--tight wrap">
+    <div class="head rise"><p class="eyebrow">Nyári kikapcsolódási lehetőségek</p><h2>Amikor elolvad a hó.</h2></div>
+    <div class="linkgrid rise" data-activities="summer"></div>
+  </section>
+
+  <section class="band wrap">
+    <div class="head rise"><p class="eyebrow">Téli kikapcsolódási lehetőségek</p><h2>Amikor leesik.</h2></div>
+    <div class="linkgrid rise" data-activities="winter"></div>
+  </section>
+
+  <section class="band wrap">
+    <div class="head rise">
+      <p class="eyebrow">Tavasz &middot; Nyár &middot; Ősz</p>
+      <h2>E-Bike túrák<br>a hegyekben</h2>
+      <p class="lede">Amikor elolvad a hó, a hegyek új arcukat mutatják. Elektromos kerékpárjainkkal kényelmesen, izzadás nélkül fedezhetitek fel a völgyeket, vízeséseket és panorámautakat — akár sokat tekertek, akár alig.</p>
+    </div>
+    <div class="cards cards--wide rise" data-grid="bike"></div>
+    <div class="inline-ctas rise">
+      <a class="btn" href="#/kapcsolat" data-route="kapcsolat" data-magnetic>Foglaljatok e-bike túrát →</a>
+      <a class="btn btn--ghost" href="#/sipalyak" data-route="sipalyak" data-magnetic>Sípályák →</a>
+    </div>
+  </section>
+</div>
+
+<!-- =================== ALOLDAL: Foglalás és kapcsolat ==================== -->
+<div class="view" data-view="kapcsolat">
+  <section class="band subhero wrap">
+    <p class="eyebrow rise">Foglalás és kapcsolat</p>
+    <h1 class="rise">Írjatok,<br>és visszajelzünk.</h1>
+    <p class="lede rise">Rugalmas érkezés — bármely nap, akár este is. Töltsétek ki az űrlapot, vagy hívjatok minket közvetlenül.</p>
+  </section>
+
+  <section class="band band--tight wrap">
+<div class="two-col">
     <div class="rise" data-parallax="0.05">
       <ul class="contact-list">
         <li><span aria-hidden="true">📍</span> Neukirchen am Grossvenediger, Ausztria</li>
@@ -636,119 +756,6 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <p class="fineprint">A foglalás elküldésével elfogadjátok az <a href="#/" data-anchor="">Adatkezelési tájékoztatót</a> és az <a href="#/" data-anchor="">ÁSZF-et</a>.</p>
     </form>
   </div>
-</section>
-
-</div><!-- /view: home -->
-
-<!-- ========================= ALOLDAL: Szobák ============================= -->
-<div class="view" data-view="szobak">
-  <section class="band subhero wrap">
-    <p class="eyebrow rise">Szobáink</p>
-    <h1 class="rise">Tizenkét szoba,<br>két emeleten.</h1>
-    <p class="lede rise">Az összkomfortos, többnyire erkélyes szobákból pazar kilátás nyílik a hegyekre. Minden szoba egyedi panorámával — Venediger vagy Wildkogel kilátással.</p>
-    <ul class="room-types rise">
-      <li>Családi szoba</li><li>Kétágyas szoba</li><li>Franciaágyas szoba</li>
-      <li>Ikerágyas szoba</li><li>Fürdőszoba</li>
-    </ul>
-  </section>
-  <section class="band band--tight wrap">
-    <div class="filters rise" id="room-filters" role="group" aria-label="Szobák szűrése">
-      <button type="button" data-filter="all" aria-pressed="true">Mind</button>
-      <button type="button" data-filter="f1" aria-pressed="false">1. emelet</button>
-      <button type="button" data-filter="f2" aria-pressed="false">2. emelet</button>
-      <button type="button" data-filter="terrace" aria-pressed="false">Terasszal</button>
-      <button type="button" data-filter="big" aria-pressed="false">4 főtől</button>
-      <span class="filter-count mono" id="room-count"></span>
-    </div>
-    <p class="hint rise">Kattintsatok a szobákra, és összeáll a csoportotok — alul futó összesítéssel.</p>
-    <div class="cards rise" data-grid="rooms" data-pickable="true"></div>
-  </section>
-  <section class="band wrap">
-    <div class="head rise"><p class="eyebrow">Minden szobában</p><h2>Ami jár hozzá.</h2></div>
-    <ul class="highlights rise">
-      <li><span aria-hidden="true">🛏️</span> Ágynemű, szappan, hajszárító minden szobában</li>
-      <li><span aria-hidden="true">🏔️</span> Venediger vagy Wildkogel panoráma, legtöbbször erkéllyel</li>
-      <li><span aria-hidden="true">📶</span> Korlátlan WiFi az egész házban</li>
-      <li><span aria-hidden="true">🎿</span> Fűtött sítároló a felszerelésnek</li>
-    </ul>
-    <div class="inline-ctas rise">
-      <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Időpontot foglalok</a>
-      <a class="btn btn--ghost" href="#/" data-anchor="arak" data-magnetic>Árak megtekintése</a>
-      <a class="btn btn--ghost" href="https://sportclubhausamwildkogel.eu/360photos/" target="_blank" rel="noopener" data-magnetic>360° szobafotók ↗</a>
-    </div>
-  </section>
-</div>
-
-<!-- ======================== ALOLDAL: Sípályák ============================ -->
-<div class="view" data-view="sipalyak">
-  <section class="band subhero wrap">
-    <p class="eyebrow rise">A környék</p>
-    <h1 class="rise">Három síterep,<br>egy szállásból</h1>
-    <p class="lede rise">A Ludwighaus 600 méterre van a Wildkogel sípályáktól, és onnan további két nagy síterep érhető el rövid autóúttal.</p>
-  </section>
-  <section class="band band--tight wrap">
-    <dl class="gauges rise">
-      <div class="gauge"><dd class="mono">402,7<u>km</u></dd><dt>Sípálya a régióban</dt></div>
-      <div class="gauge"><dd class="mono">600<u>m</u></dd><dt>Gyalog a Wildkogelig</dt></div>
-      <div class="gauge"><dd class="mono">14<u>km</u></dd><dt>A világ leghosszabb kivilágított szánkópályája</dt></div>
-      <div class="gauge"><dd class="mono">3.662<u>m</u></dd><dt>Großvenediger</dt></div>
-    </dl>
-  </section>
-  <section class="band wrap">
-    <div class="cards cards--wide rise" data-grid="ski"></div>
-  </section>
-
-  <section class="band wrap">
-    <div class="head rise">
-      <p class="eyebrow">Összehasonlítás</p>
-      <h2>Melyik terep<br>való nektek?</h2>
-      <p class="lede">A pályahossz nehézség szerinti megoszlása. Európai jelölés: kék könnyű, piros közepes, fekete nehéz.</p>
-    </div>
-    <div class="mixes rise" id="ski-mix"></div>
-    <p class="hint rise">A megadott kilométerek a síterepek saját adatai; a bontás összege helyenként pár tizeddel eltér a főszámtól.</p>
-    <div class="panel webcams rise">
-      <p class="eyebrow">Élő webkamerák</p>
-      <div class="contact-direct">
-        <a href="https://sportclubhausamwildkogel.eu/webcam/" target="_blank" rel="noopener">📷 Webkamerák a környéken ↗</a>
-        <a href="https://sportclubhausamwildkogel.eu/wildkogelarena/" target="_blank" rel="noopener">🏔️ Wildkogel-Arena ↗</a>
-      </div>
-    </div>
-    <div class="inline-ctas rise">
-      <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Időpontot foglalok</a>
-      <a class="btn btn--ghost" href="#/galeria" data-route="galeria" data-magnetic>Galéria →</a>
-    </div>
-  </section>
-</div>
-
-<!-- ====================== ALOLDAL: Kikapcsolódás ========================= -->
-<div class="view" data-view="kikapcsolodas">
-  <section class="band subhero wrap">
-    <p class="eyebrow rise">Kikapcsolódás</p>
-    <h1 class="rise">Nyáron és télen,<br>a ház körül.</h1>
-    <p class="lede rise">A Wildkogel-Aréna és a Hohe Tauern Nemzeti Park programjai. Kattintsatok a programokra a részletekért.</p>
-  </section>
-
-  <section class="band band--tight wrap">
-    <div class="head rise"><p class="eyebrow">Nyári kikapcsolódási lehetőségek</p><h2>Amikor elolvad a hó.</h2></div>
-    <div class="linkgrid rise" data-activities="summer"></div>
-  </section>
-
-  <section class="band wrap">
-    <div class="head rise"><p class="eyebrow">Téli kikapcsolódási lehetőségek</p><h2>Amikor leesik.</h2></div>
-    <div class="linkgrid rise" data-activities="winter"></div>
-  </section>
-
-  <section class="band wrap">
-    <div class="head rise">
-      <p class="eyebrow">Tavasz &middot; Nyár &middot; Ősz</p>
-      <h2>E-Bike túrák<br>a hegyekben</h2>
-      <p class="lede">Amikor elolvad a hó, a hegyek új arcukat mutatják. Elektromos kerékpárjainkkal kényelmesen, izzadás nélkül fedezhetitek fel a völgyeket, vízeséseket és panorámautakat — akár sokat tekertek, akár alig.</p>
-    </div>
-    <div class="cards cards--wide rise" data-grid="bike"></div>
-    <div class="inline-ctas rise">
-      <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Foglaljatok e-bike túrát →</a>
-      <a class="btn btn--ghost" href="#/sipalyak" data-route="sipalyak" data-magnetic>Sípályák →</a>
-    </div>
   </section>
 </div>
 
@@ -770,7 +777,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <figure class="strip"><canvas data-scape="night"></canvas><figcaption><b>Bár &amp; Disco</b><small>A panzió pincéjében</small></figcaption></figure>
     </div>
     <div class="inline-ctas rise">
-      <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Időpontot foglalok</a>
+      <a class="btn" href="#/kapcsolat" data-route="kapcsolat" data-magnetic>Időpontot foglalok</a>
       <a class="btn btn--ghost" href="#/sipalyak" data-route="sipalyak" data-magnetic>Sípályák →</a>
     </div>
   </section>
@@ -800,8 +807,8 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       </a>
     </div>
     <div><h4>Az oldal</h4><ul><li><a href="#/" data-anchor="szallasunk">Szállásunk</a></li><li><a href="#/szobak" data-route="szobak">Szobák</a></li><li><a href="#/sipalyak" data-route="sipalyak">Sípályák</a></li><li><a href="#/kikapcsolodas" data-route="kikapcsolodas">Kikapcsolódás</a></li></ul></div>
-    <div><h4>Foglalás</h4><ul><li><a href="#/" data-anchor="arak">Árak</a></li><li><a href="#/galeria" data-route="galeria">Galéria</a></li><li><a href="#/" data-anchor="foglalas">Időpontot foglalok</a></li></ul></div>
-    <div><h4>Dokumentumok</h4><ul><li><a href="#/" data-anchor="">ÁSZF</a></li><li><a href="#/" data-anchor="">Adatkezelés</a></li><li><a href="#/" data-anchor="foglalas">Kapcsolat</a></li></ul></div>
+    <div><h4>Foglalás</h4><ul><li><a href="#/" data-anchor="arak">Árak</a></li><li><a href="#/galeria" data-route="galeria">Galéria</a></li><li><a href="#/kapcsolat" data-route="kapcsolat">Időpontot foglalok</a></li></ul></div>
+    <div><h4>Dokumentumok</h4><ul><li><a href="#/" data-anchor="">ÁSZF</a></li><li><a href="#/" data-anchor="">Adatkezelés</a></li><li><a href="#/kapcsolat" data-route="kapcsolat">Kapcsolat</a></li></ul></div>
     <div><h4>Kövessetek minket</h4><ul class="social">
       <li><a href="https://www.facebook.com/ludwighausneukirchen/" target="_blank" rel="noopener">Facebook</a></li>
       <li><a href="https://www.instagram.com/sportclubhaus.am.wildkogel/" target="_blank" rel="noopener">Instagram</a></li>
@@ -810,7 +817,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     </ul></div>
   </div>
   <div class="foot-bottom">
-    <span>© 2026 Ludwighaus · sportclubhausamwildkogel.eu</span>
+    <span>© 2026 Ludwighaus</span>
     <span>HU / EN / DE</span>
   </div>
 </footer>
@@ -838,7 +845,7 @@ const SECTIONS = [
 let T = x => x;                      /* fordító — az i18n modul állítja be */
 window.__setT = fn => { T = fn; };
 
-const VIEW_LABELS = { home:'Ludwighaus', szobak:'Szobák', sipalyak:'Sípályák', galeria:'Galéria', kikapcsolodas:'Kikapcsolódás' };
+const VIEW_LABELS = { home:'Ludwighaus', szobak:'Szobák', sipalyak:'Sípályák', galeria:'Galéria', kikapcsolodas:'Kikapcsolódás', kapcsolat:'Foglalás és kapcsolat' };
 
 const ROOMS = [
   { no:'No.11', floor:'1. emelet', name:'Venediger panoráma', type:'Panorámás szoba, terasszal', cap:'2+1 fő' },
@@ -909,24 +916,24 @@ const EXCLUDED = [
 
 const ACTIVITIES = {
   summer: [
-    { name:'Untersulzbach-vízesés',      note:'Vízesés a Hohe Tauern szívében', href:'https://sportclubhausamwildkogel.eu/untersulzbach-wasserfall/' },
-    { name:'Großer Rettenstein',         note:'A környék jellegzetes sziklacsúcsa', href:'https://sportclubhausamwildkogel.eu/grosser-rettenstein/' },
-    { name:'Blausee — Obersulzbachtal',  note:'Gleccsertavi túra a völgyben', href:'https://sportclubhausamwildkogel.eu/blausee-obersulzbachtal/' },
-    { name:'Museum Bramberg',            note:'A régió múzeuma Brambergben', href:'https://sportclubhausamwildkogel.eu/museum-bramberg/' },
-    { name:'Hohe Tauern Nemzeti Park',   note:'Közép-Európa legnagyobb nemzeti parkja', href:'https://sportclubhausamwildkogel.eu/hohe-tauern-national-park/' },
-    { name:'Habachtal',                  note:'Smaragdvölgy, túraútvonalakkal', href:'https://sportclubhausamwildkogel.eu/habactal/' },
-    { name:'Panoráma- és csúszdaút',     note:'Kilátópont és csúszda a hegyen', href:'https://sportclubhausamwildkogel.eu/panorama-and-slide-path/' },
-    { name:'Adventure Arena Kogel-Mogel',note:'Kalandpark a Wildkogelen', href:'https://sportclubhausamwildkogel.eu/adventure-arena-kogel-mogel/' },
+    { name:'Untersulzbach-vízesés',      note:'Vízesés a Hohe Tauern szívében' },
+    { name:'Großer Rettenstein',         note:'A környék jellegzetes sziklacsúcsa' },
+    { name:'Blausee — Obersulzbachtal',  note:'Gleccsertavi túra a völgyben' },
+    { name:'Museum Bramberg',            note:'A régió múzeuma Brambergben' },
+    { name:'Hohe Tauern Nemzeti Park',   note:'Közép-Európa legnagyobb nemzeti parkja' },
+    { name:'Habachtal',                  note:'Smaragdvölgy, túraútvonalakkal' },
+    { name:'Panoráma- és csúszdaút',     note:'Kilátópont és csúszda a hegyen' },
+    { name:'Adventure Arena Kogel-Mogel',note:'Kalandpark a Wildkogelen' },
   ],
   winter: [
-    { name:'Szánkózás',                  note:'A világ leghosszabb kivilágított szánkópályája', href:'https://sportclubhausamwildkogel.eu/tobogganing/' },
-    { name:'Snow Tubing',                note:'Neukirchen és Bramberg', href:'https://sportclubhausamwildkogel.eu/snow-tubing/' },
-    { name:'Sífutás',                    note:'Előkészített nyomok a völgyben', href:'https://sportclubhausamwildkogel.eu/cross-country-skiing/' },
-    { name:'Kogel Mogel gyerekpálya',    note:'Tanulóterep a legkisebbeknek', href:'https://sportclubhausamwildkogel.eu/kogel-mogel-kids-area/' },
-    { name:'Lovas szánkózás',            note:'Neukirchen és Bramberg', href:'https://sportclubhausamwildkogel.eu/sleigh-rides/' },
-    { name:'Funslope & Familypark',      note:'Hullámok, kanyarok, ugratók', href:'https://sportclubhausamwildkogel.eu/funslope-and-familypark/' },
-    { name:'Skimovie & Speedcheck',      note:'Időmérés és videó a pályán', href:'https://sportclubhausamwildkogel.eu/skimovie-and-speedcheck/' },
-    { name:'Téli túra',                  note:'Gyalogos útvonalak a Wildkogel-Arénában', href:'https://sportclubhausamwildkogel.eu/winter-hike/' },
+    { name:'Szánkózás',                  note:'A világ leghosszabb kivilágított szánkópályája' },
+    { name:'Snow Tubing',                note:'Neukirchen és Bramberg' },
+    { name:'Sífutás',                    note:'Előkészített nyomok a völgyben' },
+    { name:'Kogel Mogel gyerekpálya',    note:'Tanulóterep a legkisebbeknek' },
+    { name:'Lovas szánkózás',            note:'Neukirchen és Bramberg' },
+    { name:'Funslope & Familypark',      note:'Hullámok, kanyarok, ugratók' },
+    { name:'Skimovie & Speedcheck',      note:'Időmérés és videó a pályán' },
+    { name:'Téli túra',                  note:'Gyalogos útvonalak a Wildkogel-Arénában' },
   ],
 };
 
@@ -1526,15 +1533,14 @@ function tilt(nodes){
   if (exc) exc.innerHTML = EXCLUDED.map(x => `<li>${x}</li>`).join('');
 
   const card = a => `
-    <a class="panel linkcard" href="${a.href}" target="_blank" rel="noopener">
+    <article class="panel linkcard">
       <span class="linkcard-txt"><b>${a.name}</b><small>${a.note}</small></span>
-      <span class="linkcard-go" aria-hidden="true">↗</span>
-    </a>`;
+    </article>`;
   document.querySelectorAll('[data-activities]').forEach(g =>
     g.innerHTML = ACTIVITIES[g.dataset.activities].map(card).join(''));
   document.querySelectorAll('[data-season]').forEach(g =>
     g.innerHTML = ACTIVITIES[g.dataset.season].slice(0,5).map(a =>
-      `<li><a href="${a.href}" target="_blank" rel="noopener">${a.name}<span>↗</span></a></li>`).join(''));
+      `<li><span>${a.name}</span></li>`).join(''));
 
 
   document.querySelectorAll('[data-grid="reviews"]').forEach(rg => rg.innerHTML = REVIEWS.map(r => `
@@ -1655,7 +1661,7 @@ let renderScapes;
       </div>
       <div class="pickbar-acts">
         <button type="button" class="btn btn--ghost" id="pick-clear">Törlés</button>
-        <a class="btn btn--lamp" href="#/" data-anchor="foglalas" id="pick-go">Ajánlatot kérek ezekre</a>
+        <a class="btn btn--lamp" href="#/kapcsolat" data-route="kapcsolat" id="pick-go">Ajánlatot kérek ezekre</a>
       </div>
     </div>`;
   document.body.appendChild(bar);
@@ -2518,6 +2524,10 @@ const EN = {
   '360° szobafotók':'360° room photos','Körbenézés a szobákban':'Look around inside the rooms',
   'ÁSZF és Adatkezelési tájékoztató':'Terms and Privacy Policy','Szerződési feltételek és adatkezelés':'Contract terms and data handling',
   'Webkamerák a környéken ↗':'Webcams nearby ↗','Wildkogel-Arena ↗':'Wildkogel Arena ↗',
+  // Foglalás és kapcsolat
+  'Foglalás és kapcsolat':'Booking and contact','Írjatok,':'Write to us,','és visszajelzünk.':'we answer fast.',
+  'Rugalmas érkezés — bármely nap, akár este is. Töltsétek ki az űrlapot, vagy hívjatok minket közvetlenül.':'Flexible arrival — any day of the week, evenings included. Fill in the form, or simply call us.',
+  'Rugalmas érkezés — bármely nap, akár este is. Írjátok meg a dátumot és a létszámot, és hamarosan visszajelzünk.':'Flexible arrival — any day of the week, evenings included. Send us your dates and group size and we will get back to you shortly.',
   'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
 };
 
@@ -2684,6 +2694,10 @@ const DE = {
   '360° szobafotók':'360°-Zimmerfotos','Körbenézés a szobákban':'Rundumblick in den Zimmern',
   'ÁSZF és Adatkezelési tájékoztató':'AGB und Datenschutzerklärung','Szerződési feltételek és adatkezelés':'Vertragsbedingungen und Datenschutz',
   'Webkamerák a környéken ↗':'Webcams in der Umgebung ↗','Wildkogel-Arena ↗':'Wildkogel Arena ↗',
+  // Foglalás és kapcsolat
+  'Foglalás és kapcsolat':'Buchung und Kontakt','Írjatok,':'Schreibt uns,','és visszajelzünk.':'wir antworten schnell.',
+  'Rugalmas érkezés — bármely nap, akár este is. Töltsétek ki az űrlapot, vagy hívjatok minket közvetlenül.':'Flexible Anreise — an jedem Tag, auch abends. Füllt das Formular aus oder ruft uns einfach an.',
+  'Rugalmas érkezés — bármely nap, akár este is. Írjátok meg a dátumot és a létszámot, és hamarosan visszajelzünk.':'Flexible Anreise — an jedem Tag, auch abends. Schickt uns Termin und Personenzahl, wir melden uns kurzfristig.',
   'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
 };
 
@@ -2812,7 +2826,7 @@ h1, h2, .hero-kicker, .lede, .eyebrow, .scroll-hint, .spec-row{
   display:flex; align-items:center; gap:1rem; padding:1.1rem 1.25rem; border-radius:16px;
   text-decoration:none; color:inherit; transition:border-color .25s, transform .35s var(--ease);
 }
-.linkcard:hover{ border-color:color-mix(in srgb, var(--glacier) 60%, transparent); transform:translateY(-2px); }
+a.linkcard:hover{ border-color:color-mix(in srgb, var(--glacier) 60%, transparent); transform:translateY(-2px); }
 .linkcard .ico{ font-size:1.35rem; line-height:1; flex:none; }
 .linkcard-txt{ display:flex; flex-direction:column; gap:.15rem; min-width:0; }
 .linkcard-txt b{ font-size:.98rem; }
@@ -2823,11 +2837,12 @@ h1, h2, .hero-kicker, .lede, .eyebrow, .scroll-hint, .spec-row{
 /* Évszakos kivonat a főoldalon */
 .season{ padding:1.6rem 1.7rem; border-radius:18px; }
 .season-list{ list-style:none; margin:1rem 0 0; padding:0; display:flex; flex-direction:column; }
-.season-list a{
+.season-list a, .season-list li > span{
   display:flex; align-items:baseline; gap:.6rem; text-decoration:none;
   padding:.72rem 0; border-top:1px solid var(--rule); font-size:.92rem; color:var(--fg-soft);
   transition:color .2s;
 }
 .season-list a:hover{ color:var(--glacier); }
+.season-list li > span{ display:block; }
 .season-list span{ margin-left:auto; font-family:var(--mono); font-size:.75rem; color:var(--fg-faint); }
 </style>
