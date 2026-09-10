@@ -982,28 +982,32 @@ function measure(){
   state.p = clamp(state.scrollY / max, 0, 1);
 }
 
-/* Paletta a magasság függvényében — a lap saját, zárt vizuális világa. */
-function paint(){
-  const p = state.p;
-  const top = ramp(SKY_TOP, p), bot = ramp(SKY_BOTTOM, p);
-  root.style.setProperty('--sky-top', rgb(top));
-  root.style.setProperty('--sky-bottom', rgb(bot));
+/* A fix tokenek egyszer állnak be — a lap végig sötét, nincs mit animálni. */
+(function setFixedTokens(){
+  const fg = '233,241,247';
+  root.style.setProperty('--fg',        `rgb(${fg})`);
+  root.style.setProperty('--fg-soft',   `rgba(${fg},.66)`);
+  root.style.setProperty('--fg-faint',  `rgba(${fg},.36)`);
+  root.style.setProperty('--rule',      `rgba(${fg},.14)`);
+  root.style.setProperty('--panel',      'rgba(9,20,33,.58)');
+  root.style.setProperty('--panel-soft', `rgba(${fg},.06)`);
+  root.style.setProperty('--panel-edge', `rgba(${fg},.18)`);
+  root.style.setProperty('--glacier',    '#43B4BB');
+  const g = document.getElementById('grain');
+  if (g) g.style.opacity = '.14';
+})();
 
-  const light = 0;   /* a lap végig sötét marad — a szöveg kontrasztja nem csökken */
-  const fg = mixc(hex('#E9F1F7'), hex('#08182B'), light);
-  const f = `${fg[0]|0},${fg[1]|0},${fg[2]|0}`;
-  root.style.setProperty('--fg', `rgb(${f})`);
-  root.style.setProperty('--fg-soft',  `rgba(${f},.66)`);
-  root.style.setProperty('--fg-faint', `rgba(${f},.36)`);
-  root.style.setProperty('--rule',     `rgba(${f},${lerp(.14,.16,light)})`);
-  /* A panel nem áttetsző szűrő, hanem sötét üveg: a háttér átdereng,
-     de a rajta lévő szöveg kontrasztja nem a háttértől függ. */
-  root.style.setProperty('--panel',     'rgba(9,20,33,.58)');
-  root.style.setProperty('--panel-soft', `rgba(${f},.06)`);
-  root.style.setProperty('--panel-edge', `rgba(${f},.18)`);
-  root.style.setProperty('--glacier', light > .5 ? '#177880' : '#43B4BB');
-  const grain = document.getElementById('grain');
-  if (grain) grain.style.opacity = String(lerp(.22,.05,light));
+/* Az ég színe a görgetéssel változik — de csak akkor írunk a DOM-ba, ha a
+   kerekített érték tényleg elmozdult. Enélkül minden képkockában teljes
+   stílus-újraszámolás futna az egész dokumentumra. */
+let lastSkyKey = -1;
+function paint(){
+  const key = Math.round(state.p * 240);
+  if (key === lastSkyKey) return;
+  lastSkyKey = key;
+  const p = key / 240;
+  root.style.setProperty('--sky-top', rgb(ramp(SKY_TOP, p)));
+  root.style.setProperty('--sky-bottom', rgb(ramp(SKY_BOTTOM, p)));
 }
 
 let raf = 0, running = true;
@@ -1051,7 +1055,7 @@ window.addEventListener('pointermove', e => {
   }
 
   function build(){
-    dpr = Math.min(2, window.devicePixelRatio || 1);
+    dpr = Math.min(1.5, window.devicePixelRatio || 1);
     W = window.innerWidth; H = window.innerHeight;
     cv.width = W*dpr; cv.height = H*dpr;
     ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -1064,7 +1068,7 @@ window.addEventListener('pointermove', e => {
       { pts: ridge(2909, 7, .48),  base:1.16, speed:.66, amp:1.25 },
     ];
 
-    const count = clamp(Math.round(W*H/16000), 26, 110);
+    const count = clamp(Math.round(W*H/26000), 20, 70);
     flakes = Array.from({length:count}, () => ({
       x: Math.random()*W, y: Math.random()*H,
       r: .6 + Math.random()*1.9,
@@ -1472,15 +1476,16 @@ window.addEventListener('pointermove', e => {
 function tilt(nodes){
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
   nodes.forEach(card => {
+    let r = null;
+    card.addEventListener('pointerenter', () => { r = card.getBoundingClientRect(); });
     card.addEventListener('pointermove', e => {
-      if (!state.motion) return;
-      const r = card.getBoundingClientRect();
+      if (!state.motion || !r) return;
       const dx = (e.clientX - r.left)/r.width - .5;
       const dy = (e.clientY - r.top)/r.height - .5;
       card.style.transform = `perspective(900px) rotateX(${(-dy*4).toFixed(2)}deg) rotateY(${(dx*5).toFixed(2)}deg) translateZ(5px)`;
       card.style.transitionDuration = '.08s';
     });
-    card.addEventListener('pointerleave', () => { card.style.transform=''; card.style.transitionDuration=''; });
+    card.addEventListener('pointerleave', () => { r = null; card.style.transform=''; card.style.transitionDuration=''; });
   });
 }
 
@@ -1861,6 +1866,7 @@ let renderScapes;
     const v = viewEl(name);
     if (renderScapes) renderScapes(v);          /* a rejtett canvasnak nem volt mérete */
     window.scrollTo(0, 0);
+    if (window.__remeasure) requestAnimationFrame(window.__remeasure);
     document.title = name === 'home' ? 'Ludwighaus' : `${T(VIEW_LABELS[name])} — Ludwighaus`;
   }
 
@@ -1944,31 +1950,41 @@ let renderScapes;
    -------------------------------------------------------------------------- */
 (function Parallax(){
   const nodes = [...document.querySelectorAll('[data-parallax]')].map(el => ({
-    el, k: parseFloat(el.dataset.parallax) || 0, live: false, cur: 0,
+    el, k: parseFloat(el.dataset.parallax) || 0, top: 0, h: 0, cur: 0,
   }));
   if (!nodes.length) return;
 
-  if ('IntersectionObserver' in window){
-    const io = new IntersectionObserver(es => {
-      es.forEach(e => { const n = nodes.find(n => n.el === e.target); if (n) n.live = e.isIntersecting; });
-    }, { rootMargin: '20% 0px 20% 0px' });
-    nodes.forEach(n => io.observe(n.el));
-  } else nodes.forEach(n => n.live = true);
+  /* A pozíciókat elrendezésenként egyszer mérjük, nem képkockánként.
+     Képkockánkénti getBoundingClientRect 20+ elemre kényszerített
+     újratördelést okoz — ez volt a szaggatás fő forrása. */
+  function measureNodes(){
+    const sy = window.scrollY || 0;
+    for (const n of nodes){
+      if (!n.el.offsetParent && n.el.offsetHeight === 0){ n.h = 0; continue; }
+      const r = n.el.getBoundingClientRect();
+      n.top = r.top + sy;
+      n.h = r.height;
+    }
+  }
+  measureNodes();
+  window.__remeasure = measureNodes;
+  window.addEventListener('resize', () => { clearTimeout(measureNodes._t); measureNodes._t = setTimeout(measureNodes, 160); });
+  window.addEventListener('load', measureNodes);
 
   onTick(s => {
     if (!s.motion){
-      nodes.forEach(n => { if (n.cur !== 0){ n.cur = 0; n.el.style.transform = ''; } });
+      for (const n of nodes) if (n.cur !== 0){ n.cur = 0; n.el.style.transform = ''; }
       return;
     }
-    const mid = s.h / 2;
+    const mid = s.scrollY + s.h/2;
     for (const n of nodes){
-      if (!n.live) continue;
-      const r = n.el.getBoundingClientRect();
-      const d = (r.top + r.height / 2 - mid) / s.h;   // -1..1 a nézet közepéhez képest
-      const y = d * n.k * 130;
-      if (Math.abs(y - n.cur) < .12) continue;
+      if (!n.h) continue;
+      const c = n.top + n.h/2;
+      if (c < s.scrollY - s.h || c > s.scrollY + s.h*2) continue;   /* nézeten kívül */
+      const y = ((c - mid) / s.h) * n.k * 130;
+      if (Math.abs(y - n.cur) < .3) continue;
       n.cur = y;
-      n.el.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+      n.el.style.transform = `translate3d(0,${y.toFixed(1)}px,0)`;
     }
   });
 })();
@@ -2846,3 +2862,281 @@ a.linkcard:hover{ border-color:color-mix(in srgb, var(--glacier) 60%, transparen
 .season-list li > span{ display:block; }
 .season-list span{ margin-left:auto; font-family:var(--mono); font-size:.75rem; color:var(--fg-faint); }
 </style>
+<style>
+/* ============================================================================
+   TELJESÍTMÉNY — az elmosás csak ott marad, ahol tényleg kell
+   A háttérelmosás minden kártyán rétegenkénti újrarajzolást kényszerít.
+   Fix, sötét alap ugyanazt a hatást adja töredék költséggel.
+   ========================================================================= */
+.panel, .gauges, .tickets, .cards .card,
+.scroll-x, .forecast, .highlights, .contact-list{
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+}
+.panel{ background:rgba(9,20,33,.72); }
+.gauge, .ticket{ background:rgba(9,20,33,.72) !important; }
+.scroll-x, .forecast, .highlights, .contact-list{ background:rgba(9,20,33,.5); }
+.card{ contain:layout paint; }
+[data-parallax]{ will-change:transform; }
+.view:not(.is-active){ content-visibility:hidden; }
+
+/* ============================================================================
+   PINGVIN SEGÍTŐ
+   ========================================================================= */
+#peng{
+  position:fixed; right:clamp(.9rem,2.5vw,1.9rem); bottom:clamp(.9rem,2.5vw,1.6rem);
+  z-index:80; display:flex; flex-direction:column; align-items:flex-end; gap:.6rem;
+}
+body.has-pickbar #peng{ bottom:calc(88px + .9rem); }
+
+.peng-btn{
+  position:relative; width:74px; height:74px; padding:0; border:0; cursor:pointer;
+  background:transparent; line-height:0;
+  filter:drop-shadow(0 10px 24px rgba(4,12,22,.55));
+}
+.peng-btn svg{ width:100%; height:100%; overflow:visible; }
+.peng-body{ transform-origin:50% 100%; }
+html[data-motion="on"] .peng-body{ animation:pengBob 3.4s ease-in-out infinite; }
+@keyframes pengBob{ 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(-4px) rotate(-1.5deg); } }
+
+.peng-wing{ transform-origin:88px 132px; }
+html[data-motion="on"] .peng-btn.wave .peng-wing{ animation:pengWave .5s ease-in-out 3; }
+@keyframes pengWave{ 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(-42deg); } }
+
+html[data-motion="on"] .peng-btn.jump{ animation:pengJump .62s cubic-bezier(.3,1.4,.5,1); }
+@keyframes pengJump{ 0%{ transform:translateY(0) scaleY(1); } 22%{ transform:translateY(2px) scaleY(.86); }
+  55%{ transform:translateY(-26px) scaleY(1.08); } 78%{ transform:translateY(0) scaleY(.94); } 100%{ transform:translateY(0) scaleY(1); } }
+.peng-btn:hover{ transform:translateY(-3px); transition:transform .3s var(--ease); }
+.peng-btn:focus-visible{ outline:2px solid var(--glacier); outline-offset:6px; border-radius:12px; }
+
+.peng-bubble{
+  max-width:230px; padding:.6rem .85rem; border-radius:14px 14px 4px 14px;
+  background:var(--glacier); color:#04191B; font-size:.82rem; font-weight:700; line-height:1.4;
+  box-shadow:0 10px 26px rgba(4,12,22,.4);
+}
+.peng-bubble[hidden]{ display:none !important; }
+
+.peng-panel{
+  width:min(340px, calc(100vw - 2rem)); border-radius:18px; overflow:hidden;
+  background:rgba(8,18,30,.96); border:1px solid var(--panel-edge);
+  box-shadow:0 24px 60px -18px rgba(2,8,16,.8);
+  display:flex; flex-direction:column; max-height:min(70vh,560px);
+}
+.peng-panel[hidden]{ display:none !important; }
+.peng-head{ display:flex; align-items:center; gap:.6rem; padding:.85rem 1rem; border-bottom:1px solid var(--rule); }
+.peng-head b{ font-size:.92rem; }
+.peng-head small{ display:block; font-family:var(--mono); font-size:.55rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--fg-faint); }
+.peng-close{ margin-left:auto; background:transparent; border:0; color:var(--fg-soft); cursor:pointer; font-size:1rem; }
+.peng-close:hover{ color:var(--fg); }
+
+.peng-log{ padding:1rem; display:flex; flex-direction:column; gap:.7rem; overflow-y:auto; font-size:.88rem; line-height:1.55; }
+.peng-msg{ padding:.65rem .85rem; border-radius:12px; max-width:88%; }
+.peng-msg.bot{ background:rgba(233,241,247,.08); border:1px solid var(--rule); align-self:flex-start; border-bottom-left-radius:4px; }
+.peng-msg.me{ background:var(--glacier); color:#04191B; align-self:flex-end; border-bottom-right-radius:4px; font-weight:600; }
+.peng-msg a{ color:inherit; }
+
+.peng-chips{ display:flex; flex-wrap:wrap; gap:.35rem; padding:0 1rem .8rem; }
+.peng-chips button{
+  font-size:.72rem; padding:.36rem .65rem; border-radius:999px; cursor:pointer;
+  background:transparent; border:1px solid var(--panel-edge); color:var(--fg-soft); transition:.2s;
+}
+.peng-chips button:hover{ border-color:var(--glacier); color:var(--fg); }
+
+.peng-form{ display:flex; gap:.4rem; padding:.75rem; border-top:1px solid var(--rule); }
+.peng-form input{
+  flex:1; min-width:0; font-family:var(--body); font-size:.86rem; color:var(--fg);
+  background:rgba(233,241,247,.06); border:1px solid var(--panel-edge); border-radius:10px; padding:.55rem .7rem;
+}
+.peng-form button{ flex:none; background:var(--glacier); color:#04191B; border:0; border-radius:10px;
+  padding:0 .8rem; cursor:pointer; font-weight:700; }
+.peng-note{ padding:0 1rem .8rem; font-size:.68rem; color:var(--fg-faint); }
+
+@media (prefers-reduced-motion:reduce){ .peng-body, .peng-btn, .peng-wing{ animation:none !important; } }
+@media (max-width:520px){ .peng-btn{ width:60px; height:60px; } .peng-bubble{ max-width:180px; } }
+</style>
+
+<script>
+/* ============================================================================
+   PINGVIN SEGÍTŐ
+   Nem mesterséges intelligencia: kulcsszó alapján válaszol az oldal saját
+   adataiból. Amire nincs adat, azt nem találja ki — telefonra/e-mailre irányít.
+   Emergentben ez a QA tömb egy az egyben átvihető, vagy lecserélhető valódi
+   asszisztensre; a felület nem változik.
+   ========================================================================= */
+(() => {
+'use strict';
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const QA = [
+  { k:['ferohely','hany fo','hany agy','agy','letszam','kapacitas','45'],
+    a:'Összesen <b>45 vendégágy</b> van 12 szobában. A teljes ház egyben is bérelhető — a Szobák oldalon ki tudjátok válogatni, melyik szobák kellenek, és látjátok a futó összesítést.' },
+  { k:['szoba','szobak','apartman','emelet'],
+    a:'<b>12 szoba</b>, két emeleten. Mind összkomfortos, többségük erkéllyel, Venediger vagy Wildkogel panorámával. A Szobák oldalon emelet, terasz és férőhely szerint is szűrhettek.' },
+  { k:['ar','arak','mennyibe','koltseg','fizetes','euro'],
+    a:'A szobaárakat ajánlatban adjuk meg, mert a létszám és az időszak is számít. Amit fixen tudtok: <b>idegenforgalmi adó 3 € / nap</b> (helyszínen) és <b>egyszeri takarítási díj 25 € / fő</b>. Kérjetek ajánlatot a Foglalás oldalon.' },
+  { k:['reggeli','etkezes','felpanzio','vacsora','kaja'],
+    a:'<b>Reggelit nem szolgálunk fel.</b> Helyette van egy 50 fős étkező és egy self-cooking konyha tűzhellyel, sütővel, ipari mosogatógéppel — a csoportok általában maguknak főznek.' },
+  { k:['konyha','fozes','fozni','sutо','tuzhely'],
+    a:'A <b>self-cooking konyha</b> teljesen felszerelt: tűzhely, sütő, ipari mosogatógép, nagy főzőedények, kukta. Mellette 50 fős étkező hűtővel és kávéfőzővel.' },
+  { k:['parkolas','auto','kocsi','parkolo'],
+    a:'<b>Ingyenes parkolás</b> a ház melletti utcai parkolóban, korlátozás nélkül.' },
+  { k:['wifi','internet','net'],
+    a:'<b>Korlátlan WiFi</b> az egész házban, ingyenesen.' },
+  { k:['sipalya','sielés','sielni','wildkogel','pálya','palya','siterep','km'],
+    a:'A Wildkogel sípályák <b>600 méterre</b> vannak gyalog. A régióban <b>402,7 km</b> pálya érhető el, három síterepen: Wildkogel Aréna (72 km), Kitzbühel–Mittersill (181 km, 11 km autóval), Zillertal Aréna (146 km, 15 km autóval).' },
+  { k:['szanko','szankopalya','rodel','szankozas'],
+    a:'A <b>világ leghosszabb kivilágított szánkópályája</b> itt van, 14 km hosszan. Szánkót a házban is lehet bérelni.' },
+  { k:['sibusz','busz','transzfer','jarat'],
+    a:'Az őszi és téli hónapokban <b>síbuszjárat</b> viszi a vendégeket a Wildkogel síterepre.' },
+  { k:['ebike','e-bike','bicikli','kerekpar','tura'],
+    a:'Három e-bike túrát ajánlunk: Krimmler vízesés (~16 km, 2–3 óra), Wildkogel panoráma (~22 km, 900 m szint) és a Tauern kerékpárút, ami a ház mellett halad el. Kerékpárt a házban lehet bérelni.' },
+  { k:['program','kikapcsolodas','csinalni','latnivalo','nyar','tel'],
+    a:'Nyáron vízesések, a Blausee, a Hohe Tauern Nemzeti Park és a Kogel-Mogel kalandpark; télen szánkózás, snow tubing, sífutás, funslope és téli túrák. Mind a 16 program a <b>Kikapcsolódás</b> oldalon van.' },
+  { k:['gyerek','csalad','csaladi','kicsi'],
+    a:'Több panorámás családi szobánk van, és a Wildkogel többszörösen díjazott családbarát síterep. A legkisebbeknek a <b>Kogel Mogel gyerekpálya</b> való.' },
+  { k:['bar','disco','diszko','buli','este'],
+    a:'A panzió pincéjében van <b>bár és disco</b>. Jó tudni: ez esténként hallatszik a házban — ha csendes pihenésre vágytok, kérdezzétek meg foglaláskor, melyik szoba a legnyugodtabb.' },
+  { k:['palinka'],
+    a:'<b>Ingyenes pálinka egész nap</b> — ez a ház különlegessége.' },
+  { k:['foglalas','foglalni','ajanlat','lefoglal'],
+    a:'A <b>Foglalás</b> oldalon van az űrlap: dátum, létszám, szoba, és ha kell, a teljes ház. Kitöltés után hamarosan visszajelzünk. Sürgős esetben hívjatok: <a href="tel:+36205972010">+36 20 597 2010</a>.' },
+  { k:['lemondas','atfoglalas','stornó','storno','modositas'],
+    a:'Az átfoglalásban és a lemondásban <b>rugalmasak</b> vagyunk. A pontos feltételekért írjatok vagy hívjatok — ezt esetenként beszéljük meg.' },
+  { k:['hol','cim','megkozelites','utvonal','terkep','ausztria'],
+    a:'A ház <b>Neukirchen am Großvenediger</b> főutcáján van, Ausztriában. A Foglalás oldalon ott a Google Maps és a Waze link is.' },
+  { k:['telefon','email','kapcsolat','hivas','irni'],
+    a:'Telefon: <a href="tel:+36205972010">+36 20 597 2010</a> — magyar recepció, bármikor hívható.<br>E-mail: <a href="mailto:ludwighausaustria@gmail.com">ludwighausaustria@gmail.com</a>' },
+  { k:['erkezes','checkin','becsekkolas','kesо','kesobb'],
+    a:'Az érkezés <b>rugalmas</b>: bármely nap, akár esti órákban is. A pontos időpontot foglaláskor egyeztetjük.' },
+  { k:['kutya','allat','haziallat','dohanyzas','hazirend'],
+    a:'Erre nincs adatom az oldalon. Kérdezzétek meg közvetlenül: <a href="tel:+36205972010">+36 20 597 2010</a> vagy <a href="mailto:ludwighausaustria@gmail.com">ludwighausaustria@gmail.com</a>.' },
+];
+
+const CHIPS = ['Hány férőhely van?','Van reggeli?','Milyen messze a sípálya?','Mennyibe kerül?','Hogyan foglalok?'];
+const FALLBACK = 'Erre nem találok választ az oldalon. Írjatok vagy hívjatok, és emberi választ kaptok: <a href="tel:+36205972010">+36 20 597 2010</a> · <a href="mailto:ludwighausaustria@gmail.com">ludwighausaustria@gmail.com</a>';
+
+const norm = t => t.toLowerCase()
+  .normalize('NFD').replace(/[̀-ͯ]/g,'')
+  .replace(/[^a-z0-9 ]/g,' ');
+
+function answer(q){
+  const n = ' ' + norm(q) + ' ';
+  let best = null, bestScore = 0;
+  for (const item of QA){
+    let sc = 0;
+    for (const k of item.k) if (n.includes(' ' + norm(k))) sc += norm(k).length;
+    if (sc > bestScore){ bestScore = sc; best = item; }
+  }
+  return bestScore >= 3 ? best.a : FALLBACK;
+}
+
+/* --- Felület ------------------------------------------------------------- */
+const wrap = document.createElement('div');
+wrap.id = 'peng';
+wrap.innerHTML = `
+  <div class="peng-panel" id="peng-panel" role="dialog" aria-label="Ludwighaus segítő" hidden>
+    <div class="peng-head">
+      <span aria-hidden="true">🐧</span>
+      <span><b>Pingvin</b><small>Ludwighaus segítő</small></span>
+      <button class="peng-close" type="button" aria-label="Bezárás">✕</button>
+    </div>
+    <div class="peng-log" id="peng-log"></div>
+    <div class="peng-chips" id="peng-chips"></div>
+    <form class="peng-form" id="peng-form">
+      <input id="peng-input" type="text" placeholder="Kérdezz valamit…" autocomplete="off">
+      <button type="submit" aria-label="Küldés">→</button>
+    </form>
+    <p class="peng-note">Nem mesterséges intelligencia — az oldal adataiból válaszol.</p>
+  </div>
+
+  <div class="peng-bubble" id="peng-bubble" hidden>Szia! Kérdezz bátran a házról 🐧</div>
+
+  <button class="peng-btn" id="peng-btn" type="button" aria-label="Segítő megnyitása">
+    <svg viewBox="0 0 200 210" aria-hidden="true">
+      <g class="peng-body">
+        <ellipse cx="100" cy="196" rx="46" ry="9" fill="rgba(4,12,22,.35)"/>
+        <path d="M62 196c-6 0-9-5-6-9l14-16h20l-6 25z" fill="#F2A65A"/>
+        <path d="M138 196c6 0 9-5 6-9l-14-16h-20l6 25z" fill="#F2A65A"/>
+        <path d="M100 18c34 0 54 30 54 76 0 52-20 84-54 84s-54-32-54-84c0-46 20-76 54-76z" fill="#12222F"/>
+        <path d="M100 62c20 0 32 22 32 50s-12 44-32 44-32-16-32-44 12-50 32-50z" fill="#F4F9FC"/>
+        <path class="peng-wing" d="M88 96c-14 4-26 20-28 40-1 10 2 16 7 16 6 0 12-10 16-24 3-11 5-24 5-32z" fill="#0C1A26"/>
+        <path d="M112 96c14 4 26 20 28 40 1 10-2 16-7 16-6 0-12-10-16-24-3-11-5-24-5-32z" fill="#0C1A26"/>
+        <circle cx="84" cy="76" r="9" fill="#F4F9FC"/><circle cx="116" cy="76" r="9" fill="#F4F9FC"/>
+        <circle cx="86" cy="78" r="4.5" fill="#0A141D"/><circle cx="114" cy="78" r="4.5" fill="#0A141D"/>
+        <path d="M100 86l-11 7 11 7 11-7z" fill="#F2A65A"/>
+      </g>
+    </svg>
+  </button>`;
+document.body.appendChild(wrap);
+
+const btn = wrap.querySelector('#peng-btn');
+const panel = wrap.querySelector('#peng-panel');
+const bubble = wrap.querySelector('#peng-bubble');
+const log = wrap.querySelector('#peng-log');
+const form = wrap.querySelector('#peng-form');
+const input = wrap.querySelector('#peng-input');
+
+function say(text, who){
+  const d = document.createElement('div');
+  d.className = 'peng-msg ' + who;
+  d.innerHTML = text;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+}
+
+wrap.querySelector('#peng-chips').innerHTML = CHIPS.map(c => `<button type="button">${c}</button>`).join('');
+wrap.querySelector('#peng-chips').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  ask(b.textContent);
+});
+
+function ask(q){
+  say(q, 'me');
+  hop();
+  setTimeout(() => say(answer(q), 'bot'), reduce ? 0 : 260);
+}
+
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+  ask(q);
+});
+
+let open = false;
+function toggle(force){
+  open = force !== undefined ? force : !open;
+  panel.hidden = !open;
+  bubble.hidden = true;
+  btn.setAttribute('aria-label', open ? 'Segítő bezárása' : 'Segítő megnyitása');
+  if (open){
+    if (!log.children.length)
+      say('Szia! A ház <b>pingvinje</b> vagyok. Kérdezz a szobákról, az árakról, a sípályákról vagy a foglalásról — az oldal adataiból válaszolok.', 'bot');
+    setTimeout(() => input.focus(), 60);
+  }
+}
+btn.addEventListener('click', () => { hop(); toggle(); });
+wrap.querySelector('.peng-close').addEventListener('click', () => toggle(false));
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && open) toggle(false); });
+
+/* --- Mozgás: ugrás és integetés ------------------------------------------ */
+function hop(){
+  if (reduce) return;
+  btn.classList.remove('jump'); void btn.offsetWidth; btn.classList.add('jump');
+}
+function wave(){
+  if (reduce) return;
+  btn.classList.remove('wave'); void btn.offsetWidth; btn.classList.add('wave');
+}
+btn.addEventListener('pointerenter', wave);
+
+if (!reduce){
+  /* Időnként integet, ritkán ugrik — de csak amíg a panel zárva van. */
+  setInterval(() => { if (!open && !document.hidden) wave(); }, 9000);
+  setInterval(() => { if (!open && !document.hidden && Math.random() < .5) hop(); }, 15000);
+  setTimeout(() => { if (!open){ bubble.hidden = false; wave(); } }, 7000);
+  setTimeout(() => { bubble.hidden = true; }, 17000);
+}
+})();
+</script>
