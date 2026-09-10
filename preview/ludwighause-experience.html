@@ -927,6 +927,7 @@ window.addEventListener('pointermove', e => {
   const ctx = cv.getContext('2d', { alpha:true });
   let dpr = 1, W = 0, H = 0, layers = [], flakes = [], birds = [], clouds = [], peaks = [];
   let lastP = 0, cooldown = 0, ambient = 0;
+  let skierT = 0, spray = [];
 
   /** Középpont-eltolásos gerincgenerálás — determinisztikus, mag alapján. */
   function ridge(seed, points, rough){
@@ -993,6 +994,147 @@ window.addEventListener('pointermove', e => {
         life: 1,
       });
     }
+  }
+
+  /* --- A háttérbe vájt sípálya és a rajta ereszkedő síelő ---------------
+     A pálya képernyőtérben kanyarog fentről lefelé; a síelő helyét közvetlenül
+     a görgetés adja (t = scroll arány), így a látogatóval együtt ereszkedik. */
+  const trackX = t => W*.5 + Math.sin(t*Math.PI*2.5 + .55) * W*.19;
+  const trackY = t => -90 + t*(H + 180);
+  const trackW = t => lerp(W*.05, W*.15, t*t*.7 + t*.3);
+
+  function trackNormal(t){
+    const d = .004;
+    const dx = trackX(Math.min(1,t+d)) - trackX(Math.max(0,t-d));
+    const dy = trackY(Math.min(1,t+d)) - trackY(Math.max(0,t-d));
+    const len = Math.hypot(dx,dy) || 1;
+    return { nx:-dy/len, ny:dx/len, ang:Math.atan2(dy,dx) };
+  }
+
+  function paintPiste(s, lightF){
+    const STEPS = 44;
+    /* Pályatest */
+    ctx.beginPath();
+    for (let i=0;i<=STEPS;i++){
+      const t = i/STEPS, n = trackNormal(t), w = trackW(t)*.5;
+      const x = trackX(t) + n.nx*w, y = trackY(t) + n.ny*w;
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    for (let i=STEPS;i>=0;i--){
+      const t = i/STEPS, n = trackNormal(t), w = trackW(t)*.5;
+      ctx.lineTo(trackX(t) - n.nx*w, trackY(t) - n.ny*w);
+    }
+    ctx.closePath();
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, `rgba(226,238,248,${lerp(.30,.55,lightF)})`);
+    g.addColorStop(1, `rgba(244,250,255,${lerp(.46,.72,lightF)})`);
+    ctx.fillStyle = g; ctx.fill();
+
+    /* Ratrak-nyomok keresztben */
+    ctx.save(); ctx.clip();
+    ctx.strokeStyle = 'rgba(120,152,182,.16)';
+    ctx.lineWidth = 1;
+    for (let i=0;i<=STEPS*1.6;i++){
+      const t = i/(STEPS*1.6), n = trackNormal(t), w = trackW(t)*.6;
+      ctx.beginPath();
+      ctx.moveTo(trackX(t) + n.nx*w, trackY(t) + n.ny*w);
+      ctx.lineTo(trackX(t) - n.nx*w, trackY(t) - n.ny*w);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    /* Szegélykarók, váltakozva */
+    for (let i=1;i<14;i++){
+      const t = i/14, n = trackNormal(t), w = trackW(t)*.5 + 3, h = 5 + t*16;
+      ctx.fillStyle = i%2 ? '#F2A65A' : '#3C8FDD';
+      ctx.globalAlpha = .8;
+      ctx.fillRect(trackX(t) + n.nx*w - 1.2, trackY(t) + n.ny*w - h, 2.4, h);
+      ctx.fillRect(trackX(t) - n.nx*w - 1.2, trackY(t) - n.ny*w - h, 2.4, h);
+    }
+    ctx.globalAlpha = 1;
+
+    /* A megtett nyom: két kanyargó sínyom a síelő mögött */
+    if (skierT > .002){
+      for (const side of [-1, 1]){
+        ctx.beginPath();
+        for (let i=0;i<=STEPS;i++){
+          const t = (i/STEPS) * skierT, n = trackNormal(t);
+          const off = side * (3 + Math.sin(t*Math.PI*5)*trackW(t)*.16);
+          const x = trackX(t) + n.nx*off, y = trackY(t) + n.ny*off;
+          i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+        }
+        ctx.strokeStyle = 'rgba(96,132,166,.32)';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+      }
+    }
+  }
+
+  /* Síelő: hátulnézet, a kanyarba dőlve. Méret a perspektívával nő. */
+  function paintSkier(t, moving){
+    const n = trackNormal(t);
+    const x = trackX(t), y = trackY(t);
+    const sz = lerp(13, 30, t*t*.65 + t*.35);
+    const lean = Math.cos(t*Math.PI*2.5 + .55) * .34;      /* a kanyar iránya */
+
+    /* Hóporfelhő */
+    if (moving && spray.length < 60){
+      for (let k=0;k<2;k++) spray.push({
+        x: x - n.nx*sz*.3, y: y - sz*.2,
+        vx:(Math.random()-.5)*1.6, vy:-(.3+Math.random()*1.1),
+        r: sz*(.10+Math.random()*.20), life:1,
+      });
+    }
+    for (let i=spray.length-1;i>=0;i--){
+      const f = spray[i];
+      f.x += f.vx; f.y += f.vy; f.vy += .06; f.life -= .035;
+      if (f.life <= 0){ spray.splice(i,1); continue; }
+      ctx.globalAlpha = f.life*.5;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r*(1.6-f.life), 0, 6.2832); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(lean * .55);
+
+    /* Árnyék a hóban */
+    ctx.globalAlpha = .18; ctx.fillStyle = '#2A4260';
+    ctx.beginPath(); ctx.ellipse(0, sz*.5, sz*.52, sz*.16, 0, 0, 6.2832); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    /* Sílécek */
+    ctx.fillStyle = '#12222F';
+    ctx.fillRect(-sz*.40, sz*.24, sz*.30, sz*.11);
+    ctx.fillRect( sz*.10, sz*.24, sz*.30, sz*.11);
+
+    /* Botok */
+    ctx.strokeStyle = '#4E6A85'; ctx.lineWidth = Math.max(1, sz*.05);
+    ctx.beginPath();
+    ctx.moveTo(-sz*.34, -sz*.10); ctx.lineTo(-sz*.52, sz*.30);
+    ctx.moveTo( sz*.34, -sz*.10); ctx.lineTo( sz*.52, sz*.30);
+    ctx.stroke();
+
+    /* Láb + törzs — a kabát a lap meleg akcentusa, hóban ez látszik a legjobban */
+    ctx.fillStyle = '#1B3350';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(-sz*.26, -sz*.02, sz*.52, sz*.30, sz*.10)
+                  : ctx.rect(-sz*.26, -sz*.02, sz*.52, sz*.30);
+    ctx.fill();
+    ctx.fillStyle = '#F2A65A';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(-sz*.30, -sz*.42, sz*.60, sz*.46, sz*.16)
+                  : ctx.rect(-sz*.30, -sz*.42, sz*.60, sz*.46);
+    ctx.fill();
+
+    /* Sisak */
+    ctx.fillStyle = '#0E2540';
+    ctx.beginPath(); ctx.arc(0, -sz*.54, sz*.20, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = 'rgba(120,220,228,.85)';
+    ctx.fillRect(-sz*.17, -sz*.60, sz*.34, sz*.09);
+
+    ctx.restore();
   }
 
   function drawBird(b, col){
