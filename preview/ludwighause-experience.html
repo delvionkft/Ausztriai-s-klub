@@ -391,7 +391,6 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <li><a href="#/kikapcsolodas" data-route="kikapcsolodas">Kikapcsolódás</a></li>
       <li><a href="#/galeria" data-route="galeria">Galéria</a></li>
       <li><a href="#/" data-anchor="arak">Árak</a></li>
-      <li><a href="#/" data-anchor="jo-tudni">Jó tudni</a></li>
       <li><a href="#/" data-anchor="foglalas">Foglalás</a></li>
     </ul>
   </nav>
@@ -801,7 +800,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       </a>
     </div>
     <div><h4>Az oldal</h4><ul><li><a href="#/" data-anchor="szallasunk">Szállásunk</a></li><li><a href="#/szobak" data-route="szobak">Szobák</a></li><li><a href="#/sipalyak" data-route="sipalyak">Sípályák</a></li><li><a href="#/kikapcsolodas" data-route="kikapcsolodas">Kikapcsolódás</a></li></ul></div>
-    <div><h4>Foglalás</h4><ul><li><a href="#/" data-anchor="arak">Árak</a></li><li><a href="#/" data-anchor="jo-tudni">Jó tudni</a></li><li><a href="#/galeria" data-route="galeria">Galéria</a></li><li><a href="#/" data-anchor="foglalas">Időpontot foglalok</a></li></ul></div>
+    <div><h4>Foglalás</h4><ul><li><a href="#/" data-anchor="arak">Árak</a></li><li><a href="#/galeria" data-route="galeria">Galéria</a></li><li><a href="#/" data-anchor="foglalas">Időpontot foglalok</a></li></ul></div>
     <div><h4>Dokumentumok</h4><ul><li><a href="#/" data-anchor="">ÁSZF</a></li><li><a href="#/" data-anchor="">Adatkezelés</a></li><li><a href="#/" data-anchor="foglalas">Kapcsolat</a></li></ul></div>
     <div><h4>Kövessetek minket</h4><ul class="social">
       <li><a href="https://www.facebook.com/ludwighausneukirchen/" target="_blank" rel="noopener">Facebook</a></li>
@@ -833,7 +832,6 @@ const SECTIONS = [
   ['hero','Ludwighaus'], ['szamok','Számokban'], ['szallasunk','Szállásunk'],
   ['szobak','Szobák'], ['sipalyak','Sípályák'], ['kikapcsolodas','Kikapcsolódás'],
   ['galeria','Galéria'], ['szolgaltatasok','Szolgáltatások'], ['arak','Árak'],
-  ['jo-tudni','Jó tudni'],
   ['velemenyek','Vélemények'], ['foglalas','Foglalás'],
 ];
 
@@ -932,24 +930,6 @@ const ACTIVITIES = {
   ],
 };
 
-const MORE_INFO = [
-  { icon:'💶', name:'Szobaárak és szolgáltatások', desc:'Szobánkénti árak, szezonok, mit tartalmaz a díj',
-    href:'https://sportclubhausamwildkogel.eu/prices/' },
-  { icon:'📋', name:'Szobafoglalási tudnivalók', desc:'Előleg, fizetés, lemondás, be- és kijelentkezés',
-    href:'https://sportclubhausamwildkogel.eu/appointment/' },
-  { icon:'📜', name:'Házirend', desc:'Csendes pihenő, dohányzás, háziállat, közös terek',
-    href:'https://sportclubhausamwildkogel.eu/rules/' },
-  { icon:'🏘️', name:'Neukirchen am Großvenediger', desc:'A falu, ahol a ház áll',
-    href:'https://sportclubhausamwildkogel.eu/wildkogelarenaneukirchen/' },
-  { icon:'🏔️', name:'Wildkogel-Arena', desc:'A síterep részletes bemutatása',
-    href:'https://sportclubhausamwildkogel.eu/wildkogelarena/' },
-  { icon:'📷', name:'Webkamerák', desc:'Élő kép a hegyről és a faluból',
-    href:'https://sportclubhausamwildkogel.eu/webcam/' },
-  { icon:'🔄', name:'360° szobafotók', desc:'Körbenézés a szobákban',
-    href:'https://sportclubhausamwildkogel.eu/360photos/' },
-  { icon:'⚖️', name:'ÁSZF és Adatkezelési tájékoztató', desc:'Szerződési feltételek és adatkezelés',
-    href:'https://sportclubhausamwildkogel.eu/aszf/' },
-];
 
 const REVIEWS = [
   { text:'Nagyon hangulatos hely. Elsősorban téli síeléshez, de a nyári rekkenő meleget is jobb itt átvészelni. A szállás remek. Jó, tágas szobák. Felszerelt konyha és étkező. A házigazdák nagyon szívélyesek. Gyertek!', who:'András Kálmán', src:'Google vélemény' },
@@ -1556,13 +1536,6 @@ function tilt(nodes){
     g.innerHTML = ACTIVITIES[g.dataset.season].slice(0,5).map(a =>
       `<li><a href="${a.href}" target="_blank" rel="noopener">${a.name}<span>↗</span></a></li>`).join(''));
 
-  const mi = document.getElementById('more-info');
-  if (mi) mi.innerHTML = MORE_INFO.map(x => `
-    <a class="panel linkcard" href="${x.href}" target="_blank" rel="noopener">
-      <span class="ico" aria-hidden="true">${x.icon}</span>
-      <span class="linkcard-txt"><b>${x.name}</b><small>${x.desc}</small></span>
-      <span class="linkcard-go" aria-hidden="true">↗</span>
-    </a>`).join('');
 
   document.querySelectorAll('[data-grid="reviews"]').forEach(rg => rg.innerHTML = REVIEWS.map(r => `
     <article class="panel card card--tall">
