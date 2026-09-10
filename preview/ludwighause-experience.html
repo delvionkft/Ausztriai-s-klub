@@ -1189,6 +1189,14 @@ window.addEventListener('pointermove', e => {
       ctx.strokeStyle = `rgba(233,241,247,${lerp(.16,.05,lightF) * (1 - i*.18)})`;
       ctx.lineWidth = 1.1;
       ctx.stroke();
+
+      /* A sípálya a távoli gerincek elé, a közeli rétegek mögé kerül. */
+      if (i === 2){
+        const prev = skierT;
+        skierT = s.motion ? lerp(skierT, clamp(p,0,1), .14) : clamp(p,0,1);
+        paintPiste(s, lightF);
+        paintSkier(skierT, s.motion && Math.abs(skierT - prev) > .0006);
+      }
     }
 
     /* --- Felhősávok: lassú, folyamatos sodródás ------------------------- */
