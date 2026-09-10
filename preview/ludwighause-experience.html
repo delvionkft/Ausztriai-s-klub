@@ -395,11 +395,9 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   </nav>
   <div class="nav-tools">
     <div class="lang" role="group" aria-label="Nyelv">
-      <button type="button" aria-pressed="true">HU</button>
-      <button type="button" aria-pressed="false">EN</button>
-      <button type="button" aria-pressed="false">DE</button>
-      <button type="button" aria-pressed="false">AT</button>
-      <button type="button" aria-pressed="false">NL</button>
+      <button type="button" data-lang="hu" aria-pressed="true">HU</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      <button type="button" data-lang="de" aria-pressed="false">DE</button>
     </div>
     <button class="toggle-motion" id="motion-toggle" type="button" aria-pressed="true">Mozgás: be</button>
     <a class="btn" href="#/" data-anchor="foglalas">Időpontot foglalok</a>
@@ -744,7 +742,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   </div>
   <div class="foot-bottom">
     <span>© 2025 Ludwighaus · sportclubhausamwildkogel.eu</span>
-    <span>HU / EN / DE / AT / NL</span>
+    <span>HU / EN / DE</span>
   </div>
 </footer>
 </main>
@@ -767,6 +765,9 @@ const SECTIONS = [
   ['galeria','Galéria'], ['szolgaltatasok','Szolgáltatások'], ['arak','Árak'],
   ['velemenyek','Vélemények'], ['foglalas','Foglalás'],
 ];
+
+let T = x => x;                      /* fordító — az i18n modul állítja be */
+window.__setT = fn => { T = fn; };
 
 const VIEW_LABELS = { home:'Ludwighaus', szobak:'Szobák', sipalyak:'Sípályák', galeria:'Galéria' };
 
@@ -1135,7 +1136,7 @@ window.addEventListener('pointermove', e => {
     if (!view) return;
     if (view.dataset.view !== 'home'){
       const label = VIEW_LABELS[view.dataset.view];
-      if (label !== last){ zone.textContent = label; last = label; }
+      if (label !== last){ zone.textContent = T(label); last = label; }
       return;
     }
     let cur = null;
@@ -1144,7 +1145,7 @@ window.addEventListener('pointermove', e => {
       if (el && el.getBoundingClientRect().top <= s.h*0.4) cur = label;
     }
     cur = cur || SECTIONS[0][1];
-    if (cur !== last){ zone.textContent = cur; last = cur; }
+    if (cur !== last){ zone.textContent = T(cur); last = cur; }
   });
 })();
 
@@ -1154,10 +1155,6 @@ window.addEventListener('pointermove', e => {
 (function Nav(){
   const nav = document.getElementById('nav');
   onTick(s => { nav.dataset.stuck = String(s.scrollY > 40); });
-
-  document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('.lang button').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
-  }));
 
   const btn = document.getElementById('motion-toggle');
   btn.addEventListener('click', () => {
@@ -1200,7 +1197,7 @@ window.addEventListener('pointermove', e => {
              data-beds="${beds(r.cap)}" data-terrace="${/terasszal/.test(r.type) ? '1' : '0'}">
       <div class="card-top">
         <span class="tag">${r.floor}</span>
-        <span class="cap mono">👤 ${r.cap}</span>
+        <span class="cap mono"><i aria-hidden="true">👤</i> ${r.cap}</span>
       </div>
       <h3>${r.no} — ${r.name}</h3>
       <p class="card-desc">${r.type}</p>
@@ -1212,10 +1209,9 @@ window.addEventListener('pointermove', e => {
   });
 
   const sel = document.getElementById('f-room');
-  if (sel) sel.insertAdjacentHTML('beforeend', ROOMS.map(r => {
-    const terrace = /terasszal/.test(r.type) ? ', terasz' : '';
-    return `<option>${r.no} — ${r.name}${terrace} (${r.cap})</option>`;
-  }).join(''));
+  if (sel) sel.insertAdjacentHTML('beforeend', ROOMS.map(r =>
+    `<option data-no="${r.no}" data-name="${r.name}" data-cap="${r.cap}">${r.no} — ${r.name} (${r.cap})</option>`
+  ).join(''));
 })();
 
 /* Közös 3D dőlés — csak egérrel, bekapcsolt mozgás mellett. */
@@ -1349,7 +1345,7 @@ let renderScapes;
   f.addEventListener('submit', e => {
     e.preventDefault();
     const btn = f.querySelector('button[type=submit]');
-    btn.textContent = 'Köszönjük — hamarosan visszajelzünk';
+    btn.textContent = T('Köszönjük — hamarosan visszajelzünk');
     btn.disabled = true;
   });
 })();
@@ -1377,7 +1373,7 @@ let renderScapes;
   function applyFilter(){
     let n = 0;
     cards().forEach(c => { const ok = matches(c); c.hidden = !ok; if (ok) n++; });
-    countEl.textContent = `${n} / ${ROOMS.length} szoba`;
+    countEl.textContent = `${n} / ${ROOMS.length} ${T('szoba')}`;
   }
 
   filters.addEventListener('click', e => {
@@ -1441,7 +1437,7 @@ let renderScapes;
     const whole = document.getElementById('f-whole');
     if (!picked.size) return;
     const beds = document.getElementById('pick-beds').textContent;
-    if (note) note.value = `Kiválasztott szobák: ${[...picked].join(', ')} (${beds} férőhely).`;
+    if (note) note.value = `${T('Kiválasztott szobák')}: ${[...picked].join(', ')} (${beds} ${T('férőhely')}).`;
     if (whole) whole.checked = picked.size === ROOMS.length;
   });
 
@@ -1456,7 +1452,7 @@ let renderScapes;
   const box = document.getElementById('ski-mix');
   if (!box) return;
   const max = Math.max(...SKI_AREAS.map(a => a.mix.blue + a.mix.red + a.mix.black));
-  const LABEL = { blue:'Kék', red:'Piros', black:'Fekete' };
+  const LABEL = { blue:'Kék', red:'Piros', black:'Fekete' };  /* csak a tooltiphez */
 
   box.innerHTML = SKI_AREAS.map(a => {
     const total = a.mix.blue + a.mix.red + a.mix.black;
@@ -1464,16 +1460,16 @@ let renderScapes;
     return `
       <div class="mix">
         <div class="mix-head">
-          <div><b>${a.name}</b><span class="tag">${a.best} · ${a.vert} szintkülönbség</span></div>
+          <div><b>${a.name}</b><span class="tag"><em>${a.best}</em> · ${a.vert} <em>szintkülönbség</em></span></div>
           <span class="mix-total mono">${a.km}</span>
         </div>
         <div class="mix-bar" style="width:${(total/max*100).toFixed(1)}%">
           ${seg('blue')}${seg('red')}${seg('black')}
         </div>
         <div class="mix-legend mono">
-          <span><i class="seg-blue"></i>${a.mix.blue} km kék</span>
-          <span><i class="seg-red"></i>${a.mix.red} km piros</span>
-          <span><i class="seg-black"></i>${String(a.mix.black).replace('.', ',')} km fekete</span>
+          <span><i class="seg-blue"></i>${a.mix.blue} km <em>kék</em></span>
+          <span><i class="seg-red"></i>${a.mix.red} km <em>piros</em></span>
+          <span><i class="seg-black"></i>${String(a.mix.black).replace('.', ',')} km <em>fekete</em></span>
         </div>
       </div>`;
   }).join('');
@@ -1601,7 +1597,7 @@ let renderScapes;
     const v = viewEl(name);
     if (renderScapes) renderScapes(v);          /* a rejtett canvasnak nem volt mérete */
     window.scrollTo(0, 0);
-    document.title = name === 'home' ? 'Ludwighaus' : `${VIEW_LABELS[name]} — Ludwighaus`;
+    document.title = name === 'home' ? 'Ludwighaus' : `${T(VIEW_LABELS[name])} — Ludwighaus`;
   }
 
   function go(name, anchorId){
@@ -2048,6 +2044,7 @@ body.has-pickbar{ padding-bottom:88px; }
   font-size:.62rem; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-faint); }
 .mix-legend span{ display:inline-flex; align-items:center; gap:.45rem; }
 .mix-legend i{ width:12px; height:3px; border-radius:2px; }
+.mix-legend em, .mix-head .tag em{ font-style:normal; }
 
 /* Képnagyító */
 .lightbox{
@@ -2075,3 +2072,309 @@ body.has-pickbar{ padding-bottom:88px; }
   .lb-stage{ max-width:100%; }
 }
 </style>
+
+<script>
+/* ============================================================================
+   I18N — HU (forrás) / EN / DE
+   A magyar szöveg a forrás: a modul a betöltéskor lementi minden szövegcsomópont
+   eredeti tartalmát, és nyelvváltáskor szótár alapján cseréli. Amire nincs
+   bejegyzés (tulajdonnév, szám, mértékegység), az változatlan marad.
+   Emergentben ez a szótár egy az egyben átvihető kulcs-érték fájlba.
+   ========================================================================= */
+(() => {
+'use strict';
+
+const EN = {
+  // Navigáció, fejléc
+  'Szállásunk':'Our house','Szobák':'Rooms','Sípályák':'Ski areas','Galéria':'Gallery',
+  'Árak':'Prices','Foglalás':'Booking','Időpontot foglalok':'Book your stay',
+  'Mozgás: be':'Motion: on','Mozgás: ki':'Motion: off','Alpesi panzió':'Alpine guesthouse',
+  'Számokban':'In numbers','Szolgáltatások':'Services','Vélemények':'Reviews',
+  // Hero
+  'Ausztria. Barátok. Síelés.':'Austria. Friends. Skiing.',
+  'Egy ház, ahol':'A house where you','nem csak':"won't just",'aludni':'sleep','fogtok.':'at night.',
+  'férőhely':'beds','Közösségi terek':'Common areas','Self-cooking konyha':'Self-catering kitchen',
+  'Sífelszerelés-tároló':'Ski storage','Parkolás':'Parking',
+  'Kérj csoportos ajánlatot':'Get a group quote','Szabad időpontok':'Availability','Görgess':'Scroll',
+  // Számok
+  'Sípálya a régióban':'Slopes in the region','Vendégágy':'Guest beds','Szoba':'Rooms',
+  'Leghosszabb kivilágított szánkópálya':'Longest floodlit toboggan run',
+  'Gyalog a Wildkogelig':'On foot to the Wildkogel',
+  // Szállásunk
+  'A szállásunk':'Our house',
+  'A Ludwighaus a falu főutcájában található. 12 szobájával, 45 vendégággyal és fiatalos hangulatával várja a vendégeket — télen-nyáron.':'Ludwighaus sits on the main street of the village. Twelve rooms, 45 guest beds and an easy-going, youthful atmosphere — in winter and in summer.',
+  'Az összkomfortos, többnyire erkélyes szobákból pazar kilátás nyílik a hegyekre, amelyek legmagasabb pontja az örök hóhatár felett lévő 3.662 m magas Großvenediger.':'The fully equipped rooms, most of them with a balcony, look out over the mountains — crowned by the 3,662 m Großvenediger above the permanent snow line.',
+  'A terület':'The area','Hohen Tauern Nemzeti Park':'Hohe Tauern National Park',
+  'Közép-Európa legnagyobb nemzeti parkjában, Salzburg, Karintia és Tirol találkozásánál. Több mint 300 hegycsúcs, gleccserek, vízesések.':"In Central Europe's largest national park, where Salzburg, Carinthia and Tyrol meet. More than 300 peaks, glaciers and waterfalls.",
+  '8 km-re a Krimmler vízesés — Európa leghosszabb vízesése. Körülötted Ausztria egyik legváltozatosabb természeti csodája.':"Eight kilometres away are the Krimml Waterfalls, the longest waterfall in Europe. All around you, one of Austria's most varied landscapes.",
+  'Self-cooking konyha 50 fő részére, teljesen felszerelve':'Self-catering kitchen for 50, fully equipped',
+  'Bár & Disco a panzió pincéjében':'Bar and disco in the cellar of the house',
+  'Ingyenes parkolás a ház mellett':'Free parking next to the house',
+  'Ingyenes pálinka egész nap — ez a ház különlegessége':'Free pálinka all day — the speciality of the house',
+  'Korlátlan WiFi és magyar recepció':'Unlimited WiFi and Hungarian-speaking reception',
+  // Szobák
+  'Szobáink':'Our rooms','Minden szoba':'Every room with','egyedi panorámával.':'its own view.',
+  'Venediger vagy Wildkogel kilátással, legtöbbje erkéllyel.':'Facing the Venediger or the Wildkogel, most with a balcony.',
+  'Családi szoba':'Family room','Kétágyas szoba':'Double room','Franciaágyas szoba':'King bed room',
+  'Ikerágyas szoba':'Twin room','Fürdőszoba':'Bathroom','Mind a 12 szoba →':'All 12 rooms →',
+  'Tizenkét szoba,':'Twelve rooms,','két emeleten.':'on two floors.',
+  'Az összkomfortos, többnyire erkélyes szobákból pazar kilátás nyílik a hegyekre. Minden szoba egyedi panorámával — Venediger vagy Wildkogel kilátással.':'The fully equipped rooms, most with a balcony, look out over the mountains. Every room has its own view — facing the Venediger or the Wildkogel.',
+  'Mind':'All','1. emelet':'1st floor','2. emelet':'2nd floor','Terasszal':'With terrace','4 főtől':'From 4 guests',
+  'Kattints a szobákra, és összeállítjuk a csoportodat — alul futó összesítéssel.':'Click the rooms to build your group — a running total appears at the bottom.',
+  'szoba':'rooms','Kiválasztott szobák':'Selected rooms','Törlés':'Clear',
+  'Ajánlatot kérek ezekre':'Request a quote for these',
+  'Minden szobában':'In every room','Ami jár hozzá.':'What comes with it.',
+  'Ágynemű, szappan, hajszárító minden szobában':'Bed linen, soap and hairdryer in every room',
+  'Venediger vagy Wildkogel panoráma, legtöbbször erkéllyel':'Venediger or Wildkogel view, mostly with a balcony',
+  'Korlátlan WiFi az egész házban':'Unlimited WiFi throughout the house',
+  'Fűtött sítároló a felszerelésnek':'Heated ski room for your gear',
+  'Árak megtekintése':'See prices',
+  'Venediger panoráma':'Venediger view','Panorámás szoba, terasszal':'Panorama room with terrace',
+  'Venediger apartman':'Venediger apartment','Apartman, terasszal':'Apartment with terrace',
+  'Wildkogel családi':'Wildkogel family','Panorámás családi szoba':'Panorama family room',
+  'Wildkogel dupla':'Wildkogel double','Dupla szoba, terasszal':'Double room with terrace',
+  'Franciaágyas':'King bed','Wildkogel panorámás szoba':'Wildkogel panorama room',
+  'Venediger dupla':'Venediger double',
+  '2 fő':'2 guests','2+1 fő':'2+1 guests','2+2 fő':'2+2 guests','3+2 fő':'3+2 guests',
+  '3+3 fő':'3+3 guests','4+1 fő':'4+1 guests',
+  // Sípályák
+  'A környék':'The area','Három síterep,':'Three ski areas,','egy szállásból':'one base',
+  'Sípályák részletesen →':'Ski areas in detail →','Sípályák →':'Ski areas →','Galéria →':'Gallery →',
+  'A Ludwighaus 600 méterre van a Wildkogel sípályáktól, és onnan további két nagy síterep érhető el rövid autóúttal.':'Ludwighaus is 600 metres from the Wildkogel slopes, with two more large ski areas a short drive away.',
+  'Zillertal Aréna':'Zillertal Arena','Wildkogel Aréna':'Wildkogel Arena',
+  'Több családbarát díjjal kitüntetett síterep. 35 km piros, 30 km kék, 10 km fekete. 1320 m szintkülönbség.':'A family-friendly ski area with several awards to its name. 35 km red, 30 km blue, 10 km black. 1,320 m vertical drop.',
+  'Kezdőknek ideális, rengeteg tanulóliftel. 94 km kék, 67 km piros, 20 km fekete. 1200 m szintkülönbség.':'Ideal for beginners, with plenty of practice lifts. 94 km blue, 67 km red, 20 km black. 1,200 m vertical drop.',
+  'Ausztria egyik legnagyobb, legmodernebb síparadicsoma. 49 km kék, 87 km piros, 10,7 km fekete. 1920 m szintkülönbség.':"One of Austria's largest and most modern ski paradises. 49 km blue, 87 km red, 10.7 km black. 1,920 m vertical drop.",
+  '600 m gyalog a háztól':'600 m on foot from the house','11 km autóval':'11 km by car','15 km autóval':'15 km by car',
+  'Családoknak':'For families','Kezdőknek':'For beginners','Haladóknak':'For advanced skiers',
+  'Összehasonlítás':'Comparison','Melyik terep':'Which area','való nektek?':'suits you?',
+  'A pályahossz nehézség szerinti megoszlása. Európai jelölés: kék könnyű, piros közepes, fekete nehéz.':'Slope length by difficulty. European colour code: blue easy, red intermediate, black difficult.',
+  'A megadott kilométerek a síterepek saját adatai; a bontás összege helyenként pár tizeddel eltér a főszámtól.':'The kilometre figures come from the ski areas themselves; in places the breakdown adds up slightly differently from the headline number.',
+  'kék':'blue','piros':'red','fekete':'black','szintkülönbség':'vertical drop',
+  // E-Bike
+  'Tavasz · Nyár · Ősz':'Spring · Summer · Autumn','E-Bike túrák':'E-bike tours','a hegyekben':'in the mountains',
+  'Amikor elolvad a hó, a hegyek új arcukat mutatják. Elektromos kerékpárjainkkal kényelmesen, izzadás nélkül fedezheted fel a völgyeket, vízeséseket és panorámautakat — kezdőként és haladóként is.':'When the snow melts, the mountains show another face. Our e-bikes take the effort out of the valleys, waterfalls and panorama roads — whether you ride often or hardly ever.',
+  'Foglalj e-bike túrát →':'Book an e-bike tour →','A környék galériája →':'Gallery of the area →',
+  'Könnyű · családbarát':'Easy · family-friendly','Krimmler vízesés túra':'Krimml Waterfalls tour',
+  'Lazán tekerhető útvonal Európa leghosszabb vízeséséhez. Árnyas erdei szakaszok, pihenőhelyek, a végén a lélegzetelállító 380 méteres zuhatag.':'An easy ride to the longest waterfall in Europe. Shaded forest sections, places to stop, and at the end the breathtaking 380-metre cascade.',
+  'Táv oda-vissza':'Round trip','Időtartam':'Duration','Közepes · panoráma':'Medium · panorama',
+  'Wildkogel panoráma':'Wildkogel panorama',
+  'Felfelé az e-bike viszi a terhet — neked csak a kilátás marad. Alpesi legelők, havasi kürtök hangja, és a 3.662 m magas Großvenediger a háttérben.':'On the way up the e-bike does the work — all that is left for you is the view. Alpine pastures, the sound of alphorns, and the 3,662 m Großvenediger behind it all.',
+  'Táv':'Distance','Szint':'Climb','Tetszőleges · hosszú':'Any length · long','Tauern kerékpárút':'Tauern Cycle Path',
+  'A híres Tauernradweg a házunk mellett halad el. Salzach-parti, szinte végig lejtős nyomvonal — akár egész napos kalandhoz, festői falvakon át.':'The famous Tauernradweg runs right past the house. Along the Salzach, downhill almost the whole way — good for a full day out through picture-book villages.',
+  'Rugalmas':'Flexible','Hossz':'Length','A ház':'The house','Indulás':'Start',
+  // Galéria
+  'A ház és':'The house and','a környék.':'the area.',
+  'Hohen Tauern Nemzeti Park, több mint 300 hegycsúcs, gleccserek és vízesések — 8 km-re a Krimmler vízesés, Európa leghosszabb vízesése.':'Hohe Tauern National Park: more than 300 peaks, glaciers and waterfalls — and 8 km away the Krimml Waterfalls, the longest waterfall in Europe.',
+  'Kattints egy képre a nagyításhoz — nyilakkal lapozhatsz, Esc-cel bezárod.':'Click an image to enlarge — arrow keys to browse, Esc to close.',
+  'Kivilágított szánkópálya':'Floodlit toboggan run','Nemzeti park':'National park',
+  'Krimmler vízesés':'Krimml Waterfalls','8 km-re a háztól':'8 km from the house',
+  'A panzió pincéjében':'In the cellar of the house',
+  // Szolgáltatások
+  'Ami benne van':"What's included",'Szolgáltatásaink':'Our services',
+  'Ágynemű & felszerelés':'Bed linen & essentials','Tágas étkező':'Spacious dining room',
+  '50 fő befogadására alkalmas, hűtővel, kávéfőzővel':'Seats 50, with fridge and coffee machine',
+  'Tűzhely, sütő, ipari mosogatógép, nagy főzőedények, kukta':'Hob, oven, commercial dishwasher, large pots, pressure cooker',
+  'Fűtött sítároló':'Heated ski room',
+  'Sífelszerelés és cipők biztonságos, meleg tárolása':'Safe, warm storage for skis and boots',
+  'Ingyenes parkolás':'Free parking','A ház melletti utcai parkolóban, korlátlanul':'On the street beside the house, with no limit',
+  'Korlátlan WiFi':'Unlimited WiFi','Az egész házban, ingyenesen':'Throughout the house, free of charge',
+  'Ingyenes pálinka egész nap':'Free pálinka all day',
+  'Ez a ház különlegessége — mert a hegyen megdolgoztatok érte.':'The speciality of the house — you earned it up on the mountain.',
+  // Árak
+  'Átlátható árazás':'Transparent pricing','Mi van benne,':"What's included,",'mi nincs':"what isn't",
+  'A szállás tartalmazza':'Included in the stay','Nem tartalmazza':'Not included',
+  'Ágynemű, szappan, hajszárító':'Bed linen, soap, hairdryer',
+  'Étkező és büfékonyha használata':'Use of the dining room and buffet kitchen',
+  'Self-cooking konyha (tűzhely, sütő, mosogatógép)':'Self-catering kitchen (hob, oven, dishwasher)',
+  'Venediger panorámás napozóterasz':'Sun terrace with Venediger view',
+  'Fűtött sí- és sífelszerelés tároló':'Heated storage for skis and equipment',
+  'Közösségi terek és játékok':'Common areas and games',
+  'Ingyenes pálinka egész nap 🥃':'Free pálinka all day 🥃',
+  'Idegenforgalmi adó: 3 € / nap (helyszínen fizetendő)':'Tourist tax: €3 per day (payable on site)',
+  'Egyszeri takarítási díj: 25 € / fő':'One-off cleaning fee: €25 per person',
+  // Vélemények
+  '136 Google vélemény alapján':'Based on 136 Google reviews','Amit a vendégek':'What our guests','mondanak':'say',
+  'Google vélemény':'Google review',
+  // Foglalás
+  'Foglald le':'Book','a szobád':'your room',
+  'Rugalmas érkezés — bármely nap, akár esti órákban is. Töltsd ki az űrlapot, visszajelzünk hamarosan.':'Flexible arrival — any day of the week, evenings included. Fill in the form and we will get back to you shortly.',
+  'Neukirchen am Grossvenediger, Ausztria':'Neukirchen am Grossvenediger, Austria',
+  'Magyar recepció — hívható bármikor':'Hungarian-speaking reception — call any time',
+  'Rugalmas becsekkolás, esti érkezés is OK':'Flexible check-in, evening arrival is fine',
+  'Megkereshetsz minket itt is':'You can also reach us here',
+  'Teljes név':'Full name','E-mail cím':'Email address','Érkezés':'Arrival','Távozás':'Departure',
+  'Felnőtt':'Adults','Gyermek':'Children','Szoba kiválasztása':'Choose a room',
+  '— Válassz szobát —':'— Select a room —','Teljes házat szeretnék foglalni':'I would like to book the whole house',
+  'Megjegyzés (opcionális)':'Message (optional)','Foglalás leadása →':'Send booking request →',
+  'A foglalás elküldésével elfogadod az':'By sending this request you accept the',
+  'Adatkezelési tájékoztatót':'Privacy Policy','és az':'and the','ÁSZF-et':'Terms and Conditions',
+  'Köszönjük — hamarosan visszajelzünk':'Thank you — we will be in touch shortly',
+  // Lábléc
+  'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
+};
+
+const DE = {
+  'Szállásunk':'Unser Haus','Szobák':'Zimmer','Sípályák':'Skigebiete','Galéria':'Galerie',
+  'Árak':'Preise','Foglalás':'Buchung','Időpontot foglalok':'Termin buchen',
+  'Mozgás: be':'Bewegung: an','Mozgás: ki':'Bewegung: aus','Alpesi panzió':'Alpenpension',
+  'Számokban':'In Zahlen','Szolgáltatások':'Leistungen','Vélemények':'Bewertungen',
+  'Ausztria. Barátok. Síelés.':'Österreich. Freunde. Skifahren.',
+  'Egy ház, ahol':'Ein Haus, in dem ihr','nem csak':'nicht nur','aludni':'schlafen','fogtok.':'werdet.',
+  'férőhely':'Betten','Közösségi terek':'Gemeinschaftsräume','Self-cooking konyha':'Selbstversorgerküche',
+  'Sífelszerelés-tároló':'Skiraum','Parkolás':'Parkplatz',
+  'Kérj csoportos ajánlatot':'Gruppenangebot anfordern','Szabad időpontok':'Freie Termine','Görgess':'Scrollen',
+  'Sípálya a régióban':'Pisten in der Region','Vendégágy':'Gästebetten','Szoba':'Zimmer',
+  'Leghosszabb kivilágított szánkópálya':'Längste beleuchtete Rodelbahn',
+  'Gyalog a Wildkogelig':'Zu Fuß zum Wildkogel',
+  'A szállásunk':'Unser Haus',
+  'A Ludwighaus a falu főutcájában található. 12 szobájával, 45 vendégággyal és fiatalos hangulatával várja a vendégeket — télen-nyáron.':'Das Ludwighaus liegt an der Hauptstraße des Dorfes. Zwölf Zimmer, 45 Gästebetten und eine junge, entspannte Atmosphäre — im Winter wie im Sommer.',
+  'Az összkomfortos, többnyire erkélyes szobákból pazar kilátás nyílik a hegyekre, amelyek legmagasabb pontja az örök hóhatár felett lévő 3.662 m magas Großvenediger.':'Die komfortablen Zimmer, die meisten mit Balkon, bieten einen weiten Blick auf die Berge — überragt vom 3.662 m hohen Großvenediger oberhalb der ewigen Schneegrenze.',
+  'A terület':'Die Region','Hohen Tauern Nemzeti Park':'Nationalpark Hohe Tauern',
+  'Közép-Európa legnagyobb nemzeti parkjában, Salzburg, Karintia és Tirol találkozásánál. Több mint 300 hegycsúcs, gleccserek, vízesések.':'Im größten Nationalpark Mitteleuropas, dort wo Salzburg, Kärnten und Tirol aufeinandertreffen. Über 300 Gipfel, Gletscher und Wasserfälle.',
+  '8 km-re a Krimmler vízesés — Európa leghosszabb vízesése. Körülötted Ausztria egyik legváltozatosabb természeti csodája.':'Acht Kilometer entfernt liegen die Krimmler Wasserfälle, der längste Wasserfall Europas. Rundherum eine der vielfältigsten Naturlandschaften Österreichs.',
+  'Self-cooking konyha 50 fő részére, teljesen felszerelve':'Selbstversorgerküche für 50 Personen, voll ausgestattet',
+  'Bár & Disco a panzió pincéjében':'Bar und Disco im Keller des Hauses',
+  'Ingyenes parkolás a ház mellett':'Kostenlos parken direkt am Haus',
+  'Ingyenes pálinka egész nap — ez a ház különlegessége':'Den ganzen Tag Pálinka gratis — die Spezialität des Hauses',
+  'Korlátlan WiFi és magyar recepció':'Unbegrenztes WLAN und ungarischsprachige Rezeption',
+  'Szobáink':'Unsere Zimmer','Minden szoba':'Jedes Zimmer mit','egyedi panorámával.':'eigenem Panorama.',
+  'Venediger vagy Wildkogel kilátással, legtöbbje erkéllyel.':'Mit Blick auf Venediger oder Wildkogel, meist mit Balkon.',
+  'Családi szoba':'Familienzimmer','Kétágyas szoba':'Doppelzimmer','Franciaágyas szoba':'Zimmer mit französischem Bett',
+  'Ikerágyas szoba':'Zweibettzimmer','Fürdőszoba':'Badezimmer','Mind a 12 szoba →':'Alle 12 Zimmer →',
+  'Tizenkét szoba,':'Zwölf Zimmer,','két emeleten.':'auf zwei Etagen.',
+  'Az összkomfortos, többnyire erkélyes szobákból pazar kilátás nyílik a hegyekre. Minden szoba egyedi panorámával — Venediger vagy Wildkogel kilátással.':'Die komfortablen Zimmer, die meisten mit Balkon, bieten einen weiten Blick auf die Berge. Jedes Zimmer mit eigenem Panorama — Venediger oder Wildkogel.',
+  'Mind':'Alle','1. emelet':'1. Stock','2. emelet':'2. Stock','Terasszal':'Mit Terrasse','4 főtől':'Ab 4 Personen',
+  'Kattints a szobákra, és összeállítjuk a csoportodat — alul futó összesítéssel.':'Zimmer anklicken und die Gruppe zusammenstellen — die Summe erscheint unten.',
+  'szoba':'Zimmer','Kiválasztott szobák':'Ausgewählte Zimmer','Törlés':'Löschen',
+  'Ajánlatot kérek ezekre':'Angebot für diese anfordern',
+  'Minden szobában':'In jedem Zimmer','Ami jár hozzá.':'Was dazugehört.',
+  'Ágynemű, szappan, hajszárító minden szobában':'Bettwäsche, Seife und Föhn in jedem Zimmer',
+  'Venediger vagy Wildkogel panoráma, legtöbbször erkéllyel':'Venediger- oder Wildkogel-Blick, meist mit Balkon',
+  'Korlátlan WiFi az egész házban':'Unbegrenztes WLAN im ganzen Haus',
+  'Fűtött sítároló a felszerelésnek':'Beheizter Skiraum für die Ausrüstung',
+  'Árak megtekintése':'Preise ansehen',
+  'Venediger panoráma':'Venediger-Panorama','Panorámás szoba, terasszal':'Panoramazimmer mit Terrasse',
+  'Venediger apartman':'Venediger-Apartment','Apartman, terasszal':'Apartment mit Terrasse',
+  'Wildkogel családi':'Wildkogel Familie','Panorámás családi szoba':'Panorama-Familienzimmer',
+  'Wildkogel dupla':'Wildkogel Doppel','Dupla szoba, terasszal':'Doppelzimmer mit Terrasse',
+  'Franciaágyas':'Französisches Bett','Wildkogel panorámás szoba':'Wildkogel-Panoramazimmer',
+  'Venediger dupla':'Venediger Doppel',
+  '2 fő':'2 Pers.','2+1 fő':'2+1 Pers.','2+2 fő':'2+2 Pers.','3+2 fő':'3+2 Pers.',
+  '3+3 fő':'3+3 Pers.','4+1 fő':'4+1 Pers.',
+  'A környék':'Die Umgebung','Három síterep,':'Drei Skigebiete,','egy szállásból':'ein Quartier',
+  'Sípályák részletesen →':'Skigebiete im Detail →','Sípályák →':'Skigebiete →','Galéria →':'Galerie →',
+  'A Ludwighaus 600 méterre van a Wildkogel sípályáktól, és onnan további két nagy síterep érhető el rövid autóúttal.':'Das Ludwighaus liegt 600 Meter von den Wildkogel-Pisten entfernt; zwei weitere große Skigebiete sind mit dem Auto schnell erreichbar.',
+  'Zillertal Aréna':'Zillertal Arena','Wildkogel Aréna':'Wildkogel Arena',
+  'Több családbarát díjjal kitüntetett síterep. 35 km piros, 30 km kék, 10 km fekete. 1320 m szintkülönbség.':'Ein mehrfach ausgezeichnetes, familienfreundliches Skigebiet. 35 km rot, 30 km blau, 10 km schwarz. 1320 m Höhenunterschied.',
+  'Kezdőknek ideális, rengeteg tanulóliftel. 94 km kék, 67 km piros, 20 km fekete. 1200 m szintkülönbség.':'Ideal für Anfänger, mit vielen Übungsliften. 94 km blau, 67 km rot, 20 km schwarz. 1200 m Höhenunterschied.',
+  'Ausztria egyik legnagyobb, legmodernebb síparadicsoma. 49 km kék, 87 km piros, 10,7 km fekete. 1920 m szintkülönbség.':'Eines der größten und modernsten Skiparadiese Österreichs. 49 km blau, 87 km rot, 10,7 km schwarz. 1920 m Höhenunterschied.',
+  '600 m gyalog a háztól':'600 m zu Fuß vom Haus','11 km autóval':'11 km mit dem Auto','15 km autóval':'15 km mit dem Auto',
+  'Családoknak':'Für Familien','Kezdőknek':'Für Anfänger','Haladóknak':'Für Fortgeschrittene',
+  'Összehasonlítás':'Vergleich','Melyik terep':'Welches Gebiet','való nektek?':'passt zu euch?',
+  'A pályahossz nehézség szerinti megoszlása. Európai jelölés: kék könnyű, piros közepes, fekete nehéz.':'Pistenlänge nach Schwierigkeit. Europäische Farbcodes: blau leicht, rot mittel, schwarz schwer.',
+  'A megadott kilométerek a síterepek saját adatai; a bontás összege helyenként pár tizeddel eltér a főszámtól.':'Die Kilometerangaben stammen von den Skigebieten selbst; stellenweise weicht die Summe der Aufteilung leicht von der Gesamtzahl ab.',
+  'kék':'blau','piros':'rot','fekete':'schwarz','szintkülönbség':'Höhenunterschied',
+  'Tavasz · Nyár · Ősz':'Frühling · Sommer · Herbst','E-Bike túrák':'E-Bike-Touren','a hegyekben':'in den Bergen',
+  'Amikor elolvad a hó, a hegyek új arcukat mutatják. Elektromos kerékpárjainkkal kényelmesen, izzadás nélkül fedezheted fel a völgyeket, vízeséseket és panorámautakat — kezdőként és haladóként is.':'Wenn der Schnee schmilzt, zeigen die Berge ihr anderes Gesicht. Mit unseren E-Bikes erkundet ihr Täler, Wasserfälle und Panoramastraßen ohne Anstrengung — ob geübt oder nicht.',
+  'Foglalj e-bike túrát →':'E-Bike-Tour buchen →','A környék galériája →':'Galerie der Umgebung →',
+  'Könnyű · családbarát':'Leicht · familienfreundlich','Krimmler vízesés túra':'Tour zu den Krimmler Wasserfällen',
+  'Lazán tekerhető útvonal Európa leghosszabb vízeséséhez. Árnyas erdei szakaszok, pihenőhelyek, a végén a lélegzetelállító 380 méteres zuhatag.':'Eine entspannte Route zum längsten Wasserfall Europas. Schattige Waldabschnitte, Rastplätze und am Ende der atemberaubende 380-Meter-Sturz.',
+  'Táv oda-vissza':'Hin & zurück','Időtartam':'Dauer','Közepes · panoráma':'Mittel · Panorama',
+  'Wildkogel panoráma':'Wildkogel-Panorama',
+  'Felfelé az e-bike viszi a terhet — neked csak a kilátás marad. Alpesi legelők, havasi kürtök hangja, és a 3.662 m magas Großvenediger a háttérben.':'Bergauf übernimmt das E-Bike die Arbeit — euch bleibt die Aussicht. Almwiesen, Alphornklänge und im Hintergrund der 3.662 m hohe Großvenediger.',
+  'Táv':'Distanz','Szint':'Anstieg','Tetszőleges · hosszú':'Beliebig · lang','Tauern kerékpárút':'Tauernradweg',
+  'A híres Tauernradweg a házunk mellett halad el. Salzach-parti, szinte végig lejtős nyomvonal — akár egész napos kalandhoz, festői falvakon át.':'Der berühmte Tauernradweg führt direkt am Haus vorbei. Entlang der Salzach, fast durchgehend bergab — auch für einen ganzen Tag durch malerische Dörfer.',
+  'Rugalmas':'Flexibel','Hossz':'Länge','A ház':'Das Haus','Indulás':'Start',
+  'A ház és':'Das Haus und','a környék.':'die Umgebung.',
+  'Hohen Tauern Nemzeti Park, több mint 300 hegycsúcs, gleccserek és vízesések — 8 km-re a Krimmler vízesés, Európa leghosszabb vízesése.':'Nationalpark Hohe Tauern: über 300 Gipfel, Gletscher und Wasserfälle — und 8 km entfernt die Krimmler Wasserfälle, der längste Wasserfall Europas.',
+  'Kattints egy képre a nagyításhoz — nyilakkal lapozhatsz, Esc-cel bezárod.':'Für die Großansicht auf ein Bild klicken — mit den Pfeiltasten blättern, Esc schließt.',
+  'Kivilágított szánkópálya':'Beleuchtete Rodelbahn','Nemzeti park':'Nationalpark',
+  'Krimmler vízesés':'Krimmler Wasserfälle','8 km-re a háztól':'8 km vom Haus',
+  'A panzió pincéjében':'Im Keller des Hauses',
+  'Ami benne van':'Was dabei ist','Szolgáltatásaink':'Unsere Leistungen',
+  'Ágynemű & felszerelés':'Bettwäsche & Ausstattung','Tágas étkező':'Großer Essraum',
+  '50 fő befogadására alkalmas, hűtővel, kávéfőzővel':'Platz für 50 Personen, mit Kühlschrank und Kaffeemaschine',
+  'Tűzhely, sütő, ipari mosogatógép, nagy főzőedények, kukta':'Herd, Backofen, Industriespülmaschine, große Töpfe, Schnellkochtopf',
+  'Fűtött sítároló':'Beheizter Skiraum',
+  'Sífelszerelés és cipők biztonságos, meleg tárolása':'Sichere, warme Aufbewahrung für Ski und Schuhe',
+  'Ingyenes parkolás':'Kostenlos parken','A ház melletti utcai parkolóban, korlátlanul':'Auf der Straße neben dem Haus, ohne Begrenzung',
+  'Korlátlan WiFi':'Unbegrenztes WLAN','Az egész házban, ingyenesen':'Im ganzen Haus, kostenlos',
+  'Ingyenes pálinka egész nap':'Den ganzen Tag Pálinka gratis',
+  'Ez a ház különlegessége — mert a hegyen megdolgoztatok érte.':'Die Spezialität des Hauses — den Berg habt ihr euch verdient.',
+  'Átlátható árazás':'Transparente Preise','Mi van benne,':'Was enthalten ist,','mi nincs':'und was nicht',
+  'A szállás tartalmazza':'Im Aufenthalt enthalten','Nem tartalmazza':'Nicht enthalten',
+  'Ágynemű, szappan, hajszárító':'Bettwäsche, Seife, Föhn',
+  'Étkező és büfékonyha használata':'Nutzung von Essraum und Buffetküche',
+  'Self-cooking konyha (tűzhely, sütő, mosogatógép)':'Selbstversorgerküche (Herd, Backofen, Spülmaschine)',
+  'Venediger panorámás napozóterasz':'Sonnenterrasse mit Venediger-Blick',
+  'Fűtött sí- és sífelszerelés tároló':'Beheizter Raum für Ski und Ausrüstung',
+  'Közösségi terek és játékok':'Gemeinschaftsräume und Spiele',
+  'Ingyenes pálinka egész nap 🥃':'Den ganzen Tag Pálinka gratis 🥃',
+  'Idegenforgalmi adó: 3 € / nap (helyszínen fizetendő)':'Ortstaxe: 3 € pro Tag (vor Ort zu zahlen)',
+  'Egyszeri takarítási díj: 25 € / fő':'Einmalige Reinigungsgebühr: 25 € pro Person',
+  '136 Google vélemény alapján':'Auf Basis von 136 Google-Bewertungen','Amit a vendégek':'Was unsere Gäste','mondanak':'sagen',
+  'Google vélemény':'Google-Bewertung',
+  'Foglald le':'Bucht','a szobád':'euer Zimmer',
+  'Rugalmas érkezés — bármely nap, akár esti órákban is. Töltsd ki az űrlapot, visszajelzünk hamarosan.':'Flexible Anreise — an jedem Tag, auch abends. Füllt das Formular aus, wir melden uns kurzfristig.',
+  'Neukirchen am Grossvenediger, Ausztria':'Neukirchen am Grossvenediger, Österreich',
+  'Magyar recepció — hívható bármikor':'Ungarischsprachige Rezeption — jederzeit erreichbar',
+  'Rugalmas becsekkolás, esti érkezés is OK':'Flexibler Check-in, auch abends',
+  'Megkereshetsz minket itt is':'Ihr erreicht uns auch hier',
+  'Teljes név':'Vollständiger Name','E-mail cím':'E-Mail-Adresse','Érkezés':'Anreise','Távozás':'Abreise',
+  'Felnőtt':'Erwachsene','Gyermek':'Kinder','Szoba kiválasztása':'Zimmer wählen',
+  '— Válassz szobát —':'— Zimmer auswählen —','Teljes házat szeretnék foglalni':'Wir möchten das ganze Haus buchen',
+  'Megjegyzés (opcionális)':'Nachricht (optional)','Foglalás leadása →':'Buchung absenden →',
+  'A foglalás elküldésével elfogadod az':'Mit dem Absenden akzeptiert ihr die',
+  'Adatkezelési tájékoztatót':'Datenschutzerklärung','és az':'und die','ÁSZF-et':'AGB',
+  'Köszönjük — hamarosan visszajelzünk':'Danke — wir melden uns in Kürze',
+  'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
+};
+
+const DICT = { hu:{}, en:EN, de:DE };
+const LANG_TAG = { hu:'hu', en:'en', de:'de' };
+
+/* A magyar forrásszöveg lementése — csak egyszer, a teljes tartalom renderelése után. */
+const snap = [];
+const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+  acceptNode(n){
+    const p = n.parentNode;
+    if (!p || /^(SCRIPT|STYLE|CANVAS)$/.test(p.nodeName)) return NodeFilter.FILTER_REJECT;
+    return n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+  }
+});
+for (let n = walker.nextNode(); n; n = walker.nextNode()) snap.push({ n, hu: n.nodeValue });
+
+const tr = (hu, lang) => {
+  const d = DICT[lang];
+  if (!d) return hu;
+  const key = hu.trim();
+  const hit = d[key];
+  if (!hit) return hu;
+  return hu.replace(key, hit);           /* a körülvevő szóközök megmaradnak */
+};
+
+let lang = 'hu';
+
+function setLang(next){
+  if (!DICT[next]) return;
+  lang = next;
+  for (const s of snap) s.n.nodeValue = tr(s.hu, lang);
+
+  /* Az űrlap szobalistája részekből épül újra. */
+  document.querySelectorAll('#f-room option[data-no]').forEach(o => {
+    o.textContent = `${o.dataset.no} — ${tr(o.dataset.name, lang)} (${tr(o.dataset.cap, lang)})`;
+  });
+
+  document.documentElement.lang = LANG_TAG[lang];
+  document.querySelectorAll('.lang button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+  if (window.__setT) window.__setT(x => tr(x, lang));
+}
+
+document.querySelectorAll('.lang button').forEach(b =>
+  b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+if (window.__setT) window.__setT(x => tr(x, lang));
+})();
+</script>
