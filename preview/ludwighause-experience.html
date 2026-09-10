@@ -631,7 +631,16 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     </ul>
   </section>
   <section class="band band--tight wrap">
-    <div class="cards rise" data-grid="rooms"></div>
+    <div class="filters rise" id="room-filters" role="group" aria-label="Szobák szűrése">
+      <button type="button" data-filter="all" aria-pressed="true">Mind</button>
+      <button type="button" data-filter="f1" aria-pressed="false">1. emelet</button>
+      <button type="button" data-filter="f2" aria-pressed="false">2. emelet</button>
+      <button type="button" data-filter="terrace" aria-pressed="false">Terasszal</button>
+      <button type="button" data-filter="big" aria-pressed="false">4 főtől</button>
+      <span class="filter-count mono" id="room-count"></span>
+    </div>
+    <p class="hint rise">Kattints a szobákra, és összeállítjuk a csoportodat — alul futó összesítéssel.</p>
+    <div class="cards rise" data-grid="rooms" data-pickable="true"></div>
   </section>
   <section class="band wrap">
     <div class="head rise"><p class="eyebrow">Minden szobában</p><h2>Ami jár hozzá.</h2></div>
@@ -665,6 +674,16 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   </section>
   <section class="band wrap">
     <div class="cards cards--wide rise" data-grid="ski"></div>
+  </section>
+
+  <section class="band wrap">
+    <div class="head rise">
+      <p class="eyebrow">Összehasonlítás</p>
+      <h2>Melyik terep<br>való nektek?</h2>
+      <p class="lede">A pályahossz nehézség szerinti megoszlása. Európai jelölés: kék könnyű, piros közepes, fekete nehéz.</p>
+    </div>
+    <div class="mixes rise" id="ski-mix"></div>
+    <p class="hint rise">A megadott kilométerek a síterepek saját adatai; a bontás összege helyenként pár tizeddel eltér a főszámtól.</p>
     <div class="inline-ctas rise">
       <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Időpontot foglalok</a>
       <a class="btn btn--ghost" href="#/galeria" data-route="galeria" data-magnetic>Galéria →</a>
@@ -680,7 +699,8 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     <p class="lede rise">Hohen Tauern Nemzeti Park, több mint 300 hegycsúcs, gleccserek és vízesések — 8 km-re a Krimmler vízesés, Európa leghosszabb vízesése.</p>
   </section>
   <section class="band band--tight wrap">
-    <div class="strips strips--six rise">
+    <p class="hint rise">Kattints egy képre a nagyításhoz — nyilakkal lapozhatsz, Esc-cel bezárod.</p>
+    <div class="strips strips--six rise" data-lightbox="true">
       <figure class="strip"><canvas data-scape="dawn"></canvas><figcaption><b>Wildkogel</b><small>600 m gyalog a háztól</small></figcaption></figure>
       <figure class="strip"><canvas data-scape="day"></canvas><figcaption><b>Großvenediger</b><small>3.662 m</small></figcaption></figure>
       <figure class="strip"><canvas data-scape="night"></canvas><figcaption><b>Kivilágított szánkópálya</b><small>14 km</small></figcaption></figure>
@@ -693,6 +713,17 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <a class="btn btn--ghost" href="#/sipalyak" data-route="sipalyak" data-magnetic>Sípályák →</a>
     </div>
   </section>
+</div>
+
+<!-- ======================= KOMPONENS: Lightbox ========================== -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Kép nagyítva" hidden>
+  <button class="lb-close" type="button" aria-label="Bezárás">✕</button>
+  <button class="lb-nav lb-prev" type="button" aria-label="Előző">‹</button>
+  <figure class="lb-stage">
+    <canvas id="lb-canvas"></canvas>
+    <figcaption><b id="lb-title"></b><small id="lb-sub"></small></figcaption>
+  </figure>
+  <button class="lb-nav lb-next" type="button" aria-label="Következő">›</button>
 </div>
 
 <!-- ========================== KOMPONENS: Footer ========================== -->
@@ -755,13 +786,13 @@ const ROOMS = [
 ];
 
 const SKI_AREAS = [
-  { km:'72 km', name:'Wildkogel Aréna',
+  { km:'72 km', name:'Wildkogel Aréna', vert:'1320 m', mix:{ blue:30, red:35, black:10 }, best:'Családoknak',
     desc:'Több családbarát díjjal kitüntetett síterep. 35 km piros, 30 km kék, 10 km fekete. 1320 m szintkülönbség.',
     dist:'600 m gyalog a háztól' },
-  { km:'181 km', name:'Kitzbühel–Mittersill',
+  { km:'181 km', name:'Kitzbühel–Mittersill', vert:'1200 m', mix:{ blue:94, red:67, black:20 }, best:'Kezdőknek',
     desc:'Kezdőknek ideális, rengeteg tanulóliftel. 94 km kék, 67 km piros, 20 km fekete. 1200 m szintkülönbség.',
     dist:'11 km autóval' },
-  { km:'146 km', name:'Zillertal Aréna',
+  { km:'146 km', name:'Zillertal Aréna', vert:'1920 m', mix:{ blue:49, red:87, black:10.7 }, best:'Haladóknak',
     desc:'Ausztria egyik legnagyobb, legmodernebb síparadicsoma. 49 km kék, 87 km piros, 10,7 km fekete. 1920 m szintkülönbség.',
     dist:'15 km autóval' },
 ];
@@ -1163,8 +1194,10 @@ window.addEventListener('pointermove', e => {
    7. KOMPONENS: Rooms — 12 szoba + a foglalási űrlap szobalistája
    -------------------------------------------------------------------------- */
 (function Rooms(){
+  const beds = c => c.replace('fő','').split('+').reduce((a,x)=>a+(parseInt(x,10)||0),0);
   const card = r => `
-    <article class="panel card">
+    <article class="panel card" data-no="${r.no}" data-floor="${r.floor.startsWith('1') ? 'f1' : 'f2'}"
+             data-beds="${beds(r.cap)}" data-terrace="${/terasszal/.test(r.type) ? '1' : '0'}">
       <div class="card-top">
         <span class="tag">${r.floor}</span>
         <span class="cap mono">👤 ${r.cap}</span>
@@ -1319,6 +1352,175 @@ let renderScapes;
     btn.textContent = 'Köszönjük — hamarosan visszajelzünk';
     btn.disabled = true;
   });
+})();
+
+/* --------------------------------------------------------------------------
+   12b. KOMPONENS: RoomTools (Szobák aloldal)
+   Szűrés emelet / terasz / férőhely szerint, plusz csoportépítő: a kiválasztott
+   szobák férőhelye futó összegzésben, és onnan egy kattintás az ajánlatkérés.
+   -------------------------------------------------------------------------- */
+(function RoomTools(){
+  const grid = document.querySelector('[data-pickable="true"]');
+  const filters = document.getElementById('room-filters');
+  if (!grid || !filters) return;
+
+  const cards = () => [...grid.querySelectorAll('.card')];
+  const countEl = document.getElementById('room-count');
+  let mode = 'all';
+
+  const matches = (c) =>
+    mode === 'all'     ? true :
+    mode === 'terrace' ? c.dataset.terrace === '1' :
+    mode === 'big'     ? +c.dataset.beds >= 4 :
+                         c.dataset.floor === mode;
+
+  function applyFilter(){
+    let n = 0;
+    cards().forEach(c => { const ok = matches(c); c.hidden = !ok; if (ok) n++; });
+    countEl.textContent = `${n} / ${ROOMS.length} szoba`;
+  }
+
+  filters.addEventListener('click', e => {
+    const b = e.target.closest('button[data-filter]');
+    if (!b) return;
+    mode = b.dataset.filter;
+    filters.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    applyFilter();
+  });
+
+  /* --- Csoportépítő --- */
+  const bar = document.createElement('div');
+  bar.className = 'pickbar';
+  bar.hidden = true;
+  bar.innerHTML = `
+    <div class="pickbar-in">
+      <div class="pickbar-nums">
+        <span><b class="mono" id="pick-rooms">0</b> szoba</span>
+        <span><b class="mono" id="pick-beds">0</b> férőhely</span>
+        <span class="pickbar-list mono" id="pick-list"></span>
+      </div>
+      <div class="pickbar-acts">
+        <button type="button" class="btn btn--ghost" id="pick-clear">Törlés</button>
+        <a class="btn btn--lamp" href="#/" data-anchor="foglalas" id="pick-go">Ajánlatot kérek ezekre</a>
+      </div>
+    </div>`;
+  document.body.appendChild(bar);
+
+  const picked = new Set();
+  function sync(){
+    const list = [...picked];
+    const beds = list.reduce((a,no) => {
+      const c = grid.querySelector(`[data-no="${no}"]`);
+      return a + (c ? +c.dataset.beds : 0);
+    }, 0);
+    document.getElementById('pick-rooms').textContent = list.length;
+    document.getElementById('pick-beds').textContent = beds;
+    document.getElementById('pick-list').textContent = list.join(' · ');
+    bar.hidden = list.length === 0;
+    document.body.classList.toggle('has-pickbar', list.length > 0);
+  }
+
+  grid.addEventListener('click', e => {
+    const c = e.target.closest('.card');
+    if (!c) return;
+    const no = c.dataset.no;
+    picked.has(no) ? picked.delete(no) : picked.add(no);
+    c.classList.toggle('is-picked', picked.has(no));
+    sync();
+  });
+
+  document.getElementById('pick-clear').addEventListener('click', () => {
+    picked.clear();
+    cards().forEach(c => c.classList.remove('is-picked'));
+    sync();
+  });
+
+  /* Az ajánlatkéréskor a kiválasztás bekerül a megjegyzésbe. */
+  document.getElementById('pick-go').addEventListener('click', () => {
+    const note = document.getElementById('f-note');
+    const whole = document.getElementById('f-whole');
+    if (!picked.size) return;
+    const beds = document.getElementById('pick-beds').textContent;
+    if (note) note.value = `Kiválasztott szobák: ${[...picked].join(', ')} (${beds} férőhely).`;
+    if (whole) whole.checked = picked.size === ROOMS.length;
+  });
+
+  applyFilter();
+})();
+
+/* --------------------------------------------------------------------------
+   12c. KOMPONENS: SkiMix (Sípályák aloldal)
+   A három terep pályahossza nehézség szerint, egy közös skálán.
+   -------------------------------------------------------------------------- */
+(function SkiMix(){
+  const box = document.getElementById('ski-mix');
+  if (!box) return;
+  const max = Math.max(...SKI_AREAS.map(a => a.mix.blue + a.mix.red + a.mix.black));
+  const LABEL = { blue:'Kék', red:'Piros', black:'Fekete' };
+
+  box.innerHTML = SKI_AREAS.map(a => {
+    const total = a.mix.blue + a.mix.red + a.mix.black;
+    const seg = k => `<i class="seg-${k}" style="flex:${a.mix[k]}" title="${LABEL[k]}: ${a.mix[k]} km"></i>`;
+    return `
+      <div class="mix">
+        <div class="mix-head">
+          <div><b>${a.name}</b><span class="tag">${a.best} · ${a.vert} szintkülönbség</span></div>
+          <span class="mix-total mono">${a.km}</span>
+        </div>
+        <div class="mix-bar" style="width:${(total/max*100).toFixed(1)}%">
+          ${seg('blue')}${seg('red')}${seg('black')}
+        </div>
+        <div class="mix-legend mono">
+          <span><i class="seg-blue"></i>${a.mix.blue} km kék</span>
+          <span><i class="seg-red"></i>${a.mix.red} km piros</span>
+          <span><i class="seg-black"></i>${String(a.mix.black).replace('.', ',')} km fekete</span>
+        </div>
+      </div>`;
+  }).join('');
+})();
+
+/* --------------------------------------------------------------------------
+   12d. KOMPONENS: Lightbox (Galéria aloldal)
+   -------------------------------------------------------------------------- */
+(function Lightbox(){
+  const box = document.getElementById('lightbox');
+  const wrap = document.querySelector('[data-lightbox="true"]');
+  if (!box || !wrap) return;
+  const figs = [...wrap.querySelectorAll('.strip')];
+  const cv = document.getElementById('lb-canvas');
+  let i = 0;
+
+  function paint(){
+    const src = figs[i].querySelector('canvas');
+    const cap = figs[i].querySelector('figcaption');
+    document.getElementById('lb-title').textContent = cap.querySelector('b').textContent;
+    document.getElementById('lb-sub').textContent = cap.querySelector('small').textContent;
+    const r = cv.getBoundingClientRect();
+    cv.width = Math.max(2, r.width|0); cv.height = Math.max(2, r.height|0);
+    const c = cv.getContext('2d');
+    c.imageSmoothingEnabled = true;
+    c.drawImage(src, 0, 0, cv.width, cv.height);
+  }
+  function open(n){ i = n; box.hidden = false; document.body.style.overflow = 'hidden'; requestAnimationFrame(paint); }
+  function close(){ box.hidden = true; document.body.style.overflow = ''; }
+  function step(d){ i = (i + d + figs.length) % figs.length; paint(); }
+
+  figs.forEach((f,n) => {
+    f.tabIndex = 0;
+    f.addEventListener('click', () => open(n));
+    f.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(n); } });
+  });
+  box.querySelector('.lb-close').addEventListener('click', close);
+  box.querySelector('.lb-prev').addEventListener('click', () => step(-1));
+  box.querySelector('.lb-next').addEventListener('click', () => step(1));
+  box.addEventListener('click', e => { if (e.target === box) close(); });
+  document.addEventListener('keydown', e => {
+    if (box.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') step(-1);
+    if (e.key === 'ArrowRight') step(1);
+  });
+  window.addEventListener('resize', () => { if (!box.hidden) paint(); });
 })();
 
 /* --------------------------------------------------------------------------
@@ -1786,4 +1988,90 @@ section.band + section.band{ border-top:0; }
 }
 
 .hero .hero-ctas{ margin-top:clamp(2rem,5vh,3rem); }
+</style>
+<style>
+/* ============================================================================
+   ALOLDALI EXTRÁK — szűrő, csoportépítő, nehézségi bontás, képnagyító
+   ========================================================================= */
+.hint{ font-size:.82rem; color:var(--fg-faint); margin:0 0 1.25rem; }
+
+/* Szűrősor */
+.filters{ display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; margin-bottom:1rem; }
+.filters button{
+  font-family:var(--mono); font-size:.64rem; letter-spacing:.12em; text-transform:uppercase;
+  background:transparent; border:1px solid var(--panel-edge); color:var(--fg-soft);
+  padding:.48rem .85rem; border-radius:999px; cursor:pointer; transition:.2s;
+}
+.filters button:hover{ color:var(--fg); border-color:var(--glacier); }
+.filters button[aria-pressed="true"]{ background:var(--glacier); border-color:var(--glacier); color:#04191B; font-weight:700; }
+.filter-count{ margin-left:auto; font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-faint); }
+
+/* Válogatható szobakártyák */
+[data-pickable="true"] .card{ cursor:pointer; }
+[data-pickable="true"] .card::after{
+  content:''; position:absolute; inset:auto 1.1rem 1.1rem auto;
+  width:16px; height:16px; border-radius:5px; border:1px solid var(--panel-edge);
+  transition:.2s;
+}
+[data-pickable="true"] .card{ position:relative; }
+.card.is-picked{ border-color:var(--glacier); background:color-mix(in srgb, var(--glacier) 10%, transparent); }
+.card.is-picked::after{ background:var(--glacier); border-color:var(--glacier); box-shadow:inset 0 0 0 3px var(--sky-bottom); }
+
+/* Futó összesítő sáv */
+.pickbar{
+  position:fixed; inset-inline:0; bottom:0; z-index:70;
+  background:color-mix(in srgb, var(--sky-top) 92%, transparent);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--panel-edge);
+  padding:.85rem var(--gutter) calc(.85rem + env(safe-area-inset-bottom, 0px));
+}
+.pickbar-in{ max-width:1180px; margin-inline:auto; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1rem; }
+.pickbar-nums{ display:flex; flex-wrap:wrap; align-items:baseline; gap:.5rem 1.5rem;
+  font-family:var(--mono); font-size:.64rem; letter-spacing:.13em; text-transform:uppercase; color:var(--fg-faint); }
+.pickbar-nums b{ font-size:1.5rem; color:var(--fg); margin-right:.35rem; letter-spacing:-.02em; }
+.pickbar-list{ text-transform:none; letter-spacing:.04em; color:var(--fg-soft); font-size:.72rem; }
+.pickbar-acts{ display:flex; gap:.6rem; }
+body.has-pickbar{ padding-bottom:88px; }
+
+/* Nehézségi bontás */
+.mixes{ display:flex; flex-direction:column; gap:2rem; }
+.mix-head{ display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:.7rem; }
+.mix-head b{ font-size:1.05rem; }
+.mix-head .tag{ display:block; margin-top:.25rem; color:var(--fg-faint); }
+.mix-total{ font-size:1.35rem; font-weight:700; letter-spacing:-.02em; }
+.mix-bar{ display:flex; height:14px; border-radius:7px; overflow:hidden; min-width:40%; }
+.mix-bar i{ display:block; height:100%; }
+.seg-blue{ background:var(--piste-blue); }
+.seg-red{ background:var(--piste-red); }
+.seg-black{ background:var(--piste-black); }
+.mix-legend{ display:flex; flex-wrap:wrap; gap:.5rem 1.3rem; margin-top:.7rem;
+  font-size:.62rem; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-faint); }
+.mix-legend span{ display:inline-flex; align-items:center; gap:.45rem; }
+.mix-legend i{ width:12px; height:3px; border-radius:2px; }
+
+/* Képnagyító */
+.lightbox{
+  position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; gap:.5rem;
+  background:color-mix(in srgb, var(--ink) 88%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  padding:clamp(1rem,4vw,3rem);
+}
+.lb-stage{ margin:0; display:flex; flex-direction:column; gap:.9rem; max-width:min(880px,100%); flex:1; }
+#lb-canvas{ width:100%; aspect-ratio:4/3; max-width:100%; border-radius:14px; border:1px solid var(--panel-edge); display:block; }
+.lb-stage figcaption{ display:flex; flex-direction:column; gap:.2rem; }
+.lb-stage figcaption b{ font-family:var(--display); font-size:1.15rem; letter-spacing:-.02em; }
+.lb-stage figcaption small{ font-family:var(--mono); font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); }
+.lb-nav, .lb-close{
+  flex:none; background:var(--panel); border:1px solid var(--panel-edge); color:var(--fg);
+  width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:1.3rem; line-height:1;
+  transition:.2s;
+}
+.lb-nav:hover, .lb-close:hover{ border-color:var(--glacier); color:var(--glacier); }
+.lb-close{ position:absolute; top:clamp(1rem,3vw,2rem); right:clamp(1rem,3vw,2rem); font-size:1rem; }
+.strip{ cursor:zoom-in; }
+@media (max-width:640px){
+  .lb-nav{ position:absolute; bottom:clamp(1rem,4vw,2rem); }
+  .lb-prev{ left:clamp(1rem,4vw,2rem); } .lb-next{ right:clamp(1rem,4vw,2rem); }
+  .lb-stage{ max-width:100%; }
+}
 </style>
