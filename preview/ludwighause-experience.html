@@ -418,26 +418,28 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 
 <!-- =========================== KOMPONENS: Hero ============================ -->
 <section class="band hero wrap" id="hero">
-  <div class="hero-top" data-parallax="-0.06">
-    <span class="chip"><i class="dot"></i> ⛷ Neukirchen am Grossvenediger &middot; Ausztria</span>
-  </div>
+  <p class="hero-kicker" data-parallax="-0.05">Ausztria. Barátok. Síelés.</p>
 
   <div data-parallax="-0.14">
     <h1 id="hero-title">
-      <span class="l"><i>Az Alpok</i></span>
-      <span class="l"><i><em>szívében</em></i></span>
-      <span class="l"><i>vár a ház</i></span>
+      <span class="l"><i>Egy ház, ahol</i></span>
+      <span class="l"><i>nem csak <em>aludni</em></i></span>
+      <span class="l"><i>fogtok.</i></span>
     </h1>
   </div>
 
-  <div class="hero-foot" data-parallax="-0.22">
-    <div>
-      <p class="lede">Fiatalos alpesi panzió, 45 vendégágy, bár a pincében — 600 méterre a Wildkogel sípályáktól.</p>
-      <div class="hero-ctas">
-        <a class="btn" href="#/" data-anchor="foglalas" data-magnetic>Szabad időpontok megtekintése</a>
-        <a class="btn btn--ghost" href="#/" data-anchor="szallasunk" data-magnetic>Szállásunk</a>
-      </div>
-    </div>
+  <ul class="spec-row" data-parallax="-0.19">
+    <li><b class="mono">45</b> férőhely</li>
+    <li>Közösségi terek</li>
+    <li>Self-cooking konyha</li>
+    <li>Sífelszerelés-tároló</li>
+    <li>Parkolás</li>
+    <li>Wildkogel</li>
+  </ul>
+
+  <div class="hero-ctas" data-parallax="-0.24">
+    <a class="btn btn--lamp" href="#/" data-anchor="foglalas" data-preset="group" data-magnetic>Kérj csoportos ajánlatot</a>
+    <a class="btn btn--ghost" href="#/" data-anchor="foglalas" data-magnetic>Szabad időpontok</a>
   </div>
 
   <div class="scroll-hint" data-parallax="-0.3"><i></i> Görgess</div>
@@ -1460,6 +1462,10 @@ let renderScapes;
     const a = e.target.closest('a[data-route], a[data-anchor]');
     if (!a) return;
     e.preventDefault();
+    if (a.dataset.preset === 'group'){
+      const w = document.getElementById('f-whole');
+      if (w) w.checked = true;              /* csoportos ajánlat = teljes ház */
+    }
     if (a.dataset.route) go(a.dataset.route);
     else go('home', a.dataset.anchor);
   });
@@ -1741,4 +1747,43 @@ section.band + section.band{ border-top:0; }
 @media (prefers-reduced-motion:reduce){
   .view{ transform:none !important; opacity:1 !important; }
 }
+</style>
+<style>
+/* ============================================================================
+   HERO — nyitó állítás, műszaki sor, azonnali CTA
+   ========================================================================= */
+.hero{ justify-content:center; gap:0; }
+
+.hero-kicker{
+  font-family:var(--mono); font-weight:700;
+  font-size:clamp(.68rem,1.1vw,.82rem);
+  letter-spacing:.3em; text-transform:uppercase;
+  color:var(--glacier);
+  margin:0 0 clamp(1.6rem,4vh,2.4rem);
+  display:flex; align-items:center; gap:1rem;
+}
+.hero-kicker::after{ content:''; flex:1; max-width:120px; height:1px; background:currentColor; opacity:.45; }
+
+.hero h1{ margin:0; }
+
+/* Egy sor, hat tény — vékony elválasztókkal, nem kártyákban */
+.spec-row{
+  list-style:none; margin:clamp(2rem,5vh,3.2rem) 0 0; padding:0;
+  display:flex; flex-wrap:wrap; align-items:baseline;
+  gap:.55rem clamp(1rem,2.2vw,1.9rem);
+  font-family:var(--mono); font-size:clamp(.66rem,1vw,.76rem);
+  letter-spacing:.15em; text-transform:uppercase; color:var(--fg-soft);
+}
+.spec-row li{ display:flex; align-items:baseline; gap:.5rem; white-space:nowrap; }
+.spec-row li + li{ padding-left:clamp(1rem,2.2vw,1.9rem); border-left:1px solid var(--rule); }
+.spec-row b{
+  font-size:1.55em; font-weight:700; color:var(--fg);
+  letter-spacing:-.02em; line-height:1;
+}
+@media (max-width:560px){
+  .spec-row li + li{ padding-left:0; border-left:0; }
+  .spec-row li:not(:last-child)::after{ content:'·'; margin-left:.55rem; color:var(--fg-faint); }
+}
+
+.hero .hero-ctas{ margin-top:clamp(2rem,5vh,3rem); }
 </style>
