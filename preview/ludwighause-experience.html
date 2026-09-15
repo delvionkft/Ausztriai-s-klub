@@ -1503,27 +1503,32 @@ window.addEventListener('pointermove', e => {
    -------------------------------------------------------------------------- */
 (function Rooms(){
   const card = (r, i, full) => `
-    <article class="panel card${(full && r.photos) ? ' has-photo' : ''}" data-idx="${i}">
+    <article class="panel card room-card${(full && r.photos) ? ' has-photo' : ''}" data-idx="${i}">
       ${(full && r.photos) ? `<figure class="card-photo">
         <img src="${r.photos[0].src}" alt="${r.name}" loading="lazy" decoding="async">
         <button class="photo-btn" type="button" data-photos="${i}" aria-label="Fotók megnyitása">📷 ${r.photos.length}</button>
       </figure>` : ''}
-      <div class="card-top">
-        <span class="tag">${r.floor}</span>
-        <span class="cap mono"><i aria-hidden="true">👤</i> ${r.cap}</span>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="tag">${r.floor}</span>
+          <span class="cap mono"><i aria-hidden="true">👤</i> ${r.cap}</span>
+        </div>
+        <h3>${r.name}</h3>
+        <p class="room-nos mono">${r.nos}</p>
+        <p class="card-desc">${r.desc}</p>
+        <div class="card-foot">
+          ${r.price ? `<div class="price-row">
+            <div><span>Főszezon</span><b class="mono">€${r.price.high}</b><small>/ éj</small></div>
+            <div><span>Szezonon kívül</span><b class="mono">€${r.price.low}</b><small>/ éj</small></div>
+          </div>` : ''}
+          ${full ? `<div class="room-pick" data-idx="${i}">
+            <button type="button" data-step="-1" aria-label="Kevesebb szoba">−</button>
+            <output class="mono">0</output>
+            <span class="pick-max mono">/ ${r.rooms} <em>szoba</em></span>
+            <button type="button" data-step="1" aria-label="Több szoba">+</button>
+          </div>` : ''}
+        </div>
       </div>
-      <h3>${r.name}<span>${r.nos}</span></h3>
-      <p class="card-desc">${r.desc}</p>
-      ${r.price ? `<div class="price-row">
-        <div><span>Főszezon</span><b class="mono">€${r.price.high}</b><small>/ éj</small></div>
-        <div><span>Szezonon kívül</span><b class="mono">€${r.price.low}</b><small>/ éj</small></div>
-      </div>` : ''}
-      ${full ? `<div class="room-pick" data-idx="${i}">
-        <button type="button" data-step="-1" aria-label="Kevesebb szoba">−</button>
-        <output class="mono">0</output>
-        <span class="pick-max mono">/ ${r.rooms} <em>szoba</em></span>
-        <button type="button" data-step="1" aria-label="Több szoba">+</button>
-      </div>` : ''}
     </article>`;
 
   document.querySelectorAll('[data-grid="rooms"]').forEach(g => {
@@ -3507,4 +3512,58 @@ if (!reduce){
 .price-row > div:first-child b{ color:var(--glacier); }
 .price-row small{ font-family:var(--mono); font-size:.62rem; color:var(--fg-soft); }
 .card.has-photo .price-row{ margin-inline:1.5rem; }
+</style>
+<style>
+/* ============================================================================
+   SZOBATÍPUS-KÁRTYA — fekvő, listaszerű elrendezés a Szobák aloldalon
+   Egy sorban egy típus: balra a fotó, jobbra a szöveg, alul az ár és a
+   szobaszámláló egy vonalon. Így a tíz adat nem egy hasábba zsúfolódik.
+   ========================================================================= */
+[data-pickable="true"]{ grid-template-columns:1fr; gap:1.1rem; }
+
+[data-pickable="true"] .room-card{
+  display:grid; grid-template-columns:minmax(230px,32%) 1fr;
+  padding:0; gap:0; align-items:stretch; overflow:hidden; border-radius:18px;
+}
+[data-pickable="true"] .room-card > *{ padding-inline:0 !important; }
+
+[data-pickable="true"] .card-photo{
+  aspect-ratio:auto; height:100%; min-height:250px; margin:0;
+}
+[data-pickable="true"] .card-photo img{ height:100%; }
+
+[data-pickable="true"] .card-body{
+  padding:1.5rem 1.7rem; display:flex; flex-direction:column; gap:.55rem; min-width:0;
+}
+[data-pickable="true"] .card-top{ margin-bottom:.2rem; }
+[data-pickable="true"] .room-card h3{ font-size:clamp(1.25rem,1.6vw,1.55rem); letter-spacing:-.025em; }
+.room-nos{
+  font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--glacier);
+}
+[data-pickable="true"] .card-desc{ max-width:62ch; }
+
+[data-pickable="true"] .card-foot{
+  margin-top:auto; padding-top:1.1rem; border-top:1px solid var(--rule);
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1rem 1.5rem;
+}
+[data-pickable="true"] .price-row,
+[data-pickable="true"] .room-pick{
+  margin:0 !important; padding:0 !important; border:0 !important;
+}
+[data-pickable="true"] .price-row{ gap:.3rem 1.6rem; }
+[data-pickable="true"] .room-pick{ margin-left:auto !important; }
+
+/* Kiválasztott típus: finom jelölés a bal élen, nem az egész kártya elszínezése */
+[data-pickable="true"] .room-card.is-picked{
+  border-color:color-mix(in srgb, var(--glacier) 55%, transparent);
+  background:color-mix(in srgb, var(--glacier) 7%, rgba(9,20,33,.72));
+}
+
+@media (max-width:760px){
+  [data-pickable="true"] .room-card{ grid-template-columns:1fr; }
+  [data-pickable="true"] .card-photo{ aspect-ratio:16/10; min-height:0; }
+  [data-pickable="true"] .card-body{ padding:1.25rem 1.3rem; }
+  [data-pickable="true"] .card-foot{ justify-content:flex-start; }
+  [data-pickable="true"] .room-pick{ margin-left:0 !important; }
+}
 </style>
