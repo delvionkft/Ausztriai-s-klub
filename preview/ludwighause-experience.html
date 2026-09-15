@@ -3567,3 +3567,18 @@ if (!reduce){
   [data-pickable="true"] .room-pick{ margin-left:0 !important; }
 }
 </style>
+<style>
+/* A fotó és a szövegoszlop közé több levegő kell — fekvő kártyán a kép éle
+   túl közel került a sorok kezdetéhez. */
+[data-pickable="true"] .card-body{
+  padding:1.7rem 1.9rem 1.7rem clamp(1.9rem, 3vw, 2.8rem);
+  gap:.6rem;
+}
+[data-pickable="true"] .room-card{ column-gap:clamp(.4rem, 1vw, 1rem); }
+
+@media (max-width:760px){
+  /* Egy hasábban a kép fölül van, ott az oldalsó térköz egyenletes legyen. */
+  [data-pickable="true"] .card-body{ padding:1.4rem 1.4rem 1.5rem; }
+  [data-pickable="true"] .room-card{ column-gap:0; }
+}
+</style>
