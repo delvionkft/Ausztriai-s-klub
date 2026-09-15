@@ -626,12 +626,22 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     <div class="cards rise" data-grid="rooms" data-pickable="true"></div>
   </section>
   <section class="band wrap">
-    <div class="head rise"><p class="eyebrow">Minden szobában</p><h2>Ami jár hozzá.</h2></div>
+    <div class="head rise"><p class="eyebrow">Az árban benne van</p><h2>Ami jár hozzá.</h2></div>
     <ul class="highlights rise">
       <li><span aria-hidden="true">🛏️</span> Ágynemű, szappan, hajszárító minden szobában</li>
       <li><span aria-hidden="true">🏔️</span> Venediger vagy Wildkogel panoráma, legtöbbször erkéllyel</li>
-      <li><span aria-hidden="true">📶</span> Korlátlan WiFi az egész házban</li>
-      <li><span aria-hidden="true">🎿</span> Fűtött sítároló a felszerelésnek</li>
+      <li><span aria-hidden="true">📶</span> Korlátlan internet az egész házban (Wi-Fi)</li>
+      <li><span aria-hidden="true">🍽️</span> Étkező használata egész nap</li>
+      <li><span aria-hidden="true">👩‍🍳</span> Főzésre alkalmas konyha használata egész nap</li>
+      <li><span aria-hidden="true">🧺</span> Mosógép használata egész nap</li>
+      <li><span aria-hidden="true">🅿️</span> Parkolás a ház mellett</li>
+      <li><span aria-hidden="true">🛎️</span> Recepciós szolgálat</li>
+      <li><span aria-hidden="true">🎤</span> Karaoke szett használata</li>
+      <li><span aria-hidden="true">📽️</span> Kivetítő használata</li>
+      <li><span aria-hidden="true">🚲</span> Kerékpárok tárolása a nyári szezonban</li>
+      <li><span aria-hidden="true">🎿</span> Sílécek tárolása a téli szezonban</li>
+      <li><span aria-hidden="true">🥃</span> Ingyenes pálinka, a ház ajándéka</li>
+      <li><span aria-hidden="true">🎟️</span> Disco belépő a ház pincéjébe, minden napra</li>
     </ul>
     <div class="inline-ctas rise">
       <a class="btn" href="#/kapcsolat" data-route="kapcsolat" data-magnetic>Időpontot foglalok</a>
@@ -952,15 +962,18 @@ const SERVICES = [
 ];
 
 const INCLUDED = [
-  'Ágynemű, szappan, hajszárító',
-  'Étkező és büfékonyha használata',
-  'Self-cooking konyha (tűzhely, sütő, mosogatógép)',
-  'Venediger panorámás napozóterasz',
-  'Fűtött sí- és sífelszerelés tároló',
-  'Korlátlan WiFi',
-  'Ingyenes parkolás',
-  'Közösségi terek és játékok',
-  'Ingyenes pálinka egész nap 🥃',
+  'Korlátlan internet az egész házban (Wi-Fi)',
+  'Étkező használata egész nap',
+  'Főzésre alkalmas konyha használata egész nap',
+  'Mosógép használata egész nap',
+  'Parkolás a ház mellett',
+  'Recepciós szolgálat',
+  'Karaoke szett használata',
+  'Kivetítő használata',
+  'Kerékpárok tárolása a nyári szezonban',
+  'Sílécek tárolása a téli szezonban',
+  'Ingyenes pálinka, a ház ajándéka',
+  'Disco belépő a ház pincéjébe, minden napra',
 ];
 const EXCLUDED = [
   'Idegenforgalmi adó: 3 € / fő / éj, a helyszínen fizetendő (2026)',
@@ -2769,6 +2782,20 @@ const EN = {
   'Mosógép':'Washing machine','Egész nap használható':'Available all day',
   'Karaoke és kivetítő':'Karaoke and projector','Közösségi estékhez, a ház felszereléséből':'For shared evenings, from the house equipment',
   'Disco belépő':'Disco entry','A ház pincéjébe, minden napra':'To the cellar of the house, for every day',
+  // Szolgáltatások a hivatalos árlistáról
+  'Az árban benne van':"What the price covers",
+  'Korlátlan internet az egész házban (Wi-Fi)':'Unlimited internet throughout the house (Wi-Fi)',
+  'Étkező használata egész nap':'Use of the dining room all day',
+  'Főzésre alkalmas konyha használata egész nap':'Use of a kitchen you can actually cook in, all day',
+  'Mosógép használata egész nap':'Use of the washing machine all day',
+  'Parkolás a ház mellett':'Parking next to the house',
+  'Recepciós szolgálat':'Reception service',
+  'Karaoke szett használata':'Use of the karaoke set',
+  'Kivetítő használata':'Use of the projector',
+  'Kerékpárok tárolása a nyári szezonban':'Bike storage in the summer season',
+  'Sílécek tárolása a téli szezonban':'Ski storage in the winter season',
+  'Ingyenes pálinka, a ház ajándéka':'Free pálinka, on the house',
+  'Disco belépő a ház pincéjébe, minden napra':'Disco entry to the cellar, for every day',
   'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
 };
 
@@ -3023,6 +3050,20 @@ const DE = {
   'Mosógép':'Waschmaschine','Egész nap használható':'Den ganzen Tag nutzbar',
   'Karaoke és kivetítő':'Karaoke und Beamer','Közösségi estékhez, a ház felszereléséből':'Für gesellige Abende, aus der Hausausstattung',
   'Disco belépő':'Disco-Eintritt','A ház pincéjébe, minden napra':'In den Keller des Hauses, für jeden Tag',
+  // Szolgáltatások a hivatalos árlistáról
+  'Az árban benne van':'Im Preis enthalten',
+  'Korlátlan internet az egész házban (Wi-Fi)':'Unbegrenztes Internet im ganzen Haus (WLAN)',
+  'Étkező használata egész nap':'Nutzung des Essraums den ganzen Tag',
+  'Főzésre alkalmas konyha használata egész nap':'Nutzung einer voll kochtauglichen Küche, den ganzen Tag',
+  'Mosógép használata egész nap':'Nutzung der Waschmaschine den ganzen Tag',
+  'Parkolás a ház mellett':'Parken direkt am Haus',
+  'Recepciós szolgálat':'Rezeptionsdienst',
+  'Karaoke szett használata':'Nutzung der Karaoke-Anlage',
+  'Kivetítő használata':'Nutzung des Beamers',
+  'Kerékpárok tárolása a nyári szezonban':'Fahrradabstellraum in der Sommersaison',
+  'Sílécek tárolása a téli szezonban':'Skiraum in der Wintersaison',
+  'Ingyenes pálinka, a ház ajándéka':'Pálinka gratis, ein Geschenk des Hauses',
+  'Disco belépő a ház pincéjébe, minden napra':'Disco-Eintritt in den Keller, für jeden Tag',
   'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
 };
 
