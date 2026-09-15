@@ -1459,10 +1459,10 @@ window.addEventListener('pointermove', e => {
    -------------------------------------------------------------------------- */
 (function Rooms(){
   const beds = c => c.replace('fő','').split('+').reduce((a,x)=>a+(parseInt(x,10)||0),0);
-  const card = r => `
-    <article class="panel card${r.photos ? ' has-photo' : ''}" data-no="${r.no}" data-floor="${r.floor.startsWith('1') ? 'f1' : 'f2'}"
+  const card = (r, withPhoto) => `
+    <article class="panel card${(withPhoto && r.photos) ? ' has-photo' : ''}" data-no="${r.no}" data-floor="${r.floor.startsWith('1') ? 'f1' : 'f2'}"
              data-beds="${beds(r.cap)}" data-terrace="${/terasszal/.test(r.type) ? '1' : '0'}">
-      ${r.photos ? `<figure class="card-photo">
+      ${(withPhoto && r.photos) ? `<figure class="card-photo">
         <img src="${r.photos[0].src}" alt="${r.no} — ${r.name}" loading="lazy" decoding="async">
         <button class="photo-btn" type="button" data-photos="${r.no}" aria-label="Fotók megnyitása">📷 ${r.photos.length}</button>
       </figure>` : ''}
@@ -1475,7 +1475,9 @@ window.addEventListener('pointermove', e => {
     </article>`;
   document.querySelectorAll('[data-grid="rooms"]').forEach(g => {
     const n = parseInt(g.dataset.limit || '0', 10) || ROOMS.length;
-    g.innerHTML = ROOMS.slice(0, n).map(card).join('');
+    /* Fotó csak a Szobák aloldalon; a főoldali előzetes szöveges marad. */
+    const withPhoto = g.dataset.pickable === 'true';
+    g.innerHTML = ROOMS.slice(0, n).map(r => card(r, withPhoto)).join('');
     tilt(g.querySelectorAll('.card'));
   });
 
