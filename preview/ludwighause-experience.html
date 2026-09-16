@@ -931,6 +931,31 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   </section>
 
   <section class="band wrap">
+    <div class="head rise">
+      <p class="eyebrow">Letölthető dokumentum</p>
+      <h2>A teljes házirend,<br>három nyelven.</h2>
+      <p class="lede">A hivatalos, aláírt változat PDF-ben. Válasszátok ki a nyelvet — új lapon nyílik meg.</p>
+    </div>
+    <div class="doclinks rise">
+      <a class="doclink" href="docs/Ludwighaus-Hazirend-Magyar.pdf" target="_blank" rel="noopener">
+        <span class="doclink-flag" aria-hidden="true">🇭🇺</span>
+        <span class="doclink-txt"><b>Magyar</b><small>Házirend · PDF, 38 kB</small></span>
+        <span class="doclink-go" aria-hidden="true">↗</span>
+      </a>
+      <a class="doclink" href="docs/Ludwighaus-House-Rules-English.pdf" target="_blank" rel="noopener">
+        <span class="doclink-flag" aria-hidden="true">🇬🇧</span>
+        <span class="doclink-txt"><b>English</b><small>House rules · PDF, 34 kB</small></span>
+        <span class="doclink-go" aria-hidden="true">↗</span>
+      </a>
+      <a class="doclink" href="docs/Ludwighaus-Hausordnung-Deutsch.pdf" target="_blank" rel="noopener">
+        <span class="doclink-flag" aria-hidden="true">🇩🇪</span>
+        <span class="doclink-txt"><b>Deutsch</b><small>Hausordnung · PDF, 37 kB</small></span>
+        <span class="doclink-go" aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="band wrap">
     <div class="panel rules-note rise" data-parallax="0.05">
       <h3>Kérdés maradt?</h3>
       <p>Ha bármi nem világos, hívjatok vagy írjatok — a magyar recepció bármikor elérhető, és a foglalás előtt is szívesen végigvesszük veletek.</p>
@@ -3444,6 +3469,11 @@ const EN = {
   'A mosógép egész nap rendelkezésre áll.':'The washing machine is available all day.',
   'A kerékpárokat nyáron, a sífelszerelést télen a ház erre kijelölt tárolójában tartsátok.':'Keep bikes in summer and ski equipment in winter in the storage room set aside for them.',
   'Menü':'Menu','Mobil navigáció':'Mobile navigation',
+  'Letölthető dokumentum':'Downloadable document','A teljes házirend,':'The full house rules,','három nyelven.':'in three languages.',
+  'A hivatalos, aláírt változat PDF-ben. Válasszátok ki a nyelvet — új lapon nyílik meg.':'The official signed version as a PDF. Pick your language — it opens in a new tab.',
+  'Magyar':'Hungarian','Házirend · PDF, 38 kB':'House rules · PDF, 38 kB',
+  'English':'English','House rules · PDF, 34 kB':'House rules · PDF, 34 kB',
+  'Deutsch':'German','Hausordnung · PDF, 37 kB':'House rules · PDF, 37 kB',
   'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
 };
 
@@ -3840,6 +3870,11 @@ const DE = {
   'A mosógép egész nap rendelkezésre áll.':'Die Waschmaschine steht den ganzen Tag bereit.',
   'A kerékpárokat nyáron, a sífelszerelést télen a ház erre kijelölt tárolójában tartsátok.':'Bewahrt die Fahrräder im Sommer und die Skiausrüstung im Winter im dafür vorgesehenen Raum auf.',
   'Menü':'Menü','Mobil navigáció':'Mobile Navigation',
+  'Letölthető dokumentum':'Dokument zum Download','A teljes házirend,':'Die vollständige Hausordnung,','három nyelven.':'in drei Sprachen.',
+  'A hivatalos, aláírt változat PDF-ben. Válasszátok ki a nyelvet — új lapon nyílik meg.':'Die offizielle, unterzeichnete Fassung als PDF. Wählt eure Sprache — sie öffnet sich in einem neuen Tab.',
+  'Magyar':'Ungarisch','Házirend · PDF, 38 kB':'Hausordnung · PDF, 38 kB',
+  'English':'Englisch','House rules · PDF, 34 kB':'Hausordnung · PDF, 34 kB',
+  'Deutsch':'Deutsch','Hausordnung · PDF, 37 kB':'Hausordnung · PDF, 37 kB',
   'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
 };
 
@@ -4462,6 +4497,29 @@ if (!reduce){
   backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
 }
 .infobox-panel{ overflow:hidden auto; }
+/* --- Letölthető dokumentumok ------------------------------------------- */
+.doclinks{ display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+.doclink{
+  display:flex; align-items:center; gap:1rem; text-decoration:none; color:inherit;
+  padding:1.05rem 1.2rem; border:1px solid var(--rule); border-radius:14px;
+  background:var(--panel-soft); position:relative; overflow:hidden;
+  transition:border-color .22s var(--ease), translate .22s var(--ease), background .22s var(--ease);
+}
+.doclink::after{
+  content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:linear-gradient(120deg, color-mix(in srgb, var(--glacier) 16%, transparent), transparent 55%);
+  opacity:0; transition:opacity .22s var(--ease);
+}
+.doclink:hover,.doclink:focus-visible{ border-color:var(--glacier); translate:0 -3px; }
+.doclink:hover::after,.doclink:focus-visible::after{ opacity:1; }
+.doclink:focus-visible{ outline:2px solid var(--glacier); outline-offset:3px; }
+.doclink-flag{ font-size:1.7rem; line-height:1; flex:none; }
+.doclink-txt{ display:flex; flex-direction:column; gap:.15rem; min-width:0; }
+.doclink-txt b{ font-size:1.05rem; letter-spacing:-.01em; }
+.doclink-txt small{ font-family:var(--mono); font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-soft); }
+.doclink-go{ margin-left:auto; font-size:1.1rem; color:var(--glacier); flex:none; transition:translate .22s var(--ease); }
+.doclink:hover .doclink-go{ translate:3px -3px; }
+
 /* --- Házirend ---------------------------------------------------------- */
 .rules{ display:grid; gap:1.1rem; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
 .rule-card{ padding:clamp(1.3rem,2.6vw,1.8rem); display:flex; flex-direction:column; gap:.85rem; }
