@@ -874,7 +874,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <label class="check"><input id="f-whole" name="wholehouse" type="checkbox"> Teljes házat szeretnék foglalni</label>
       <div class="field"><label for="f-note">Megjegyzés (opcionális)</label><textarea id="f-note" name="note" rows="3"></textarea></div>
       <button class="btn" type="submit" data-magnetic>Foglalás leadása →</button>
-      <p class="fineprint">A foglalás elküldésével elfogadjátok az <a href="#/" data-anchor="">Adatkezelési tájékoztatót</a> és az <a href="#/" data-anchor="">ÁSZF-et</a>.</p>
+      <p class="fineprint">A foglalás elküldésével elfogadjátok az <a href="#adatkezeles" data-doc="privacy">Adatkezelési tájékoztatót</a> és az <a href="#/" data-anchor="">ÁSZF-et</a>.</p>
     </form>
   </div>
   </section>
@@ -992,7 +992,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     </div>
     <div><h4>Az oldal</h4><ul><li><a href="#/" data-anchor="szallasunk">Szállásunk</a></li><li><a href="#/szobak" data-route="szobak">Szobák</a></li><li><a href="#/sipalyak" data-route="sipalyak">Sípályák</a></li><li><a href="#/kikapcsolodas" data-route="kikapcsolodas">Kikapcsolódás</a></li></ul></div>
     <div><h4>Foglalás</h4><ul><li><a href="#/" data-anchor="arak">Árak</a></li><li><a href="#/galeria" data-route="galeria">Galéria</a></li><li><a href="#/kapcsolat" data-route="kapcsolat">Időpontot foglalok</a></li></ul></div>
-    <div><h4>Dokumentumok</h4><ul><li><a href="#/hazirend" data-route="hazirend">Házirend</a></li><li><a href="#/" data-anchor="">ÁSZF</a></li><li><a href="#/" data-anchor="">Adatkezelés</a></li><li><a href="#/kapcsolat" data-route="kapcsolat">Kapcsolat</a></li></ul></div>
+    <div><h4>Dokumentumok</h4><ul><li><a href="#/hazirend" data-route="hazirend">Házirend</a></li><li><a href="#/" data-anchor="">ÁSZF</a></li><li><a href="#adatkezeles" data-doc="privacy">Adatkezelés</a></li><li><a href="#/kapcsolat" data-route="kapcsolat">Kapcsolat</a></li></ul></div>
     <div><h4>Kövessetek minket</h4><ul class="social">
       <li><a href="https://www.facebook.com/ludwighausneukirchen/" target="_blank" rel="noopener">Facebook</a></li>
       <li><a href="https://www.instagram.com/sportclubhaus.am.wildkogel/" target="_blank" rel="noopener">Instagram</a></li>
@@ -1184,6 +1184,317 @@ const HOUSE_SHOTS = [
   { img:HAZ_BEJARAT, pos:'50% 50%', t:'A bejárat',         s:'Ludwighaus' },
   { img:HAZ_NYAR,    pos:'60% 50%', t:'A ház nyáron',      s:'A Wildkogel lábánál' },
 ];
+
+/* A hivatalos adatkezelési tájékoztató teljes szövege. A magázó hangnem
+   a dokumentumé — ez a jogilag érvényes változat, nem marketingszöveg. */
+const PRIVACY = {
+  title:'Adatkezelési tájékoztató',
+  lead:'A Ludwighaus adatkezelési tájékoztatója. A dokumentum a hivatalos, magázó szövegváltozat.',
+  rights: ["kérelmezheti a rá vonatkozó személyes adatokhoz való hozzáférést,", "kérelmezheti azok helyesbítését,", "kérelmezheti azok törlését,", "kérelmezheti a GDPR 18. cikkében foglalt feltételek fennállása esetén a személyes adatok kezelésének korlátozását (tehát azt, hogy szállásunk az adatokat ne törölje, vagy ne semmisítse meg bíróság vagy hatóság megkereséséig, de legfeljebb harminc napig, s ezen túlmenően más céllal az adatot ne kezelje),", "tiltakozhat a személyes adatok kezelése ellen,", "gyakorolhatja az adathordozhatósághoz való jogát. Ez utóbbi jog értelmében az érintett jogosult arra, hogy a rá vonatkozó személyes adatokat word vagy excel formátumban megkapja, továbbá jogosult arra, hogy ezeket az adatokat kérésére egy másik adatkezelőnek továbbítsa szállásunk."],
+  rightsLead:'Az érintett jogai: az érintett személy (az, akinek a személyes adatait szállásunk kezeli)',
+  incident: "Az adatkezeléssel kapcsolatos egyéb információk: szállásunk minden szükséges technikai és szervezési intézkedést megtesz egy esetleges adatvédelmi incidens (pl. személyes adatokat tartalmazó fájlok sérülése, eltűnése, illetéktelenek számára hozzáférhetővé válása) elkerülésére. Egy mégis bekövetkező incidens esetén a szükséges intézkedések ellenőrzése, valamint az érintett tájékoztatása céljából nyilvántartást vezetünk, amely tartalmazza az érintett személyes adatok körét, az adatvédelmi incidenssel érintettek körét és számát, az adatvédelmi incidens időpontját, körülményeit, hatásait és az elhárítására megtett intézkedéseket, valamint az adatkezelést előíró jogszabályban meghatározott egyéb adatokat.",
+  blocks: [
+    {
+      "h": "1. Általános rendelkezések",
+      "p": [
+        "A Ludwighaus (AT-5741 Neukirchen am Großvenediger, Marktstraße 121) a Ludwighaus üzemeltetőjeként minden esetben biztosítja az általa kezelt személyes adatok tekintetében az adatkezelés jogszerűségét és célszerűségét. E tájékoztató célja, hogy a szállást foglaló, személyes adataikat megadó vendégeink már a foglalás, illetve személyes adataik megadása előtt megfelelő információkat kaphassanak arról, hogy adataikat milyen feltételek és garanciák mellett, mennyi ideig kezeli a Ludwighaus. A tájékoztatóban foglaltakhoz a szállás minden személyes adatkezeléssel járó esetben tartja magát, az itt leírtakat magunkra nézve kötelezőnek tartjuk.",
+        "Fenntartjuk ugyanakkor a jelen egyoldalú jognyilatkozatban leírtak megváltoztatásának jogát, ez esetben az érintetteket előzetesen tájékoztatni fogjuk. Kérjük, amennyiben kérdése van a tájékoztatóban foglaltakkal kapcsolatban, írjon e-mailt nekünk. A szállásunk tevékenységének adatkezelései önkéntes hozzájáruláson alapulnak, illetve némely esetben az adatkezelés a szerződés megkötését megelőzően az érintett kérésére történő lépések megtételéhez szükséges.",
+        "Adatkezeléseink megfelelnek a vonatkozó jogszabályoknak, különösen a következőknek:"
+      ],
+      "ul": [
+        "Az Európai Parlament és a Tanács (EU) 2016/679 rendelete (2016. április 27.) — a természetes személyeknek a személyes adatok kezelése tekintetében történő védelméről és az ilyen adatok szabad áramlásáról, valamint a 95/46/EK rendelet hatályon kívül helyezéséről (általános adatvédelmi rendelet, a továbbiakban: „GDPR”).",
+        "Az információs önrendelkezési jogról és az információszabadságról szóló 2011. évi CXII. törvény („Info. tv.”)."
+      ],
+      "dl": [
+        [
+          "Név",
+          "LUDWIGHAUS"
+        ],
+        [
+          "Székhely",
+          "AT-5741 Neukirchen am Großvenediger, Marktstraße 121"
+        ],
+        [
+          "Közösségi adószám",
+          "ATU70176212"
+        ],
+        [
+          "Telefonszám",
+          "+36 30 245 3873"
+        ],
+        [
+          "E-mail",
+          "ausztriaisiklub@gmail.com"
+        ]
+      ]
+    },
+    {
+      "h": "2. Online szállásfoglalással összefüggő adatkezelés",
+      "p": [
+        "Szállásunk lehetőséget biztosít online szállásfoglalásra annak érdekében, hogy gyors, kényelmes és költségmentes módon foglalhasson szobát a Ludwighausban.",
+        "A személyes adatok kezelője: Ludwighaus, AT-5741 Neukirchen am Großvenediger, Marktstraße 121.",
+        "Az adatkezelés célja: a szállásfoglalás megkönnyítése, költségmentessé, hatékonyabbá tétele.",
+        "Az adatkezelés jogalapja: a szállást foglaló személy előzetes hozzájárulása.",
+        "A kezelt személyes adatok köre: vezetéknév és keresztnév; lakcím (irányítószám, város, utca, házszám); mobiltelefonszám; e-mail cím; személyazonosító igazolvány szám; szállásra érkezők száma; tartózkodás ideje; nyelv.",
+        "Az adatkezelés időtartama: a foglalás szerinti tartózkodási dátum utolsó napját követő két év.",
+        "Az adatszolgáltatás elmaradásának lehetséges következményei: nem jön létre szerződés a szállásunk szobáira vonatkozóan."
+      ],
+      "rights": true,
+      "incident": true
+    },
+    {
+      "h": "3. Ajánlatkéréssel összefüggő adatkezelés",
+      "p": [
+        "Szállásunk lehetőséget biztosít arra, hogy elektronikus úton ajánlatot kérjenek vendégeink. Az ajánlatot automatizált rendszer útján, a szabad kapacitásokra is figyelemmel adja meg szállásunk.",
+        "A személyes adatok kezelője: Ludwighaus, AT-5741 Neukirchen am Großvenediger, Marktstraße 121.",
+        "Az adatkezelés célja: előzetes tájékozódás a szállás árairól.",
+        "Az adatkezelés jogalapja: a szállást foglaló személy előzetes hozzájárulása, GDPR 6. cikk (1) bekezdés a) pont, illetve az adatkezelés a szerződés megkötését megelőzően az érintett kérésére történő lépések megtételéhez szükséges — GDPR 6. cikk (1) bekezdés b) pont.",
+        "A kezelt személyes adatok köre: vezetéknév és keresztnév; lakcím (irányítószám, város, utca, házszám); mobiltelefonszám; e-mail cím; személyazonosító igazolvány szám; szállásra érkezők száma; tartózkodás ideje; nyelv.",
+        "Az adatkezelés időtartama: a foglalás szerinti tartózkodási dátum utolsó napját követő két év.",
+        "Az adatszolgáltatás elmaradásának lehetséges következményei: a szállás nem tud ajánlatot adni."
+      ],
+      "rights": true,
+      "incident": true
+    },
+    {
+      "h": "4. Hírlevélre való feliratkozással kapcsolatos adatkezelés",
+      "p": [
+        "Szállásunk hírlevél útján tartja a kapcsolatot vendégeivel, akiknek a figyelmébe ajánlja szolgáltatásait, a működésével kapcsolatos újdonságokról, akciókról tájékoztatja.",
+        "A személyes adatok kezelője: Ludwighaus, AT-5741 Neukirchen am Großvenediger, Marktstraße 121.",
+        "Az adatkezelés célja: kapcsolattartás a potenciális szállóvendégekkel.",
+        "Az adatkezelés jogalapja: az érintett hozzájárulása — GDPR 6. cikk (1) bekezdés a) pont.",
+        "A jogos érdek megjelölése: szálláson tartózkodó vendégekkel kialakított üzleti kapcsolatok fenntartása, fejlesztése.",
+        "A kezelt személyes adatok köre: vezetéknév és keresztnév; lakcím (irányítószám, város, utca, házszám); mobiltelefonszám; e-mail cím; személyazonosító igazolvány szám; szállásra érkezők száma; tartózkodás ideje; nyelv.",
+        "Az adatkezelés időtartama: szállásunk a hírlevélről való leiratkozásig kezeli az e-mail címeket.",
+        "Az adatszolgáltatás elmaradásának lehetséges következményei: az érintett nem kap hírlevelet szállásunktól."
+      ],
+      "rights": true
+    },
+    {
+      "h": "",
+      "p": [
+        "A hírlevélről bármikor leiratkozhat a hírlevélben a leiratkozás ikonra történő kattintással. Ebben az esetben e-mail címét haladéktalanul töröljük az adatbázisunkból.",
+        "Az adatkezeléssel kapcsolatos egyéb információk: szállásunk minden szükséges technikai és szervezési intézkedést megtesz egy esetleges adatvédelmi incidens (pl. személyes adatokat tartalmazó fájlok sérülése, eltűnése, illetéktelenek számára hozzáférhetővé válása) elkerülésére. Egy mégis bekövetkező incidens esetén a szükséges intézkedések ellenőrzése, valamint az érintett tájékoztatása céljából nyilvántartást vezetünk, amely tartalmazza az érintett személyes adatok körét, az adatvédelmi incidenssel érintettek körét és számát, az adatvédelmi incidens időpontját, körülményeit, hatásait és az elhárítására megtett intézkedéseket, valamint az adatkezelést előíró jogszabályban meghatározott egyéb adatokat."
+      ]
+    },
+    {
+      "h": "5. Elégedettségméréssel kapcsolatos személyes adatkezelés",
+      "p": [
+        "Szállásként célunk, hogy vendégeinknek szolgáltatásainkat magas színvonalon nyújtsuk, ezért folyamatosan kérünk visszajelzést vendégeinktől a szállásunkon tartózkodásuk során gyűjtött tapasztalataikról.",
+        "A személyes adatok kezelője: Ludwighaus, AT-5741 Neukirchen am Großvenediger, Marktstraße 121.",
+        "Az adatkezelés célja: visszajelzés kérése a szállóvendégektől szolgáltatásaink további fejlesztése, javítása érdekében.",
+        "Az adatkezelés jogalapja: a szállás üzemeltetőjének jogos érdeke — GDPR 6. cikk (1) bekezdés f) pont.",
+        "A jogos érdek megjelölése: szállásunknak jogos érdeke fűződik ahhoz, hogy a visszajelzések alapján szolgáltatásaink fejlesztéséhez információt kapjunk.",
+        "A kezelt személyes adatok köre: vezetéknév és keresztnév; lakcím (irányítószám, város, utca, házszám); mobiltelefonszám; e-mail cím; személyazonosító igazolvány szám; szállásra érkezők száma; tartózkodás ideje; nyelv.",
+        "Az adatkezelés időtartama: a foglalás szerinti tartózkodási dátum utolsó napját követő két év.",
+        "Az adatszolgáltatás elmaradásának lehetséges következményei: az érintett nem kap elégedettségmérő kérdőívet szállásunktól."
+      ],
+      "rights": true,
+      "incident": true
+    },
+    {
+      "h": "6. Cookie-kezelés",
+      "p": [
+        "Az Adatkezelő a testre szabott kiszolgálás érdekében a felhasználó számítógépén kis adatcsomagot, ún. sütit (cookie) helyez el, és a későbbi látogatás során olvas vissza. Ha a böngésző visszaküld egy korábban elmentett sütit, a sütit kezelő szolgáltatónak lehetősége van összekapcsolni a felhasználó aktuális látogatását a korábbiakkal, de kizárólag a saját tartalma tekintetében.",
+        "Az adatkezelés célja: a felhasználók azonosítása, nyomon követése, egymástól való megkülönböztetése, a felhasználók aktuális munkamenetének azonosítása, az annak során megadott adatok tárolása, az adatvesztés megakadályozása, webanalitikai mérések, személyre szabott kiszolgálás.",
+        "Az adatkezelés jogalapja: az érintett hozzájárulása.",
+        "A kezelt személyes adatok köre: vezetéknév és keresztnév; lakcím (irányítószám, város, utca, házszám); mobiltelefonszám; e-mail cím; személyazonosító igazolvány szám; szállásra érkezők száma; tartózkodás ideje; nyelv.",
+        "Az adatkezelés időtartama: maximum 90 nap.",
+        "Az adatkezeléssel kapcsolatos további információk: a sütit a felhasználó képes törölni saját számítógépéről, illetve letilthatja böngészőjében a sütik alkalmazását. A sütik kezelésére általában a böngészők Eszközök/Beállítások menüjében az Adatvédelem/Előzmények/Egyéni beállítások menü alatt, cookie, süti vagy nyomkövetés megnevezéssel van lehetőség.",
+        "Az adatszolgáltatás elmaradásának lehetséges következményei: a szolgáltatás igénybevételének lehetetlenülése a fenti, 2–5. pontokban körülírt szolgáltatások tekintetében."
+      ]
+    },
+    {
+      "h": "7. A honlap szervernaplózása",
+      "p": [
+        "A weblap meglátogatásakor a webszerver automatikusan naplózza a felhasználó tevékenységét.",
+        "Az adatkezelés célja: a honlap látogatása során a szolgáltató a szolgáltatások működésének ellenőrzése, a visszaélések megakadályozása érdekében rögzíti a látogatói adatokat.",
+        "Az adatkezelés jogalapja: a GDPR 6. cikk (1) bekezdésének f) pontja. Szállásunknak jogos érdeke fűződik a weboldal biztonságos működéséhez.",
+        "A kezelt személyes adatok köre: vezetéknév és keresztnév; lakcím (irányítószám, város, utca, házszám); mobiltelefonszám; e-mail cím; személyazonosító igazolvány szám; szállásra érkezők száma; tartózkodás ideje; nyelv.",
+        "Az adatkezelés időtartama: maximum 90 nap.",
+        "További információk: szállásunk a naplóállományok elemzése során felmerült adatokat más információval nem kapcsolja össze, a felhasználó személyének azonosítására nem törekszik. A meglátogatott oldalak címe, valamint a dátum, időpont adatok önmagukban az érintett azonosítására nem alkalmasak, azonban egyéb (pl. regisztráció során megadott) adatokkal összekapcsolva alkalmasak arra, hogy segítségükkel a felhasználóra vonatkozó következtetéseket lehessen levonni.",
+        "Külső szolgáltatók naplózással kapcsolatos adatkezelése: a portál HTML-kódja a szállásunktól független, külső szerverről érkező és külső szerverre mutató hivatkozásokat tartalmaz. A külső szolgáltató szervere közvetlenül a felhasználó számítógépével áll kapcsolatban. Felhívjuk látogatóink figyelmét, hogy e hivatkozások szolgáltatói az ő szerverükre történő közvetlen kapcsolódás, a felhasználó böngészőjével való közvetlen kommunikáció miatt felhasználói adatokat (pl. IP-cím, böngésző, operációs rendszer adatai, egérmutató mozgása, meglátogatott oldal címe és a látogatás időpontja) képesek gyűjteni. Az IP-cím olyan számsorozat, mellyel az internetre fellépő felhasználók számítógépei, mobil eszközei egyértelműen azonosíthatók.",
+        "Az IP-címek segítségével akár földrajzilag is lokalizálható az adott számítógépet használó látogató. A meglátogatott oldalak címe, valamint a dátum, időpont adatok önmagukban az érintett azonosítására nem alkalmasak, azonban egyéb adatokkal összekapcsolva alkalmasak arra, hogy segítségükkel a felhasználóra vonatkozó következtetéseket lehessen levonni."
+      ]
+    },
+    {
+      "h": "8. Egyéb adatkezelések",
+      "p": [
+        "E tájékoztatóban fel nem sorolt adatkezelésekről az adat felvételekor adunk tájékoztatást. Tájékoztatjuk ügyfeleinket, hogy egyes hatóságok, közfeladatot ellátó szervek, bíróságok személyes adatok közlése céljából megkereshetik szállásunkat. Szállásunk e szervek részére — amennyiben az érintett szerv a pontos célt és az adatok körét megjelölte — személyes adatot csak annyit és olyan mértékben ad ki, amely a megkeresés céljának megvalósításához elengedhetetlenül szükséges, és amennyiben a megkeresés teljesítését jogszabály írja elő."
+      ]
+    },
+    {
+      "h": "9. A személyes adatok tárolásának módja, az adatkezelés biztonsága",
+      "p": [
+        "Szállásunk számítástechnikai rendszerei és más adatmegőrzési helyei a székhelyen és az adatfeldolgozó által bérelt szervereken találhatók meg. Szállásunk a személyes adatok kezeléséhez a szolgáltatás nyújtása során alkalmazott informatikai eszközöket úgy választja meg és üzemelteti, hogy a kezelt adat:"
+      ],
+      "ul": [
+        "az arra feljogosítottak számára hozzáférhető (rendelkezésre állás);",
+        "hitelessége és hitelesítése biztosított (adatkezelés hitelessége);",
+        "változatlansága igazolható (adatintegritás);",
+        "a jogosulatlan hozzáférés ellen védett (adat bizalmassága) legyen."
+      ]
+    },
+    {
+      "h": "",
+      "p": [
+        "Különös gondossággal figyelünk az adatok biztonságára, megtesszük továbbá azokat a technikai és szervezési intézkedéseket és kialakítjuk azokat az eljárási szabályokat, amelyek a GDPR szerinti garanciák érvényre juttatásához szükségesek. Az adatokat megfelelő intézkedésekkel védjük különösen a jogosulatlan hozzáférés, megváltoztatás, továbbítás, nyilvánosságra hozatal, törlés vagy megsemmisítés, valamint a véletlen megsemmisülés, sérülés, továbbá az alkalmazott technika megváltozásából fakadó hozzáférhetetlenné válás ellen.",
+        "Szállásunk informatikai rendszere és hálózata egyaránt védett a számítógéppel támogatott csalás, a számítógépvírusok, a számítógépes betörések és a szolgálatmegtagadásra vezető támadások ellen. Az üzemeltető a biztonságról szerverszintű és alkalmazásszintű védelmi eljárásokkal is gondoskodik. Az adatok napi biztonsági mentése megoldott. Az adatvédelmi incidensek elkerülése érdekében szállásunk minden lehetséges intézkedést megtesz, egy ilyen incidens bekövetkezése esetén — incidenskezelési szabályzatunk szerint — haladéktalanul fellépünk a kockázatok minimalizálása, a károk elhárítása érdekében."
+      ]
+    },
+    {
+      "h": "10. Az érintettek jogai, jogorvoslati lehetőségek",
+      "p": [
+        "Az érintett tájékoztatást kérhet személyes adatai kezeléséről, valamint kérheti személyes adatainak helyesbítését, illetve — a kötelező adatkezelések kivételével — törlését, visszavonását, élhet adathordozási- és tiltakozási jogával az adat felvételénél jelzett módon, illetve az adatkezelő fenti elérhetőségein.",
+        "Az érintett kérelmére az információkat elektronikus formában szolgáltatjuk késedelem nélkül, de legkésőbb 30 napon belül, a vonatkozó szabályzatunknak megfelelően. Az érintetteknek a lenti jogok teljesítésére irányuló kéréseit díjmentesen teljesítjük."
+      ]
+    },
+    {
+      "h": "Tájékoztatáshoz való jog",
+      "p": [
+        "Szállásunk megfelelő intézkedéseket hoz annak érdekében, hogy az érintettek részére a személyes adatok kezelésére vonatkozó, a GDPR 13. és 14. cikkben említett valamennyi információt és a 15–22. és 34. cikk szerinti minden egyes tájékoztatást tömör, átlátható, érthető és könnyen hozzáférhető formában, világosan és közérthetően megfogalmazva, ugyanakkor precíz módon nyújtsa.",
+        "A tájékozódáshoz való jog írásban, az 1. pontban megadott elérhetőségeken keresztül gyakorolható. Az érintett részére kérésére — személyazonosságának igazolását követően — szóban is adható tájékoztatás. Tájékoztatjuk ügyfeleinket, hogy amennyiben szállásunk munkatársainak kétsége támad az érintett személyazonossága felől, az érintett személyazonosságának megerősítéséhez szükséges információk nyújtását kérhetjük."
+      ]
+    },
+    {
+      "h": "Az érintett hozzáféréshez való joga",
+      "p": [
+        "Az érintett jogosult arra, hogy az adatkezelőtől visszajelzést kapjon arra vonatkozóan, hogy személyes adatainak kezelése folyamatban van-e. Amennyiben folyamatban van személyes adat kezelése, az érintett jogosult arra, hogy a személyes adatokhoz és a következő információkhoz hozzáférést kapjon:"
+      ],
+      "ul": [
+        "az adatkezelés céljai;",
+        "az érintett személyes adatok kategóriái;",
+        "azon címzettek vagy címzettek kategóriái, akikkel, illetve amelyekkel a személyes adatokat közölték vagy közölni fogják, ideértve különösen a harmadik országbeli (Európai Unión kívüli) címzetteket, illetve a nemzetközi szervezeteket;",
+        "a személyes adatok tárolásának tervezett időtartama;",
+        "a helyesbítés, törlés vagy adatkezelés korlátozásának és a tiltakozás joga;",
+        "a felügyeleti hatósághoz címzett panasz benyújtásának joga;",
+        "az adatforrásokra vonatkozó információ; az automatizált döntéshozatal ténye, ideértve a profilalkotást is, valamint az alkalmazott logikára és arra vonatkozó érthető információk, hogy az ilyen adatkezelés milyen jelentőséggel bír, és az érintettre nézve milyen várható következményekkel jár."
+      ]
+    },
+    {
+      "h": "",
+      "p": [
+        "A fentieken túlmenően személyes adatok harmadik országba vagy nemzetközi szervezet részére történő továbbítása esetén az érintett jogosult arra, hogy tájékoztatást kapjon a továbbításra vonatkozó megfelelő garanciákról."
+      ]
+    },
+    {
+      "h": "Helyesbítés joga",
+      "p": [
+        "E jog értelmében bárki kérheti a szállásunk által kezelt, rá vonatkozó, pontatlan személyes adatok helyesbítését és a hiányos adatok kiegészítését."
+      ]
+    },
+    {
+      "h": "Törléshez való jog",
+      "p": [
+        "Az érintett az alábbi indokok valamelyikének fennállása esetén jogosult arra, hogy kérésére indokolatlan késedelem nélkül töröljük a rá vonatkozó személyes adatokat:"
+      ],
+      "ul": [
+        "a személyes adatokra már nincs szükség abból a célból, amelyből azokat gyűjtötték vagy más módon kezelték;",
+        "az érintett visszavonja az adatkezelés alapját képező hozzájárulását, és az adatkezelésnek nincs más jogalapja;",
+        "az érintett tiltakozik az adatkezelés ellen, és nincs elsőbbséget élvező jogszerű ok az adatkezelésre;",
+        "a személyes adatok jogellenes kezelése állapítható meg;",
+        "a személyes adatokat az adatkezelőre alkalmazandó uniós vagy tagállami jogban előírt jogi kötelezettség teljesítéséhez törölni kell;",
+        "a személyes adatok gyűjtésére információs társadalommal összefüggő szolgáltatások kínálásával kapcsolatosan került sor."
+      ]
+    },
+    {
+      "h": "",
+      "p": [
+        "Az adatok törlése nem kezdeményezhető, ha az adatkezelés a következő célokból szükséges:"
+      ],
+      "ul": [
+        "a véleménynyilvánítás szabadságához és a tájékozódáshoz való jog gyakorlása céljából;",
+        "a személyes adatok kezelését előíró, az adatkezelőre alkalmazandó uniós vagy tagállami jog szerinti kötelezettség teljesítése, illetve közérdekből vagy az adatkezelőre ruházott közhatalmi jogosítvány gyakorlása keretében végzett feladat végrehajtása céljából;",
+        "a népegészségügy területét érintő, vagy archiválási, tudományos és történelmi kutatási célból vagy statisztikai célból, közérdek alapján;",
+        "jogi igények előterjesztéséhez, érvényesítéséhez, illetve védelméhez."
+      ]
+    },
+    {
+      "h": "Az adatkezelés korlátozásához való jog",
+      "p": [
+        "Az érintett kérésére korlátozzuk az adatkezelést a GDPR 18. cikkében fennálló feltételek esetén, tehát ha:"
+      ],
+      "ul": [
+        "az érintett vitatja a személyes adatok pontosságát — ez esetben a korlátozás arra az időtartamra vonatkozik, amely lehetővé teszi a személyes adatok pontosságának ellenőrzését;",
+        "az adatkezelés jogellenes, és az érintett ellenzi az adatok törlését, és ehelyett kéri azok felhasználásának korlátozását;",
+        "az adatkezelőnek már nincs szüksége a személyes adatokra adatkezelés céljából, de az érintett igényli azokat jogi igények előterjesztéséhez, érvényesítéséhez vagy védelméhez; vagy",
+        "az érintett tiltakozott az adatkezelés ellen — ez esetben a korlátozás arra az időtartamra vonatkozik, amíg megállapításra nem kerül, hogy az adatkezelő jogos indokai elsőbbséget élveznek-e az érintett jogos indokaival szemben."
+      ]
+    },
+    {
+      "h": "",
+      "p": [
+        "Ha az adatkezelés korlátozás alá esik, a személyes adatokat a tárolás kivételével csak az érintett hozzájárulásával, vagy jogi igények előterjesztéséhez, érvényesítéséhez vagy védelméhez, vagy más természetes vagy jogi személy jogainak védelme érdekében, vagy az Európai Unió, illetve valamely tagállam fontos közérdekéből lehet kezelni. Az érintettet az adatkezelés korlátozásának feloldásáról előzetesen tájékoztatni kell."
+      ]
+    },
+    {
+      "h": "Adathordozáshoz való jog",
+      "p": [
+        "Az érintett jogosult arra, hogy a rá vonatkozó, általa az adatkezelő rendelkezésére bocsátott személyes adatokat tagolt, széles körben használt, géppel olvasható formátumban megkapja, és ezeket az adatokat egy másik adatkezelőnek továbbítsa. Szállásunk word vagy excel formátumban tudja teljesíteni az érintett ilyen kérését."
+      ]
+    },
+    {
+      "h": "Tiltakozás joga",
+      "p": [
+        "Ha a személyes adatok kezelése közvetlen üzletszerzés érdekében történik, az érintett jogosult arra, hogy bármikor tiltakozzon a rá vonatkozó személyes adatok e célból történő kezelése ellen, ideértve a profilalkotást is, amennyiben az a közvetlen üzletszerzéshez kapcsolódik. A személyes adatok közvetlen üzletszerzés érdekében történő kezelése elleni tiltakozás esetén az adatok e célból nem kezelhetők."
+      ]
+    },
+    {
+      "h": "Automatizált döntéshozatal egyedi ügyekben, beleértve a profilalkotást",
+      "p": [
+        "Az érintett jogosult arra, hogy ne terjedjen ki rá az olyan, kizárólag automatizált adatkezelésen — ideértve a profilalkotást is — alapuló döntés hatálya, amely rá nézve joghatással járna vagy őt hasonlóképpen jelentős mértékben érintené. Nem alkalmazható a fenti jogosultság, ha az adatkezelés:"
+      ],
+      "ul": [
+        "az érintett és az adatkezelő közötti szerződés megkötése vagy teljesítése érdekében szükséges;",
+        "meghozatalát az adatkezelőre alkalmazandó olyan uniós vagy tagállami jog teszi lehetővé, amely az érintett jogainak és szabadságainak, valamint jogos érdekeinek védelmét szolgáló megfelelő intézkedéseket is megállapít; vagy",
+        "az érintett kifejezett hozzájárulásán alapul."
+      ]
+    },
+    {
+      "h": "Visszavonás joga",
+      "p": [
+        "Az érintett jogosult arra, hogy hozzájárulását bármikor visszavonja. A hozzájárulás visszavonása nem érinti a hozzájáruláson alapuló, a visszavonás előtti adatkezelés jogszerűségét."
+      ]
+    },
+    {
+      "h": "Eljárási szabályok",
+      "p": [
+        "Az adatkezelő indokolatlan késedelem nélkül, de mindenféleképpen a kérelem beérkezésétől számított egy hónapon belül tájékoztatja az érintettet a GDPR 15–22. cikk szerinti kérelem nyomán hozott intézkedésekről. Szükség esetén, figyelembe véve a kérelem összetettségét és a kérelmek számát, ez a határidő további két hónappal meghosszabbítható. A határidő meghosszabbításáról az adatkezelő a késedelem okainak megjelölésével a kérelem kézhezvételétől számított egy hónapon belül tájékoztatja az érintettet.",
+        "Ha az érintett elektronikus úton nyújtotta be a kérelmet, a tájékoztatás elektronikus úton kerül megadásra, kivéve, ha az érintett azt másként kéri.",
+        "Ha az adatkezelő nem tesz intézkedéseket az érintett kérelme nyomán, késedelem nélkül, de legkésőbb a kérelem beérkezésétől számított egy hónapon belül tájékoztatja az érintettet az intézkedés elmaradásának okairól, valamint arról, hogy az érintett panaszt nyújthat be a felügyeleti hatóságnál, és élhet bírósági jogorvoslati jogával.",
+        "Az adatkezelő minden olyan címzettet tájékoztat az általa végzett valamennyi helyesbítésről, törlésről vagy adatkezelés-korlátozásról, akivel, illetve amellyel a személyes adatot közölték, kivéve, ha ez lehetetlennek bizonyul, vagy aránytalanul nagy erőfeszítést igényel. Az érintettet kérésére az adatkezelő tájékoztatja e címzettekről."
+      ]
+    },
+    {
+      "h": "Kártérítés és sérelemdíj",
+      "p": [
+        "Minden olyan személy, aki az adatvédelmi rendelet megsértésének eredményeként vagyoni vagy nem vagyoni kárt szenvedett, az elszenvedett kárért az adatkezelőtől vagy az adatfeldolgozótól kártérítésre jogosult. Az adatfeldolgozó csak abban az esetben tartozik felelősséggel az adatkezelés által okozott károkért, ha nem tartotta be a jogszabályban meghatározott, kifejezetten az adatfeldolgozókat terhelő kötelezettségeket, vagy ha az adatkezelő jogszerű utasításait figyelmen kívül hagyta vagy azokkal ellentétesen járt el. Ha több adatkezelő vagy több adatfeldolgozó, vagy mind az adatkezelő, mind az adatfeldolgozó érintett ugyanabban az adatkezelésben, és felelősséggel tartozik az adatkezelés által okozott károkért, minden egyes adatkezelő vagy adatfeldolgozó egyetemleges felelősséggel tartozik a teljes kárért.",
+        "Az adatkezelő, illetve az adatfeldolgozó mentesül a felelősség alól, ha bizonyítja, hogy a kárt előidéző eseményért őt semmilyen módon nem terheli felelősség."
+      ]
+    },
+    {
+      "h": "Bírósághoz fordulás joga és adatvédelmi hatósági eljárás",
+      "p": [
+        "Az érintett a jogainak megsértése esetén az adatkezelő ellen bírósághoz fordulhat. A bíróság az ügyben soron kívül jár el.",
+        "Panasszal az Osztrák Adatvédelmi Hatóságnál lehet élni."
+      ],
+      "dl": [
+        [
+          "A hatóság címe",
+          "Barichgasse 40–42, A-1030 Wien, Österreich"
+        ],
+        [
+          "Telefon",
+          "+43 1 52 152-0"
+        ],
+        [
+          "E-mail",
+          "dsb@dsb.gv.at"
+        ]
+      ]
+    }
+  ],
+};
 
 const WILDKOGEL = {
   award: 'A családok hegyi specialistája',
@@ -2093,7 +2404,7 @@ function tilt(nodes){
    8c. KOMPONENS: RulesDoc — a házirend teljes szövege olvasóablakban
    -------------------------------------------------------------------------- */
 (function RulesDoc(){
-  const triggers = document.querySelectorAll('[data-rules]');
+  const triggers = document.querySelectorAll('[data-rules], [data-doc]');
   if (!triggers.length) return;
 
   const box = document.createElement('div');
@@ -2121,12 +2432,39 @@ function tilt(nodes){
 
   let last = null;
 
+  /* Hosszabb, tagolt dokumentum (adatkezelési tájékoztató). */
+  function openDoc(d){
+    box.querySelector('#doc-lang').textContent  = 'Ludwighaus';
+    box.querySelector('#doc-title').textContent = d.title;
+    const greet = box.querySelector('#doc-greet');
+    greet.textContent = ''; greet.hidden = true;
+    box.querySelector('#doc-intro').textContent = d.lead;
+    box.querySelector('#doc-items').innerHTML = d.blocks.map(b => {
+      let h = b.h ? `<li class="doc-h"><h3>${b.h}</h3></li>` : '';
+      let out = h;
+      (b.p || []).forEach(t => { out += `<li class="doc-p">${t}</li>`; });
+      if (b.ul) out += b.ul.map(t => `<li>${t}</li>`).join('');
+      if (b.dl) out += `<li class="doc-p"><dl class="doc-dl">${b.dl.map(([k,v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl></li>`;
+      if (b.rights){
+        out += `<li class="doc-p">${d.rightsLead}</li>`;
+        out += d.rights.map(t => `<li>${t}</li>`).join('');
+      }
+      if (b.incident) out += `<li class="doc-p">${d.incident}</li>`;
+      return out;
+    }).join('');
+    box.hidden = false;
+    box.querySelector('.docbox-body').scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+    box.querySelector('.lb-close').focus({ preventScroll:true });
+  }
+
   function open(code){
     const d = RULES_DOC[code];
     if (!d) return;
     box.querySelector('#doc-lang').textContent  = d.lang;
     box.querySelector('#doc-title').textContent = d.title;
-    box.querySelector('#doc-greet').textContent = d.greet;
+    const greet = box.querySelector('#doc-greet');
+    greet.textContent = d.greet; greet.hidden = false;
     box.querySelector('#doc-intro').textContent = d.intro;
     box.querySelector('#doc-items').innerHTML = d.items.map(t => `<li>${t}</li>`).join('');
     box.hidden = false;
@@ -2141,7 +2479,12 @@ function tilt(nodes){
     last?.focus({ preventScroll:true });
   }
 
-  triggers.forEach(t => t.addEventListener('click', () => { last = t; open(t.dataset.rules); }));
+  const DOCS = { privacy: PRIVACY };
+  triggers.forEach(t => t.addEventListener('click', e => {
+    last = t;
+    if (t.dataset.doc){ e.preventDefault(); openDoc(DOCS[t.dataset.doc]); }
+    else open(t.dataset.rules);
+  }));
   box.querySelector('.lb-close').addEventListener('click', close);
   box.addEventListener('click', e => { if (e.target === box) close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) close(); });
@@ -3686,6 +4029,7 @@ const EN = {
   'A 3 662 méteres Großvenediger és a gleccservilág felé. Ezen az oldalon vannak a legtágasabb szobák és az apartman.':'Facing the 3,662 m Großvenediger and the glaciers beyond. This side holds the largest rooms and the apartment.',
   'A sípálya és a felvonó felé, 600 méterre. Innen látszik esténként a kivilágított szánkópálya is.':'Facing the slopes and the lift, 600 metres away. In the evening you can see the floodlit toboggan run from here.',
   'Szoba':'Rooms','Szobatípus':'Room types','Emelet':'Floors',
+  'Adatkezelés':'Privacy','Adatkezelési tájékoztató':'Privacy notice',
   'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
 };
 
@@ -4109,6 +4453,7 @@ const DE = {
   'A 3 662 méteres Großvenediger és a gleccservilág felé. Ezen az oldalon vannak a legtágasabb szobák és az apartman.':'Mit Blick auf den 3.662 m hohen Großvenediger und die Gletscherwelt. Auf dieser Seite liegen die größten Zimmer und das Apartment.',
   'A sípálya és a felvonó felé, 600 méterre. Innen látszik esténként a kivilágított szánkópálya is.':'Richtung Piste und Bergbahn, 600 Meter entfernt. Von hier seht ihr abends auch die beleuchtete Rodelbahn.',
   'Szoba':'Zimmer','Szobatípus':'Zimmertypen','Emelet':'Etagen','Terasszal':'Mit Terrasse',
+  'Adatkezelés':'Datenschutz','Adatkezelési tájékoztató':'Datenschutzerklärung',
   'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
 };
 
@@ -4759,6 +5104,17 @@ if (!reduce){
   content:''; position:absolute; left:.3rem; top:.62em;
   width:6px; height:6px; border-radius:50%; background:var(--glacier);
 }
+.docbox-list li.doc-h,
+.docbox-list li.doc-p{ padding-left:0; }
+.docbox-list li.doc-h::before,
+.docbox-list li.doc-p::before{ content:none; }
+.docbox-list li.doc-h{ margin-top:1.1rem; }
+.docbox-list li.doc-h:first-child{ margin-top:0; }
+.docbox-list h3{ font-size:1.05rem; letter-spacing:-.01em; color:var(--glacier); }
+.doc-dl{ margin:.3rem 0 0; display:grid; gap:.4rem; }
+.doc-dl > div{ display:flex; flex-wrap:wrap; gap:.2rem .7rem; }
+.doc-dl dt{ min-width:11rem; font-family:var(--mono); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-soft); }
+.doc-dl dd{ margin:0; }
 
 /* --- Letölthető dokumentumok ------------------------------------------- */
 .doclinks{ display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
