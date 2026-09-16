@@ -927,23 +927,23 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   </section>
 
   <section class="band band--tight wrap">
-    <p class="hint rise">A hivatalos, aláírt változat PDF-ben. Válasszátok ki a nyelvet — új lapon nyílik meg.</p>
+    <p class="hint rise">A hivatalos házirend teljes szövege. Válasszátok ki a nyelvet — az oldal elhagyása nélkül elolvasható.</p>
     <div class="doclinks rise">
-      <a class="doclink" href="docs/Ludwighaus-Hazirend-Magyar.pdf" target="_blank" rel="noopener">
+      <button class="doclink" type="button" data-rules="hu">
         <span class="doclink-flag" aria-hidden="true">🇭🇺</span>
-        <span class="doclink-txt"><b>Magyar</b><small>Házirend · PDF, 38 kB</small></span>
-        <span class="doclink-go" aria-hidden="true">↗</span>
-      </a>
-      <a class="doclink" href="docs/Ludwighaus-House-Rules-English.pdf" target="_blank" rel="noopener">
+        <span class="doclink-txt"><b>Magyar</b><small>Házirend · teljes szöveg</small></span>
+        <span class="doclink-go" aria-hidden="true">→</span>
+      </button>
+      <button class="doclink" type="button" data-rules="en">
         <span class="doclink-flag" aria-hidden="true">🇬🇧</span>
-        <span class="doclink-txt"><b>English</b><small>House rules · PDF, 34 kB</small></span>
-        <span class="doclink-go" aria-hidden="true">↗</span>
-      </a>
-      <a class="doclink" href="docs/Ludwighaus-Hausordnung-Deutsch.pdf" target="_blank" rel="noopener">
+        <span class="doclink-txt"><b>English</b><small>House rules · full text</small></span>
+        <span class="doclink-go" aria-hidden="true">→</span>
+      </button>
+      <button class="doclink" type="button" data-rules="de">
         <span class="doclink-flag" aria-hidden="true">🇩🇪</span>
-        <span class="doclink-txt"><b>Deutsch</b><small>Hausordnung · PDF, 37 kB</small></span>
-        <span class="doclink-go" aria-hidden="true">↗</span>
-      </a>
+        <span class="doclink-txt"><b>Deutsch</b><small>Hausordnung · vollständig</small></span>
+        <span class="doclink-go" aria-hidden="true">→</span>
+      </button>
     </div>
   </section>
 
@@ -1077,6 +1077,75 @@ const SKI_AREAS = [
 
 /* A Wildkogel-Aréna saját bemutatkozása, nyári és téli olvasatban.
    Külön szekcióként fut a Sípályák aloldalon (lásd: KOMPONENS: WildkogelArena). */
+/* A hivatalos házirend teljes szövege három nyelven, a panzió aláírt
+   PDF-jeiből átemelve. A szöveg szándékosan megtartja a dokumentum
+   magázó, hivatalos hangnemét — ez a jogilag érvényes változat. */
+const RULES_DOC = {
+  hu: {
+    lang:'Magyar', title:'Házirend', greet:'Tisztelt Vendégeink!',
+    intro:'Házirendünk célja, hogy a szükséges információkat biztosítsuk vendégeinknek, és ezzel hozzájáruljunk a nyugodt, kellemes pihenésükhöz, valamint elkerüljük az esetleges félreértéseket.',
+    pdf:'docs/Ludwighaus-Hazirend-Magyar.pdf', pdfLabel:'PDF letöltése',
+    items:[
+      'A szállás az érkezés napján délután 15:00-tól, az elutazás napján délelőtt 10:00-ig áll rendelkezésre.',
+      'A szálláshely elfoglaltnak minősül, ha a frissen érkező összes 18 év fölötti vendég kitöltötte a bejelentkezési űrlapot, megtörtént a kulcsátadás, elszámolás és az idegenforgalmi adó kifizetése!',
+      'Minden szobához tartozik egy főbejárati ajtókulcs, amely a főbejárati ajtó nyitására és zárására használható. Fontos, hogy a főbejárati ajtót mindig zárni kell!',
+      'A szálláshelyre csak külön megbeszélés és díj megfizetése esetén lehet háziállatot bevinni.',
+      'Az épületen belül tilos a dohányzás! Dohányozni csak az épületen kívül szabad.',
+      'A szobákat a vendégek mindig tisztán kapják meg és a tartózkodásuk alatt maguknak kell ügyelniük a tisztaságra. Előre is köszönjük, ha nem hagynak szemetet!',
+      'A házban található berendezési tárgyakat, csak a szállásadó előzetes hozzájárulásával lehet átrendezni.',
+      'A kulcsot kötelező leadni a recepción a kiköltözés napján.',
+      'Az átadott kulcsok esetleges elvesztése esetén a vendégek kötelesek haladéktalanul jelezni és annak árát, illetve a zárcserét a szállásadónak megtéríteni (100 euró).',
+      'A szállásadó semmilyen felelősséget nem vállal az oda behozott vagy ott hagyott értékekért, valamint a nem rendeltetésszerű használatból adódó esetleges balesetekért.',
+      'Azokat az anyagi károkat, amelyek a nem rendeltetésszerű használatból erednek, a károkozást okozó vendégnek / vendégeknek kötelező megtéríteniük!',
+      'Kérjük a szobákban ne étkezzenek! Az étkező helyiségből poharat, tányért felvinni a szobákba NEM ENGEDÉLYEZETT!',
+      'A keletkezett szemetet kérjük csak a kijelölt szemetes kosárba tenni! Síbakancsban bejárni a szállásra veszélyes és zavaró. Előre is köszönjük, hogy a síbakancsokat, síléceket, csak a szálláson kijelölt tároló helyiségben helyezik el.',
+      'Ha a tartózkodás során bármilyen probléma adódik a szállással kapcsolatban, kérjük, azonnal értesítse a szállásadót!',
+    ],
+  },
+  en: {
+    lang:'English', title:'House rules', greet:'Dear Guests!',
+    intro:'The aim of our house rules is to provide our guests with the necessary information to ensure a relaxing and pleasant stay and to avoid any misunderstandings.',
+    pdf:'docs/Ludwighaus-House-Rules-English.pdf', pdfLabel:'Download PDF',
+    items:[
+      'Accommodation is available from 15:00 on the day of arrival until 10:00 on the day of departure.',
+      'The accommodation is considered occupied when all newly arrived guests over 18 years of age have completed the check-in form, the key has been handed over, the account has been settled and the tourist tax has been paid!',
+      'Each room has a main entrance door key which can be used to open and close the main entrance door. It is important that the main entrance door is always locked!',
+      'Pets are only allowed by prior arrangement and subject to a fee.',
+      'Smoking is prohibited inside the building! Smoking is only allowed outside the building.',
+      'The rooms are always clean and guests are responsible for keeping them clean during their stay. Thank you in advance if you do not leave any rubbish!',
+      'The furnishings in the house can only be rearranged with the prior consent of the host.',
+      'The key must be returned to the reception on the day of check-out.',
+      'In case of loss of the keys, guests are obliged to report it immediately and to pay the cost of the keys and the change of the lock to the host (EUR 100).',
+      'The host cannot be held responsible for any valuables brought in or left there, nor for any accidents resulting from improper use.',
+      'Any material damage resulting from improper use must be compensated by the guest(s) who caused the damage!',
+      'Please do not eat in the rooms! It is NOT PERMITTED to take glasses or plates from the dining room to the rooms!',
+      'Please put the garbage in the designated garbage bins only! Walking into the accommodation in ski boots is dangerous and disturbing. We thank you in advance that ski boots and skis are only to be placed in the storage room designated at the accommodation.',
+      'If you have any problems with the accommodation during your stay, please contact the accommodation immediately!',
+    ],
+  },
+  de: {
+    lang:'Deutsch', title:'Hausordnung', greet:'Liebe Gäste!',
+    intro:'Das Ziel unserer Hausordnung ist es, unsere Gäste mit den notwendigen Informationen zu versorgen, um einen entspannten und angenehmen Aufenthalt zu gewährleisten und Missverständnisse zu vermeiden.',
+    pdf:'docs/Ludwighaus-Hausordnung-Deutsch.pdf', pdfLabel:'PDF herunterladen',
+    items:[
+      'Die Unterkunft ist von 15:00 Uhr am Anreisetag bis 10:00 Uhr am Abreisetag verfügbar.',
+      'Die Unterkunft gilt als belegt, wenn alle neu ankommenden Gäste über 18 Jahre das Check-in-Formular ausgefüllt haben, der Schlüssel übergeben wurde, die Rechnung beglichen und die Kurtaxe bezahlt wurde!',
+      'Jedes Zimmer verfügt über einen Haupteingangsschlüssel, der zum Öffnen und Schließen der Haupteingangstür verwendet werden kann. Es ist wichtig, dass die Haupteingangstür immer verschlossen ist!',
+      'Haustiere sind nur nach vorheriger Absprache und gegen eine Gebühr erlaubt.',
+      'Innerhalb des Gebäudes ist das Rauchen verboten! Das Rauchen ist nur außerhalb des Gebäudes erlaubt.',
+      'Die Zimmer sind immer sauber und die Gäste sind dafür verantwortlich, sie während ihres Aufenthalts sauber zu halten. Wir danken Ihnen im Voraus, wenn Sie keinen Müll hinterlassen!',
+      'Das Mobiliar im Haus darf nur mit vorheriger Zustimmung des Gastgebers umgestellt werden.',
+      'Der Schlüssel muss am Tag des Check-outs an der Rezeption abgegeben werden.',
+      'Bei Verlust der Schlüssel sind die Gäste verpflichtet, dies unverzüglich zu melden und die Kosten für die Schlüssel und den Austausch des Schlosses an den Gastgeber zu zahlen (EUR 100).',
+      'Der Gastgeber haftet nicht für mitgebrachte oder zurückgelassene Wertgegenstände sowie für Unfälle, die durch unsachgemäßen Gebrauch entstehen.',
+      'Sachschäden, die durch unsachgemäßen Gebrauch entstanden sind, müssen von dem/den Gast/en, der/die den Schaden verursacht hat/haben, ersetzt werden!',
+      'Bitte essen Sie nicht in den Zimmern! Es ist NICHT ERLAUBT, Gläser oder Teller aus dem Speisesaal in die Zimmer mitzunehmen!',
+      'Bitte werfen Sie den Müll nur in die dafür vorgesehenen Mülleimer! Das Betreten der Unterkunft mit Skischuhen ist gefährlich und störend. Wir bedanken uns im Voraus dafür, dass Skischuhe und Skier nur in den dafür vorgesehenen Abstellraum in der Unterkunft gestellt werden dürfen.',
+      'Sollten Sie während Ihres Aufenthaltes Probleme mit der Unterkunft haben, wenden Sie sich bitte sofort an die Unterkunft!',
+    ],
+  },
+};
+
 const WILDKOGEL = {
   award: 'A családok hegyi specialistája',
   where: 'A Wildkogel-Aréna Neukirchen és Bramberg között fekszik, Salzburg tartomány déli részén — a Kitzbüheli-Alpok és a Hohe Tauern Nemzeti Park határán. A ház innen 600 méterre van, gyalog.',
@@ -1962,6 +2031,67 @@ function tilt(nodes){
 
   /* Ha az ablak a töréspont fölé nő, a nyitott panel nem ragadhat be. */
   matchMedia('(min-width:1001px)').addEventListener('change', e => { if (e.matches && open) set(false); });
+})();
+
+/* --------------------------------------------------------------------------
+   8c. KOMPONENS: RulesDoc — a házirend teljes szövege olvasóablakban
+   -------------------------------------------------------------------------- */
+(function RulesDoc(){
+  const triggers = document.querySelectorAll('[data-rules]');
+  if (!triggers.length) return;
+
+  const box = document.createElement('div');
+  box.className = 'docbox';
+  box.hidden = true;
+  box.setAttribute('role','dialog');
+  box.setAttribute('aria-modal','true');
+  box.setAttribute('aria-labelledby','doc-title');
+  box.innerHTML = `
+    <div class="docbox-panel">
+      <header class="docbox-head">
+        <div>
+          <p class="eyebrow" id="doc-lang"></p>
+          <h2 id="doc-title"></h2>
+        </div>
+        <button class="lb-close" type="button" aria-label="Bezárás">✕</button>
+      </header>
+      <div class="docbox-body">
+        <p class="docbox-greet" id="doc-greet"></p>
+        <p class="lede" id="doc-intro"></p>
+        <ul class="docbox-list" id="doc-items"></ul>
+        <a class="docbox-pdf" id="doc-pdf" href="#" target="_blank" rel="noopener"></a>
+      </div>
+    </div>`;
+  document.body.appendChild(box);
+
+  let last = null;
+
+  function open(code){
+    const d = RULES_DOC[code];
+    if (!d) return;
+    box.querySelector('#doc-lang').textContent  = d.lang;
+    box.querySelector('#doc-title').textContent = d.title;
+    box.querySelector('#doc-greet').textContent = d.greet;
+    box.querySelector('#doc-intro').textContent = d.intro;
+    box.querySelector('#doc-items').innerHTML = d.items.map(t => `<li>${t}</li>`).join('');
+    const pdf = box.querySelector('#doc-pdf');
+    pdf.href = d.pdf; pdf.textContent = d.pdfLabel + ' ↗';
+    box.hidden = false;
+    box.querySelector('.docbox-body').scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+    box.querySelector('.lb-close').focus({ preventScroll:true });
+  }
+
+  function close(){
+    box.hidden = true;
+    document.body.style.overflow = '';
+    last?.focus({ preventScroll:true });
+  }
+
+  triggers.forEach(t => t.addEventListener('click', () => { last = t; open(t.dataset.rules); }));
+  box.querySelector('.lb-close').addEventListener('click', close);
+  box.addEventListener('click', e => { if (e.target === box) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) close(); });
 })();
 
 /* --------------------------------------------------------------------------
@@ -3410,10 +3540,12 @@ const EN = {
   'A kerékpárokat nyáron, a sífelszerelést télen a ház erre kijelölt tárolójában tartsátok.':'Keep bikes in summer and ski equipment in winter in the storage room set aside for them.',
   'Menü':'Menu','Mobil navigáció':'Mobile navigation',
   'Letölthető dokumentum':'Downloadable document','A teljes házirend,':'The full house rules,','három nyelven.':'in three languages.',
-  'A hivatalos, aláírt változat PDF-ben. Válasszátok ki a nyelvet — új lapon nyílik meg.':'The official signed version as a PDF. Pick your language — it opens in a new tab.',
-  'Magyar':'Hungarian','Házirend · PDF, 38 kB':'House rules · PDF, 38 kB',
-  'English':'English','House rules · PDF, 34 kB':'House rules · PDF, 34 kB',
-  'Deutsch':'German','Hausordnung · PDF, 37 kB':'House rules · PDF, 37 kB',
+  'A hivatalos házirend teljes szövege. Válasszátok ki a nyelvet — az oldal elhagyása nélkül elolvasható.':'The official signed version as a PDF. Pick your language — it opens in a new tab.',
+  'Magyar':'Hungarian','Házirend · teljes szöveg':'House rules · full text',
+  'English':'English','House rules · full text':'House rules · full text',
+  'Deutsch':'German','Hausordnung · vollständig':'House rules · in full',
+  'Házirend · teljes szöveg':'House rules · full text','Hausordnung · vollständig':'House rules · in full',
+  'Magyar':'Hungarian','Deutsch':'German',
   'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
 };
 
@@ -3811,10 +3943,12 @@ const DE = {
   'A kerékpárokat nyáron, a sífelszerelést télen a ház erre kijelölt tárolójában tartsátok.':'Bewahrt die Fahrräder im Sommer und die Skiausrüstung im Winter im dafür vorgesehenen Raum auf.',
   'Menü':'Menü','Mobil navigáció':'Mobile Navigation',
   'Letölthető dokumentum':'Dokument zum Download','A teljes házirend,':'Die vollständige Hausordnung,','három nyelven.':'in drei Sprachen.',
-  'A hivatalos, aláírt változat PDF-ben. Válasszátok ki a nyelvet — új lapon nyílik meg.':'Die offizielle, unterzeichnete Fassung als PDF. Wählt eure Sprache — sie öffnet sich in einem neuen Tab.',
-  'Magyar':'Ungarisch','Házirend · PDF, 38 kB':'Hausordnung · PDF, 38 kB',
-  'English':'Englisch','House rules · PDF, 34 kB':'Hausordnung · PDF, 34 kB',
-  'Deutsch':'Deutsch','Hausordnung · PDF, 37 kB':'Hausordnung · PDF, 37 kB',
+  'A hivatalos házirend teljes szövege. Válasszátok ki a nyelvet — az oldal elhagyása nélkül elolvasható.':'Die offizielle, unterzeichnete Fassung als PDF. Wählt eure Sprache — sie öffnet sich in einem neuen Tab.',
+  'Magyar':'Ungarisch','Házirend · teljes szöveg':'Hausordnung · vollständiger Text',
+  'English':'Englisch','House rules · full text':'Hausordnung · vollständiger Text',
+  'Deutsch':'Deutsch','Hausordnung · vollständig':'Hausordnung · vollständiger Text',
+  'Házirend · teljes szöveg':'Hausordnung · vollständiger Text','House rules · full text':'Hausordnung · vollständiger Text',
+  'Magyar':'Ungarisch','English':'Englisch',
   'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
 };
 
@@ -4437,9 +4571,45 @@ if (!reduce){
   backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
 }
 .infobox-panel{ overflow:hidden auto; }
+/* --- Házirend olvasóablak ---------------------------------------------- */
+.docbox{
+  position:fixed; inset:0; z-index:110; display:flex; align-items:center; justify-content:center;
+  padding:clamp(.75rem,3vw,2.5rem);
+  padding-top:calc(clamp(.75rem,3vw,2.5rem) + env(safe-area-inset-top, 0px));
+  padding-bottom:calc(clamp(.75rem,3vw,2.5rem) + env(safe-area-inset-bottom, 0px));
+  background:color-mix(in srgb, var(--ink) 86%, transparent);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+}
+.docbox[hidden]{ display:none !important; }
+.docbox-panel{
+  width:min(760px,100%); max-height:100%; display:flex; flex-direction:column;
+  background:var(--panel); border:1px solid var(--panel-edge); border-radius:18px; overflow:hidden;
+}
+.docbox-head{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;
+  padding:1.3rem clamp(1.2rem,3vw,2rem); border-bottom:1px solid var(--rule); flex:none;
+}
+.docbox-head h2{ font-size:clamp(1.5rem,3vw,2rem); letter-spacing:-.03em; margin:.2rem 0 0; }
+.docbox-head .lb-close{ position:static; flex:none; }
+.docbox-body{ padding:clamp(1.2rem,3vw,2rem); overflow-y:auto; display:flex; flex-direction:column; gap:1rem; }
+.docbox-greet{ font-weight:700; }
+.docbox-list{ list-style:none; margin:.2rem 0 0; padding:0; display:grid; gap:.85rem; }
+.docbox-list li{ position:relative; padding-left:1.5rem; line-height:1.55; font-size:.95rem; }
+.docbox-list li::before{
+  content:''; position:absolute; left:.3rem; top:.62em;
+  width:6px; height:6px; border-radius:50%; background:var(--glacier);
+}
+.docbox-pdf{
+  align-self:flex-start; margin-top:.6rem; text-decoration:none; color:var(--glacier);
+  font-family:var(--mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
+  padding:.55rem .9rem; border:1px solid var(--rule); border-radius:999px; transition:border-color .2s;
+}
+.docbox-pdf:hover{ border-color:var(--glacier); }
+
 /* --- Letölthető dokumentumok ------------------------------------------- */
 .doclinks{ display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
 .doclink{
+  appearance:none; font:inherit; text-align:left; width:100%; cursor:pointer;
   display:flex; align-items:center; gap:1rem; text-decoration:none; color:inherit;
   padding:1.05rem 1.2rem; border:1px solid var(--rule); border-radius:14px;
   background:var(--panel-soft); position:relative; overflow:hidden;
