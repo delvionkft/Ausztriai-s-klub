@@ -669,6 +669,29 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     <div class="cards cards--wide rise" data-grid="ski"></div>
   </section>
 
+  <section class="band wrap" id="wildkogel">
+    <div class="head rise">
+      <p class="eyebrow">A házhoz legközelebb</p>
+      <h2>Wildkogel-Aréna</h2>
+      <p class="lede" id="wk-where"></p>
+    </div>
+    <div class="panel wk rise" data-parallax="0.05">
+      <div class="wk-top">
+        <span class="wk-award"><i aria-hidden="true">★</i> <span id="wk-award"></span></span>
+        <div class="wk-tabs" role="tablist" aria-label="Évszak">
+          <button class="wk-tab is-on" type="button" role="tab" data-wk="winter" aria-selected="true">Tél</button>
+          <button class="wk-tab" type="button" role="tab" data-wk="summer" aria-selected="false">Nyár</button>
+        </div>
+      </div>
+      <div class="wk-body">
+        <h3 id="wk-title"></h3>
+        <p class="lede" id="wk-lead"></p>
+        <div id="wk-text"></div>
+        <dl class="wk-stats" id="wk-stats"></dl>
+      </div>
+    </div>
+  </section>
+
   <section class="band wrap">
     <div class="head rise">
       <p class="eyebrow">Összehasonlítás</p>
@@ -928,8 +951,8 @@ window.__ROOMS = ROOMS;
 
 
 const SKI_AREAS = [
-  { km:'72 km', name:'Wildkogel Aréna', vert:'1320 m', mix:{ blue:30, red:35, black:10 }, best:'Családoknak',
-    desc:'Több családbarát díjjal kitüntetett síterep. 35 km piros, 30 km kék, 10 km fekete. 1320 m szintkülönbség.',
+  { km:'75 km', name:'Wildkogel Aréna', vert:'1320 m', mix:{ blue:35, red:30, black:10 }, best:'Családoknak',
+    desc:'A családok hegyi specialistája címmel kitüntetett síterep. 35 km kék, 30 km piros, 10 km fekete. 1320 m szintkülönbség.',
     dist:'600 m gyalog a háztól' },
   { km:'181 km', name:'Kitzbühel–Mittersill', vert:'1200 m', mix:{ blue:94, red:67, black:20 }, best:'Kezdőknek',
     desc:'Kezdőknek ideális, rengeteg tanulóliftel. 94 km kék, 67 km piros, 20 km fekete. 1200 m szintkülönbség.',
@@ -938,6 +961,35 @@ const SKI_AREAS = [
     desc:'Ausztria egyik legnagyobb, legmodernebb síparadicsoma. 49 km kék, 87 km piros, 10,7 km fekete. 1920 m szintkülönbség.',
     dist:'15 km autóval' },
 ];
+
+/* A Wildkogel-Aréna saját bemutatkozása, nyári és téli olvasatban.
+   Külön szekcióként fut a Sípályák aloldalon (lásd: KOMPONENS: WildkogelArena). */
+const WILDKOGEL = {
+  award: 'A családok hegyi specialistája',
+  where: 'A Wildkogel-Aréna Neukirchen és Bramberg között fekszik, Salzburg tartomány déli részén — a Kitzbüheli-Alpok és a Hohe Tauern Nemzeti Park határán. A ház innen 600 méterre van, gyalog.',
+  seasons: {
+    winter: {
+      label: 'Tél',
+      title: 'Kilencven százalékban könnyű terep.',
+      lead: 'A pályák 86%-a kék vagy piros, ezért a terep kifejezetten a kezdőknek, a visszatérőknek és a családoknak való.',
+      body: [
+        'A síelés mellett a vakáció csúcspontja a világ leghosszabb kivilágított szánkópályája, és emellett is akad bőven téli program: sífutás, hótalpas és gyalogos túraútvonalak, gyerekpálya, funslope.',
+        'A hangulatos éttermek és a hagyományos kunyhók regionális ételekkel várnak — a pinzgaui vendéglátás nagybetűvel van írva.',
+      ],
+      stats: [['35 km','Kék pálya'], ['30 km','Piros pálya'], ['10 km','Fekete pálya']],
+    },
+    summer: {
+      label: 'Nyár',
+      title: 'Ugyanaz a hegy, hó nélkül.',
+      lead: 'Nyáron a túrázók, a hegyikerékpárosok és a pihenni vágyók kapják meg az arénát — Ausztria legmagasabb hegyeinek panorámájával.',
+      body: [
+        'A Hohe Tauern Nemzeti Park üdülőrégiójában a kijelölt túraútvonalak és a 77 kerékpáros útvonal egész nyáron használható, és a felvonók is járnak.',
+        'A völgy alján és a hegyen egyaránt működnek a kunyhók és éttermek, úgyhogy egy hosszabb túra közben sem kell magatokkal cipelni az ebédet.',
+      ],
+      stats: [['77','Kerékpáros útvonal'], ['3 662 m','Großvenediger'], ['600 m','A háztól gyalog']],
+    },
+  },
+};
 
 const BIKE_TOURS = [
   { tag:'Könnyű · családbarát', name:'Krimmler vízesés túra',
@@ -1769,6 +1821,52 @@ function tilt(nodes){
 })();
 
 /* --------------------------------------------------------------------------
+   8b. KOMPONENS: WildkogelArena — évszakváltós szekció a Sípályák aloldalon
+   -------------------------------------------------------------------------- */
+(function WildkogelArena(){
+  const root = document.getElementById('wildkogel');
+  if (!root) return;
+  const where = root.querySelector('#wk-where');
+  const award = root.querySelector('#wk-award');
+  const title = root.querySelector('#wk-title');
+  const lead  = root.querySelector('#wk-lead');
+  const text  = root.querySelector('#wk-text');
+  const stats = root.querySelector('#wk-stats');
+  const tabs  = [...root.querySelectorAll('.wk-tab')];
+
+  where.textContent = T(WILDKOGEL.where);
+  award.textContent = T(WILDKOGEL.award);
+
+  let current = 'winter';
+
+  function render(season){
+    const d = WILDKOGEL.seasons[season];
+    if (!d) return;
+    current = season;
+    title.textContent = T(d.title);
+    lead.textContent  = T(d.lead);
+    text.innerHTML    = d.body.map(t => `<p>${T(t)}</p>`).join('');
+    stats.innerHTML   = d.stats
+      .map(([v,l]) => `<div><dd class="mono">${v}</dd><dt>${T(l)}</dt></div>`).join('');
+    tabs.forEach(b => {
+      const on = b.dataset.wk === season;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+  }
+
+  tabs.forEach(b => b.addEventListener('click', () => render(b.dataset.wk)));
+  render('winter');
+
+  /* Nyelvváltáskor újrarajzoljuk, hogy a dinamikus szöveg is leforduljon. */
+  document.addEventListener('lang:change', () => {
+    where.textContent = T(WILDKOGEL.where);
+    award.textContent = T(WILDKOGEL.award);
+    render(current);
+  });
+})();
+
+/* --------------------------------------------------------------------------
    9. KOMPONENS: EBike
    -------------------------------------------------------------------------- */
 (function EBike(){
@@ -1810,7 +1908,7 @@ function tilt(nodes){
     </article>`;
   document.querySelectorAll('[data-activities]').forEach(g =>
     g.innerHTML = ACTIVITIES[g.dataset.activities].map(card).join(''));
-  document.querySelectorAll('[data-season]').forEach(g =>
+  document.querySelectorAll('.season-list[data-season]').forEach(g =>
     g.innerHTML = ACTIVITIES[g.dataset.season].slice(0,5).map(a =>
       `<li><span>${a.name}</span></li>`).join(''));
 
@@ -2717,6 +2815,11 @@ body.has-pickbar{ padding-bottom:88px; }
 .mix-legend em, .mix-head .tag em{ font-style:normal; }
 
 /* Képnagyító */
+/* Rejtett elemek tényleges elrejtése. A beágyazott előnézet ezt globálisan
+   megteszi, önálló kiszolgálón (GitHub Pages, Emergent) viszont nem — enélkül
+   a rejtett lightbox átlátszó rétegként kitakarná és elnyelné a kattintásokat. */
+[hidden]{ display:none !important; }
+
 .lightbox{
   position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; gap:.5rem;
   background:color-mix(in srgb, var(--ink) 88%, transparent);
@@ -3116,6 +3219,20 @@ const EN = {
   'Pihenőzóna a játék után':'A quiet zone to wind down in',
   'Teljes ház':'Whole house','Ha az egészet kéritek':'If you want the whole place',
   'A teljes ház egyben is foglalható, maximum 45 fős csoportoknak — ehhez az űrlapon pipáljátok be a „Teljes házat szeretnék foglalni” opciót. Érkezéskor 500 € letéti díj (kaució) szükséges készpénzben, amit távozáskor automatikusan visszaadunk, ha a használt eszközöket rendben találjuk.':'The whole house can be booked as one, for groups of up to 45 people — just tick “I would like to book the whole house” on the form. A €500 deposit is required in cash on arrival, and we return it automatically on departure provided everything you used is in order.',
+  'Wildkogel-Aréna':'Wildkogel Arena','A házhoz legközelebb':'Closest to the house','Évszak':'Season',
+  'A családok hegyi specialistája':'The mountain specialist for families',
+  'A Wildkogel-Aréna Neukirchen és Bramberg között fekszik, Salzburg tartomány déli részén — a Kitzbüheli-Alpok és a Hohe Tauern Nemzeti Park határán. A ház innen 600 méterre van, gyalog.':'The Wildkogel Arena lies between Neukirchen and Bramberg in the south of Salzburg province — on the border between the Kitzbühel Alps and the Hohe Tauern National Park. The house is 600 metres away on foot.',
+  'Tél':'Winter','Nyár':'Summer',
+  'Kilencven százalékban könnyű terep.':'Terrain that mostly says yes.',
+  'A pályák 86%-a kék vagy piros, ezért a terep kifejezetten a kezdőknek, a visszatérőknek és a családoknak való.':'86% of the runs are blue or red, which makes the area a natural fit for beginners, returning skiers and families.',
+  'A síelés mellett a vakáció csúcspontja a világ leghosszabb kivilágított szánkópályája, és emellett is akad bőven téli program: sífutás, hótalpas és gyalogos túraútvonalak, gyerekpálya, funslope.':'Beyond the skiing, the highlight of the holiday is the world’s longest floodlit toboggan run — and there is plenty else besides: cross-country tracks, snowshoe and winter walking trails, a children’s slope and a funslope.',
+  'A hangulatos éttermek és a hagyományos kunyhók regionális ételekkel várnak — a pinzgaui vendéglátás nagybetűvel van írva.':'The cosy restaurants and traditional huts serve regional food — Pinzgau hospitality is written in capitals.',
+  '35 km':'35 km','Kék pálya':'Blue runs','30 km':'30 km','Piros pálya':'Red runs','10 km':'10 km','Fekete pálya':'Black runs',
+  'Ugyanaz a hegy, hó nélkül.':'The same mountain, without the snow.',
+  'Nyáron a túrázók, a hegyikerékpárosok és a pihenni vágyók kapják meg az arénát — Ausztria legmagasabb hegyeinek panorámájával.':'In summer the arena belongs to hikers, mountain bikers and anyone who just wants to sit still — with the panorama of Austria’s highest mountains behind it.',
+  'A Hohe Tauern Nemzeti Park üdülőrégiójában a kijelölt túraútvonalak és a 77 kerékpáros útvonal egész nyáron használható, és a felvonók is járnak.':'Across the Hohe Tauern National Park holiday region the marked hiking trails and the 77 cycle routes are open all summer, and the lifts keep running.',
+  'A völgy alján és a hegyen egyaránt működnek a kunyhók és éttermek, úgyhogy egy hosszabb túra közben sem kell magatokkal cipelni az ebédet.':'Huts and restaurants are open both down in the valley and up on the mountain, so even on a long tour you do not have to carry lunch with you.',
+  '77':'77','Kerékpáros útvonal':'Cycle routes','3 662 m':'3,662 m','A háztól gyalog':'On foot from the house',
   'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
 };
 
@@ -3468,6 +3585,20 @@ const DE = {
   'Pihenőzóna a játék után':'Eine Ruhezone zum Durchschnaufen',
   'Teljes ház':'Ganzes Haus','Ha az egészet kéritek':'Wenn ihr das ganze Haus wollt',
   'A teljes ház egyben is foglalható, maximum 45 fős csoportoknak — ehhez az űrlapon pipáljátok be a „Teljes házat szeretnék foglalni” opciót. Érkezéskor 500 € letéti díj (kaució) szükséges készpénzben, amit távozáskor automatikusan visszaadunk, ha a használt eszközöket rendben találjuk.':'Das ganze Haus lässt sich am Stück buchen, für Gruppen bis zu 45 Personen — kreuzt dafür im Formular „Wir möchten das ganze Haus buchen“ an. Bei der Anreise ist eine Kaution von 500 € in bar zu hinterlegen, die wir bei der Abreise automatisch zurückgeben, sofern die benutzten Einrichtungen in Ordnung sind.',
+  'Wildkogel-Aréna':'Wildkogel-Arena','A házhoz legközelebb':'Am nächsten zum Haus','Évszak':'Jahreszeit',
+  'A családok hegyi specialistája':'Der Bergspezialist für Familien',
+  'A Wildkogel-Aréna Neukirchen és Bramberg között fekszik, Salzburg tartomány déli részén — a Kitzbüheli-Alpok és a Hohe Tauern Nemzeti Park határán. A ház innen 600 méterre van, gyalog.':'Die Wildkogel-Arena liegt zwischen Neukirchen und Bramberg im Süden des Landes Salzburg — an der Grenze zwischen den Kitzbüheler Alpen und dem Nationalpark Hohe Tauern. Das Haus ist 600 Meter entfernt, zu Fuß.',
+  'Tél':'Winter','Nyár':'Sommer',
+  'Kilencven százalékban könnyű terep.':'Ein Gelände, das kaum Nein sagt.',
+  'A pályák 86%-a kék vagy piros, ezért a terep kifejezetten a kezdőknek, a visszatérőknek és a családoknak való.':'86 % der Pisten sind blau oder rot — damit passt das Gebiet besonders zu Anfängern, Wiedereinsteigern und Familien.',
+  'A síelés mellett a vakáció csúcspontja a világ leghosszabb kivilágított szánkópályája, és emellett is akad bőven téli program: sífutás, hótalpas és gyalogos túraútvonalak, gyerekpálya, funslope.':'Neben dem Skifahren ist die längste beleuchtete Rodelbahn der Welt der Höhepunkt des Urlaubs — und daneben gibt es reichlich mehr: Langlaufloipen, Schneeschuh- und Winterwanderwege, ein Kinderhang und eine Funslope.',
+  'A hangulatos éttermek és a hagyományos kunyhók regionális ételekkel várnak — a pinzgaui vendéglátás nagybetűvel van írva.':'Die gemütlichen Restaurants und die traditionellen Hütten servieren regionale Küche — Pinzgauer Gastlichkeit wird großgeschrieben.',
+  '35 km':'35 km','Kék pálya':'Blaue Pisten','30 km':'30 km','Piros pálya':'Rote Pisten','10 km':'10 km','Fekete pálya':'Schwarze Pisten',
+  'Ugyanaz a hegy, hó nélkül.':'Derselbe Berg, nur ohne Schnee.',
+  'Nyáron a túrázók, a hegyikerékpárosok és a pihenni vágyók kapják meg az arénát — Ausztria legmagasabb hegyeinek panorámájával.':'Im Sommer gehört die Arena den Wanderern, den Mountainbikern und allen, die einfach nur sitzen bleiben wollen — mit dem Panorama der höchsten Berge Österreichs im Rücken.',
+  'A Hohe Tauern Nemzeti Park üdülőrégiójában a kijelölt túraútvonalak és a 77 kerékpáros útvonal egész nyáron használható, és a felvonók is járnak.':'In der Urlaubsregion Nationalpark Hohe Tauern sind die markierten Wanderwege und die 77 Radrouten den ganzen Sommer über offen, und die Bergbahnen fahren.',
+  'A völgy alján és a hegyen egyaránt működnek a kunyhók és éttermek, úgyhogy egy hosszabb túra közben sem kell magatokkal cipelni az ebédet.':'Sowohl unten im Tal als auch oben am Berg haben Hütten und Restaurants geöffnet, sodass ihr auch auf einer längeren Tour das Mittagessen nicht mitschleppen müsst.',
+  '77':'77','Kerékpáros útvonal':'Radrouten','3 662 m':'3.662 m','A háztól gyalog':'Zu Fuß vom Haus',
   'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
 };
 
@@ -3511,6 +3642,10 @@ function setLang(next){
   document.querySelectorAll('.lang button').forEach(b =>
     b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
   if (window.__setT) window.__setT(x => tr(x, lang));
+
+  /* Jelzés a dinamikusan rajzolt komponenseknek (pl. Wildkogel-szekció),
+     hogy a T() már az új nyelven felel — csak ezután szabad újrarajzolni. */
+  document.dispatchEvent(new CustomEvent('lang:change', { detail:{ lang } }));
 }
 
 document.querySelectorAll('.lang button').forEach(b =>
@@ -4086,6 +4221,41 @@ if (!reduce){
   backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
 }
 .infobox-panel{ overflow:hidden auto; }
+/* --- Wildkogel-Aréna szekció ------------------------------------------- */
+.wk{ padding:0; overflow:hidden; }
+.wk-top{
+  display:flex; flex-wrap:wrap; gap:1rem; align-items:center; justify-content:space-between;
+  padding:1.1rem clamp(1.2rem,3vw,2rem); border-bottom:1px solid var(--rule);
+}
+.wk-award{
+  display:inline-flex; align-items:center; gap:.5rem;
+  font-size:.82rem; letter-spacing:.02em; text-transform:uppercase; opacity:.85;
+}
+.wk-award i{ color:var(--lamp); font-style:normal; }
+.wk-tabs{ display:inline-flex; gap:.25rem; padding:.25rem; border:1px solid var(--rule); border-radius:999px; }
+.wk-tab{
+  appearance:none; border:0; background:transparent; color:inherit; cursor:pointer;
+  font:inherit; font-size:.86rem; font-weight:600; padding:.42rem 1.1rem; border-radius:999px;
+  transition:background .18s ease, color .18s ease;
+}
+.wk-tab:hover{ background:color-mix(in srgb, var(--glacier) 14%, transparent); }
+.wk-tab.is-on{ background:var(--glacier); color:var(--ink); }
+.wk-body{ padding:clamp(1.4rem,3vw,2.2rem); display:flex; flex-direction:column; gap:1rem; }
+.wk-body h3{ font-size:clamp(1.5rem,3vw,2.1rem); letter-spacing:-.02em; }
+.wk-body p{ max-width:62ch; }
+#wk-text{ display:grid; gap:.85rem; }
+.wk-stats{
+  display:flex; flex-wrap:wrap; gap:.8rem 2.4rem; margin:.4rem 0 0;
+  padding-top:1.1rem; border-top:1px solid var(--rule);
+}
+.wk-stats dd{ margin:0; font-size:1.5rem; font-weight:700; letter-spacing:-.02em; }
+.wk-stats dt{ font-size:.8rem; opacity:.7; }
+@media (max-width:560px){
+  .wk-top{ flex-direction:column; align-items:flex-start; }
+  .wk-tabs{ width:100%; }
+  .wk-tab{ flex:1; }
+}
+
 .infobox-list{ list-style:none; margin:.2rem 0 0; padding:0; display:grid; gap:.55rem; }
 .infobox-list li{ position:relative; padding-left:1.5rem; line-height:1.5; }
 .infobox-list li::before{ content:'›'; position:absolute; left:.35rem; top:-.05rem; color:var(--glacier); font-weight:700; }
