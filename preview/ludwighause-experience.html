@@ -567,12 +567,28 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   <div class="head rise" data-parallax="0.07">
     <p class="eyebrow">Szobáink</p>
     <h2>Minden szoba<br>egyedi panorámával.</h2>
-    <p class="lede">Venediger vagy Wildkogel kilátással, legtöbbje erkéllyel.</p>
+    <p class="lede">Tizenkét szoba két emeleten, hét különböző típusban. A ház egyik oldala a Großvenedigerre néz, a másik a Wildkogelre — ez dönti el, mire ébredtek.</p>
   </div>
-  <ul class="room-types rise">
-    <li>Családi szoba</li><li>Kétágyas szoba</li><li>Franciaágyas szoba</li>
-    <li>Ikerágyas szoba</li><li>Fürdőszoba</li>
-  </ul>
+
+  <div class="views-split rise" data-parallax="0.05">
+    <article class="view-side">
+      <p class="eyebrow">Venediger oldal</p>
+      <p class="view-count mono"><b id="rt-ven">—</b> <span>szoba</span></p>
+      <p class="view-desc">A 3 662 méteres Großvenediger és a gleccservilág felé. Ezen az oldalon vannak a legtágasabb szobák és az apartman.</p>
+    </article>
+    <article class="view-side">
+      <p class="eyebrow">Wildkogel oldal</p>
+      <p class="view-count mono"><b id="rt-wil">—</b> <span>szoba</span></p>
+      <p class="view-desc">A sípálya és a felvonó felé, 600 méterre. Innen látszik esténként a kivilágított szánkópálya is.</p>
+    </article>
+    <dl class="views-facts">
+      <div><dd class="mono" id="rt-rooms">—</dd><dt>Szoba</dt></div>
+      <div><dd class="mono" id="rt-types">—</dd><dt>Szobatípus</dt></div>
+      <div><dd class="mono">2</dd><dt>Emelet</dt></div>
+      <div><dd class="mono" id="rt-terrace">—</dd><dt>Terasszal</dt></div>
+    </dl>
+  </div>
+
   <div class="cards rise" data-grid="rooms" data-limit="3"></div>
   <div class="inline-ctas rise"><a class="btn btn--ghost" href="#/szobak" data-route="szobak" data-magnetic>Mind a 12 szoba →</a></div>
 </section>
@@ -2026,6 +2042,23 @@ function tilt(nodes){
 })();
 
 /* --------------------------------------------------------------------------
+   7b. KOMPONENS: RoomsSplit — a szobák panoráma szerinti megoszlása
+   Minden szám a ROOMS adatból jön, hogy a szövegben ne maradhasson
+   elavult érték, ha a szobalista változik.
+   -------------------------------------------------------------------------- */
+(function RoomsSplit(){
+  const box = document.querySelector('.views-split');
+  if (!box || !Array.isArray(ROOMS)) return;
+  const sum = f => ROOMS.reduce((n,r) => n + (f(r) ? r.rooms : 0), 0);
+  const set = (id,v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('rt-ven',     sum(r => /Venediger/i.test(r.name)));
+  set('rt-wil',     sum(r => /Wildkogel/i.test(r.name)));
+  set('rt-rooms',   sum(() => true));
+  set('rt-types',   ROOMS.length);
+  set('rt-terrace', sum(r => r.terrace));
+})();
+
+/* --------------------------------------------------------------------------
    8a. KOMPONENS: MobileNav — 1000px alatt ez az egyetlen navigáció
    -------------------------------------------------------------------------- */
 (function MobileNav(){
@@ -2935,6 +2968,29 @@ section.band + section.band{ border-top:0; }
 .highlights li span{ flex:none; font-size:1.05rem; line-height:1.4; }
 
 /* Szobatípus-címkék */
+/* --- Szobák: panoráma szerinti megoszlás -------------------------------- */
+.views-split{
+  display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule);
+  border-radius:18px; overflow:hidden; margin:0 0 2rem;
+  grid-template-columns:1fr 1fr;
+}
+.view-side{ background:var(--panel); padding:clamp(1.3rem,3vw,2rem); display:flex; flex-direction:column; gap:.6rem; }
+.view-count{ margin:0; display:flex; align-items:baseline; gap:.45rem; }
+.view-count b{ font-size:clamp(2.4rem,6vw,3.4rem); font-weight:700; letter-spacing:-.04em; line-height:1; color:var(--glacier); }
+.view-count span{ font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-soft); }
+.view-desc{ margin:0; font-size:.95rem; line-height:1.55; max-width:44ch; }
+.views-facts{
+  grid-column:1 / -1; background:var(--panel); margin:0;
+  padding:1.1rem clamp(1.3rem,3vw,2rem);
+  display:flex; flex-wrap:wrap; gap:.7rem 2.6rem;
+}
+.views-facts dd{ margin:0; font-size:1.35rem; font-weight:700; letter-spacing:-.02em; }
+.views-facts dt{ font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-soft); }
+@media (max-width:680px){
+  .views-split{ grid-template-columns:1fr; }
+  .views-facts{ gap:.7rem 1.8rem; }
+}
+
 .room-types{ list-style:none; display:flex; flex-wrap:wrap; gap:.45rem; margin:0 0 2rem; padding:0; }
 .room-types li{ font-family:var(--mono); font-size:.62rem; letter-spacing:.12em; text-transform:uppercase;
   padding:.36rem .7rem; border-radius:999px; border:1px solid var(--panel-edge); color:var(--fg-soft); }
@@ -3625,6 +3681,11 @@ const EN = {
   'Séta a faluban':'A walk through the village','Percekre a háztól':'Minutes from the house',
   'Reggeli tekerés':'A morning ride','Köd a völgy fölött':'Mist over the valley',
   'Pihenő a tónál':'A break by the lake','E-bike túra a környéken':'An e-bike tour in the area',
+  'Tizenkét szoba két emeleten, hét különböző típusban. A ház egyik oldala a Großvenedigerre néz, a másik a Wildkogelre — ez dönti el, mire ébredtek.':'Twelve rooms on two floors, in seven different types. One side of the house faces the Großvenediger, the other the Wildkogel — that is what decides the view you wake up to.',
+  'Venediger oldal':'Venediger side','Wildkogel oldal':'Wildkogel side','szoba':'rooms',
+  'A 3 662 méteres Großvenediger és a gleccservilág felé. Ezen az oldalon vannak a legtágasabb szobák és az apartman.':'Facing the 3,662 m Großvenediger and the glaciers beyond. This side holds the largest rooms and the apartment.',
+  'A sípálya és a felvonó felé, 600 méterre. Innen látszik esténként a kivilágított szánkópálya is.':'Facing the slopes and the lift, 600 metres away. In the evening you can see the floodlit toboggan run from here.',
+  'Szoba':'Rooms','Szobatípus':'Room types','Emelet':'Floors',
   'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
 };
 
@@ -4043,6 +4104,11 @@ const DE = {
   'Séta a faluban':'Ein Spaziergang durchs Dorf','Percekre a háztól':'Wenige Minuten vom Haus',
   'Reggeli tekerés':'Eine Morgenrunde','Köd a völgy fölött':'Nebel über dem Tal',
   'Pihenő a tónál':'Pause am See','E-bike túra a környéken':'E-Bike-Tour in der Umgebung',
+  'Tizenkét szoba két emeleten, hét különböző típusban. A ház egyik oldala a Großvenedigerre néz, a másik a Wildkogelre — ez dönti el, mire ébredtek.':'Zwölf Zimmer auf zwei Etagen, in sieben verschiedenen Typen. Die eine Seite des Hauses blickt auf den Großvenediger, die andere auf den Wildkogel — das entscheidet, worauf ihr morgens schaut.',
+  'Venediger oldal':'Venediger-Seite','Wildkogel oldal':'Wildkogel-Seite','szoba':'Zimmer',
+  'A 3 662 méteres Großvenediger és a gleccservilág felé. Ezen az oldalon vannak a legtágasabb szobák és az apartman.':'Mit Blick auf den 3.662 m hohen Großvenediger und die Gletscherwelt. Auf dieser Seite liegen die größten Zimmer und das Apartment.',
+  'A sípálya és a felvonó felé, 600 méterre. Innen látszik esténként a kivilágított szánkópálya is.':'Richtung Piste und Bergbahn, 600 Meter entfernt. Von hier seht ihr abends auch die beleuchtete Rodelbahn.',
+  'Szoba':'Zimmer','Szobatípus':'Zimmertypen','Emelet':'Etagen','Terasszal':'Mit Terrasse',
   'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
 };
 
