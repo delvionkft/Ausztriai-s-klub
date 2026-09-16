@@ -923,19 +923,11 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
   <section class="band subhero wrap">
     <p class="eyebrow rise">Házirend</p>
     <h1 class="rise">Hogy mindenki<br>jól érezze magát.</h1>
-    <p class="lede rise">Néhány dolog, amit érdemes tudni az érkezés előtt. Semmi bonyolult — ezek tartják rendben a házat, hogy utánatok is ugyanolyan legyen.</p>
+    <p class="lede rise">A hivatalos házirend magyarul, angolul és németül is letölthető. Érdemes az érkezés előtt átfutni — nincs benne meglepetés, de így mindenki ugyanazt tudja.</p>
   </section>
 
   <section class="band band--tight wrap">
-    <div class="rules rise" id="rules"></div>
-  </section>
-
-  <section class="band wrap">
-    <div class="head rise">
-      <p class="eyebrow">Letölthető dokumentum</p>
-      <h2>A teljes házirend,<br>három nyelven.</h2>
-      <p class="lede">A hivatalos, aláírt változat PDF-ben. Válasszátok ki a nyelvet — új lapon nyílik meg.</p>
-    </div>
+    <p class="hint rise">A hivatalos, aláírt változat PDF-ben. Válasszátok ki a nyelvet — új lapon nyílik meg.</p>
     <div class="doclinks rise">
       <a class="doclink" href="docs/Ludwighaus-Hazirend-Magyar.pdf" target="_blank" rel="noopener">
         <span class="doclink-flag" aria-hidden="true">🇭🇺</span>
@@ -1085,43 +1077,6 @@ const SKI_AREAS = [
 
 /* A Wildkogel-Aréna saját bemutatkozása, nyári és téli olvasatban.
    Külön szekcióként fut a Sípályák aloldalon (lásd: KOMPONENS: WildkogelArena). */
-/* Házirend. Minden pont az ügyfél által megadott foglalási és fizetési
-   feltételekből, illetve a ház saját szolgáltatáslistájából származik.
-   A teljes, hivatalos házirend PDF-je még nem érkezett meg — amint megvan,
-   az ide kerül át, mert a beírt szöveg fordítható és keresővel is olvasható. */
-const HOUSE_RULES = [
-  { icon:'🕓', title:'Érkezés és távozás', items:[
-    'A szobák az érkezés napján 16:00-tól foglalhatók el.',
-    'Távozáskor 9:30-ig kérjük elhagyni a szobákat.',
-    'Ha aznap nincs váltás, az érkezés és a távozás is rugalmasan kezelhető — jelezzétek előre.',
-    'Esti érkezés is megoldható, csak szóljatok, hogy várjunk benneteket.',
-  ]},
-  { icon:'💳', title:'Fizetés és díjak', items:[
-    'A foglalás akkor válik érvényessé, amikor az ár 50%-a előlegként megérkezik — ekkor küldünk visszaigazolást.',
-    'A fennmaradó összeg az érkezéskor fizetendő.',
-    'Idegenforgalmi adó: 2 € / fő / nap, a helyszínen fizetendő. Az ár nem tartalmazza.',
-    'Egyszeri takarítási díj: 25 € / fő / foglalás. Az ár ezt sem tartalmazza.',
-  ]},
-  { icon:'🏠', title:'Teljes ház foglalása', items:[
-    'A ház egyben is bérelhető, maximum 45 fős csoportoknak.',
-    'Az űrlapon ehhez a „Teljes házat szeretnék foglalni” opciót válasszátok.',
-    '500 € letéti díj (kaució) szükséges, érkezéskor, készpénzben.',
-    'A kauciót távozáskor automatikusan visszaadjuk, ha a használt eszközöket rendben találjuk.',
-  ]},
-  { icon:'🔁', title:'Lemondás és átfoglalás', items:[
-    'Az érkezés előtti 30. napig az előleg teljes összegét visszautaljuk.',
-    '29–15 nappal korábbi lemondásnál az összeg felét térítjük vissza.',
-    'Az érkezést megelőző 14 napon belül az előleg nem visszatéríthető.',
-    'Átfoglalásra van lehetőség — keressetek meg minket, és megoldjuk.',
-  ]},
-  { icon:'👩‍🍳', title:'Közös terek használata', items:[
-    'A self-cooking konyha és az étkező egész nap használható.',
-    'Használat után kérjük, hogy mindenki tegye el maga után az edényeket — a következő csoport ugyanúgy főzni szeretne.',
-    'A mosógép egész nap rendelkezésre áll.',
-    'A kerékpárokat nyáron, a sífelszerelést télen a ház erre kijelölt tárolójában tartsátok.',
-  ]},
-];
-
 const WILDKOGEL = {
   award: 'A családok hegyi specialistája',
   where: 'A Wildkogel-Aréna Neukirchen és Bramberg között fekszik, Salzburg tartomány déli részén — a Kitzbüheli-Alpok és a Hohe Tauern Nemzeti Park határán. A ház innen 600 méterre van, gyalog.',
@@ -2007,21 +1962,6 @@ function tilt(nodes){
 
   /* Ha az ablak a töréspont fölé nő, a nyitott panel nem ragadhat be. */
   matchMedia('(min-width:1001px)').addEventListener('change', e => { if (e.matches && open) set(false); });
-})();
-
-/* --------------------------------------------------------------------------
-   8c. KOMPONENS: HouseRules — házirend az azonos nevű aloldalon
-   -------------------------------------------------------------------------- */
-(function HouseRules(){
-  const box = document.getElementById('rules');
-  if (!box) return;
-  box.innerHTML = HOUSE_RULES.map(g => `
-    <article class="panel rule-card">
-      <span class="ico" aria-hidden="true">${g.icon}</span>
-      <h3>${g.title}</h3>
-      <ul>${g.items.map(t => `<li>${t}</li>`).join('')}</ul>
-    </article>`).join('');
-  tilt(box.querySelectorAll('.rule-card'));
 })();
 
 /* --------------------------------------------------------------------------
@@ -3440,7 +3380,7 @@ const EN = {
   'A völgy alján és a hegyen egyaránt működnek a kunyhók és éttermek, úgyhogy egy hosszabb túra közben sem kell magatokkal cipelni az ebédet.':'Huts and restaurants are open both down in the valley and up on the mountain, so even on a long tour you do not have to carry lunch with you.',
   '77':'77','Kerékpáros útvonal':'Cycle routes','3 662 m':'3,662 m','A háztól gyalog':'On foot from the house',
   'Házirend':'House rules','Hogy mindenki':'So everyone','jól érezze magát.':'has a good stay.',
-  'Néhány dolog, amit érdemes tudni az érkezés előtt. Semmi bonyolult — ezek tartják rendben a házat, hogy utánatok is ugyanolyan legyen.':'A few things worth knowing before you arrive. Nothing complicated — these are what keep the house in the shape you found it in.',
+  'A hivatalos házirend magyarul, angolul és németül is letölthető. Érdemes az érkezés előtt átfutni — nincs benne meglepetés, de így mindenki ugyanazt tudja.':'The official house rules can be downloaded in Hungarian, English and German. Worth a read before you arrive — no surprises in there, but this way everyone knows the same thing.',
   'Kérdés maradt?':'Still have a question?',
   'Ha bármi nem világos, hívjatok vagy írjatok — a magyar recepció bármikor elérhető, és a foglalás előtt is szívesen végigvesszük veletek.':'If anything is unclear, call or write — our Hungarian-speaking reception is always reachable, and we are happy to go through it with you before you book.',
   'Érkezés és távozás':'Arrival and departure',
@@ -3841,7 +3781,7 @@ const DE = {
   'A völgy alján és a hegyen egyaránt működnek a kunyhók és éttermek, úgyhogy egy hosszabb túra közben sem kell magatokkal cipelni az ebédet.':'Sowohl unten im Tal als auch oben am Berg haben Hütten und Restaurants geöffnet, sodass ihr auch auf einer längeren Tour das Mittagessen nicht mitschleppen müsst.',
   '77':'77','Kerékpáros útvonal':'Radrouten','3 662 m':'3.662 m','A háztól gyalog':'Zu Fuß vom Haus',
   'Házirend':'Hausordnung','Hogy mindenki':'Damit sich alle','jól érezze magát.':'wohlfühlen.',
-  'Néhány dolog, amit érdemes tudni az érkezés előtt. Semmi bonyolult — ezek tartják rendben a házat, hogy utánatok is ugyanolyan legyen.':'Ein paar Dinge, die ihr vor der Anreise wissen solltet. Nichts Kompliziertes — sie halten das Haus in dem Zustand, in dem ihr es vorgefunden habt.',
+  'A hivatalos házirend magyarul, angolul és németül is letölthető. Érdemes az érkezés előtt átfutni — nincs benne meglepetés, de így mindenki ugyanazt tudja.':'Die offizielle Hausordnung steht auf Ungarisch, Englisch und Deutsch zum Download bereit. Lest sie vor der Anreise kurz durch — Überraschungen gibt es keine, aber so wissen alle dasselbe.',
   'Kérdés maradt?':'Noch eine Frage offen?',
   'Ha bármi nem világos, hívjatok vagy írjatok — a magyar recepció bármikor elérhető, és a foglalás előtt is szívesen végigvesszük veletek.':'Wenn etwas unklar ist, ruft an oder schreibt — unsere ungarischsprachige Rezeption ist jederzeit erreichbar und geht das auch vor der Buchung gern mit euch durch.',
   'Érkezés és távozás':'Anreise und Abreise',
@@ -4521,16 +4461,10 @@ if (!reduce){
 .doclink:hover .doclink-go{ translate:3px -3px; }
 
 /* --- Házirend ---------------------------------------------------------- */
-.rules{ display:grid; gap:1.1rem; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
-.rule-card{ padding:clamp(1.3rem,2.6vw,1.8rem); display:flex; flex-direction:column; gap:.85rem; }
-.rule-card .ico{ font-size:1.6rem; line-height:1; }
-.rule-card h3{ font-size:1.22rem; letter-spacing:-.01em; }
-.rule-card ul{ list-style:none; margin:0; padding:0; display:grid; gap:.6rem; }
-.rule-card li{ position:relative; padding-left:1.35rem; line-height:1.5; font-size:.95rem; opacity:.92; }
-.rule-card li::before{
-  content:''; position:absolute; left:.25rem; top:.62em;
-  width:5px; height:5px; border-radius:50%; background:var(--glacier);
-}
+[data-view="hazirend"] section.band:not(.subhero){ padding-block:clamp(2.2rem,6vh,4rem); }
+[data-view="hazirend"] .subhero{ padding-bottom:clamp(1rem,2.5vh,1.6rem); }
+[data-view="hazirend"] .subhero + section.band{ padding-top:clamp(1.2rem,3vh,2rem); }
+[data-view="hazirend"] .hint{ margin:0 0 1.1rem; }
 .rules-note{ padding:clamp(1.4rem,3vw,2rem); display:flex; flex-direction:column; gap:.9rem; }
 .rules-note p{ max-width:62ch; }
 
