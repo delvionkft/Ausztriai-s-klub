@@ -874,7 +874,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <label class="check"><input id="f-whole" name="wholehouse" type="checkbox"> Teljes házat szeretnék foglalni</label>
       <div class="field"><label for="f-note">Megjegyzés (opcionális)</label><textarea id="f-note" name="note" rows="3"></textarea></div>
       <button class="btn" type="submit" data-magnetic>Foglalás leadása →</button>
-      <p class="fineprint">A foglalás elküldésével elfogadjátok az <a href="#adatkezeles" data-doc="privacy">Adatkezelési tájékoztatót</a> és az <a href="#/" data-anchor="">ÁSZF-et</a>.</p>
+      <p class="fineprint">A foglalás elküldésével elfogadjátok az <a href="#aszf-adatkezeles" data-doc="privacy">ÁSZF-et és az adatkezelési tájékoztatót</a>.</p>
     </form>
   </div>
   </section>
@@ -992,7 +992,7 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
     </div>
     <div><h4>Az oldal</h4><ul><li><a href="#/" data-anchor="szallasunk">Szállásunk</a></li><li><a href="#/szobak" data-route="szobak">Szobák</a></li><li><a href="#/sipalyak" data-route="sipalyak">Sípályák</a></li><li><a href="#/kikapcsolodas" data-route="kikapcsolodas">Kikapcsolódás</a></li></ul></div>
     <div><h4>Foglalás</h4><ul><li><a href="#/" data-anchor="arak">Árak</a></li><li><a href="#/galeria" data-route="galeria">Galéria</a></li><li><a href="#/kapcsolat" data-route="kapcsolat">Időpontot foglalok</a></li></ul></div>
-    <div><h4>Dokumentumok</h4><ul><li><a href="#/hazirend" data-route="hazirend">Házirend</a></li><li><a href="#/" data-anchor="">ÁSZF</a></li><li><a href="#adatkezeles" data-doc="privacy">Adatkezelés</a></li><li><a href="#/kapcsolat" data-route="kapcsolat">Kapcsolat</a></li></ul></div>
+    <div><h4>Dokumentumok</h4><ul><li><a href="#/hazirend" data-route="hazirend">Házirend</a></li><li><a href="#aszf-adatkezeles" data-doc="privacy">ÁSZF és adatkezelés</a></li><li><a href="#/kapcsolat" data-route="kapcsolat">Kapcsolat</a></li></ul></div>
     <div><h4>Kövessetek minket</h4><ul class="social">
       <li><a href="https://www.facebook.com/ludwighausneukirchen/" target="_blank" rel="noopener">Facebook</a></li>
       <li><a href="https://www.instagram.com/sportclubhaus.am.wildkogel/" target="_blank" rel="noopener">Instagram</a></li>
@@ -1188,12 +1188,189 @@ const HOUSE_SHOTS = [
 /* A hivatalos adatkezelési tájékoztató teljes szövege. A magázó hangnem
    a dokumentumé — ez a jogilag érvényes változat, nem marketingszöveg. */
 const PRIVACY = {
-  title:'Adatkezelési tájékoztató',
-  lead:'A Ludwighaus adatkezelési tájékoztatója. A dokumentum a hivatalos, magázó szövegváltozat.',
+  title:'ÁSZF és adatkezelési tájékoztató',
+  lead:'A Ludwighaus általános szerződési feltételei és adatkezelési tájékoztatója egy dokumentumban. A magázó hangnem a hivatalos szövegé.',
   rights: ["kérelmezheti a rá vonatkozó személyes adatokhoz való hozzáférést,", "kérelmezheti azok helyesbítését,", "kérelmezheti azok törlését,", "kérelmezheti a GDPR 18. cikkében foglalt feltételek fennállása esetén a személyes adatok kezelésének korlátozását (tehát azt, hogy szállásunk az adatokat ne törölje, vagy ne semmisítse meg bíróság vagy hatóság megkereséséig, de legfeljebb harminc napig, s ezen túlmenően más céllal az adatot ne kezelje),", "tiltakozhat a személyes adatok kezelése ellen,", "gyakorolhatja az adathordozhatósághoz való jogát. Ez utóbbi jog értelmében az érintett jogosult arra, hogy a rá vonatkozó személyes adatokat word vagy excel formátumban megkapja, továbbá jogosult arra, hogy ezeket az adatokat kérésére egy másik adatkezelőnek továbbítsa szállásunk."],
   rightsLead:'Az érintett jogai: az érintett személy (az, akinek a személyes adatait szállásunk kezeli)',
   incident: "Az adatkezeléssel kapcsolatos egyéb információk: szállásunk minden szükséges technikai és szervezési intézkedést megtesz egy esetleges adatvédelmi incidens (pl. személyes adatokat tartalmazó fájlok sérülése, eltűnése, illetéktelenek számára hozzáférhetővé válása) elkerülésére. Egy mégis bekövetkező incidens esetén a szükséges intézkedések ellenőrzése, valamint az érintett tájékoztatása céljából nyilvántartást vezetünk, amely tartalmazza az érintett személyes adatok körét, az adatvédelmi incidenssel érintettek körét és számát, az adatvédelmi incidens időpontját, körülményeit, hatásait és az elhárítására megtett intézkedéseket, valamint az adatkezelést előíró jogszabályban meghatározott egyéb adatokat.",
   blocks: [
+  
+    {
+      "h": "Általános Szerződési Feltételek"
+    },
+    {
+      "h": "1. Általános rendelkezések",
+      "p": [
+        "1.1. Az Általános Szerződéses Feltételek (továbbiakban ÁSZF) azt a szerződéses tartalmat foglalják össze, melyek alapján a Ludwighaus (AT-5741 Neukirchen am Großvenediger, Marktstraße 121), továbbiakban Szolgáltató általánosságban elszállásolási szerződést köt Vendégeivel.",
+        "1.2. Egyedi feltételek nem képezik a részét jelen ÁSZF-nek, de nem zárják ki külön, speciális megállapodások kötését utazásközvetítőkkel, szervezőkkel, esetenként más-más, az adott üzletnek megfelelő feltételekkel."
+      ]
+    },
+    {
+      "h": "2. Szerződő felek",
+      "p": [
+        "2.1. A Szolgáltató által nyújtott szolgáltatásokat a Vendég veszi igénybe. Amennyiben a szolgáltatásokra vonatkozó megrendelést a Vendég közvetlenül a Szolgáltatónak adja le, úgy a Vendég lesz a Szerződő fél. A Szolgáltató és a Vendég együttesen, amennyiben a feltételek teljesülnek, szerződéses felekké válnak (továbbiakban: Felek).",
+        "2.2. Amennyiben a szolgáltatásokra vonatkozó megrendelést a Vendég megbízásából egy harmadik személy (továbbiakban Közvetítő) adja le a Szolgáltatónak, az együttműködés feltételeit a Szolgáltató és a Közvetítő közötti megállapodás szabályozza."
+      ]
+    },
+    {
+      "h": "3. A szolgáltatás igénybevételének módja és feltételei",
+      "p": [
+        "3.1. A Vendég szóbeli vagy írásbeli ajánlatkérésére a Szolgáltató írásbeli vagy szóbeli ajánlatot ad a Vendég számára. Amennyiben az ajánlat tájékoztatásától számított 72 órán belül nem érkezik konkrét megrendelés, úgy a Szolgáltató ajánlati kötöttsége megszűnik.",
+        "3.2. A Szerződés kizárólag a Vendég írásban vagy szóban leadott foglalásának a Szolgáltató általi írásban megküldött vagy szóban tájékoztatott visszaigazolásával jön létre, és így megkötött Szerződésnek minősül.",
+        "3.3. A szállás-szolgáltatás igénybevételéről szóló Szerződés meghatározott időtartamra szól.",
+        "3.4. Ha a Vendég a meghatározott időtartam lejárta előtt véglegesen elhagyja a szobát, a Szolgáltató jogosult a Szerződésben kikötött szolgáltatás teljes ellenértékére. A lejárati idő előtt megüresedett szobát a Szolgáltató jogosult újra értékesíteni.",
+        "3.5. A szállás-szolgáltatás igénybevételének Vendég által kezdeményezett meghosszabbításához a Szolgáltató előzetes hozzájárulása szükséges. Ebben az esetben a Szolgáltató kikötheti a már teljesített szolgáltatás díjának megtérítését.",
+        "3.6. A szállás-szolgáltatás igénybevételének feltétele, hogy a Vendégek személyazonosságukat a bejelentkezési űrlap megfelelő kitöltésével igazolják, a szoba elfoglalása előtt vagy az érkezés napján. A szálláson bejelentés nélkül senki sem lakhat.",
+        "3.7. A Szerződés módosításához és/vagy kiegészítéséhez a Felek által aláírt írásbeli megállapodás szükséges."
+      ]
+    },
+    {
+      "h": "4. Az elszállásolás kezdete és vége (check-in, check-out)",
+      "p": [
+        "4.1. A foglalás csak onnantól érvényes, ha az ár 50%-a, mint első részlet megérkezik a bankszámlánkra. Ennek beérkezésekor küldünk egy visszaigazoló e-mailt, és a fennmaradó összeget a helyszínre érkezéskor készpénzes fizetéssel vagy az érkezés előtt átutalással lehet kiegyenlíteni.",
+        "4.2. A Vendégnek joga van a bérelt helyiségeket a megállapodás szerinti nap 16:00 órától elfoglalni. Amennyiben nincs aznap váltás, úgy az érkezést rugalmasan kezeljük.",
+        "4.3. A Vendégnek a szobát az elutazási nap 9:30 óráig el kell hagynia. Amennyiben nincs aznap váltás, úgy a távozást is rugalmasan kezeljük."
+      ]
+    },
+    {
+      "h": "5. Az elszállásolás meghosszabbítása",
+      "p": [
+        "5.1. Amennyiben a Vendég a szobáját a bejelentkezéskor a távozás napjaként feltüntetett napon 9:30-ig nem üríti ki, és a tartózkodás meghosszabbításához a Szolgáltató előzetesen nem járult hozzá, úgy a Szolgáltató jogosult a szobaárat egy további napra is kiszámlázni, és ezzel egyidejűleg a Szolgáltató szolgáltatási kötelezettsége is megszűnik."
+      ]
+    },
+    {
+      "h": "6. Árak",
+      "p": [
+        "6.1. A szállás aktuális árlistája a weboldal Szobák aloldalán, szobatípusonként, fő- és holtszezonra bontva található meg.",
+        "6.2. A Szolgáltató a meghirdetett árait előzetes bejelentés nélkül (például csomagárak vagy egyéb kedvezmények okán) megváltoztathatja. Amennyiben a Vendég szállást foglalt, és azt a Szolgáltató írásban vagy szóban visszaigazolta, úgy ezen a szállásáron a Szolgáltató már nem változtathat.",
+        "6.3. A Vendég a szolgáltatások áráról mindig tájékoztatást kaphat a szolgáltatásnyújtás megkezdése előtt a szállás tulajdonosától telefonon vagy e-mailben."
+      ]
+    },
+    {
+      "h": "7. Ajánlatok, kedvezmények",
+      "p": [
+        "7.1. Az aktuális ajánlatok, kedvezmények a szállás weboldalán vagy a közösségi felületeken kerülnek meghirdetésre.",
+        "7.2. A meghirdetett kedvezmények nem vonhatók össze semmilyen más kedvezménnyel.",
+        "7.3. A Szolgáltató speciális kondíciókhoz kötött termékeinek foglalása, csoportos foglalás vagy rendezvények esetén egyedi szerződésben rögzített feltételeket állapíthat meg."
+      ]
+    },
+    {
+      "h": "8. Lemondási feltételek",
+      "p": [
+        "8.1. Amennyiben a szállás ajánlatában más feltételt nem határozott meg, a lemondási és módosítási feltételek a következők:",
+        "8.2. A foglalás dátumát megelőző 30. napig az átutalt részlet teljes összege visszautalásra kerül. Ha a lemondás a foglalás időpontját 29–15 nappal megelőzően történik, akkor az átutalt összeg 50%-át tudjuk visszafizetni; a foglalás dátumát megelőző 14. napon belüli lemondásnál pedig megtartjuk a teljes foglalót.",
+        "8.3. Az esetleges lemondásra a következő feltételek vonatkoznak: amennyiben a foglalást az érkezés előtt 30 nappal vagy korábban mondja le, az átutalt előleg teljes összege visszautalásra kerül. Ha a lemondás az érkezést 30 napon belül megelőzően történik, 50% kötbér kerül felszámításra, és az előleg összege nem kerül visszafizetésre. Fontos azonban, hogy a foglalás díjmentesen átruházható más személyre, és a már befizetett előleg az eredeti foglalástól számított 1 éven belül felhasználható a Ludwighausban történő új foglaláskor."
+      ]
+    },
+    {
+      "h": "9. A szerződés teljesítésének elutasítása, a szolgáltatási kötelezettség megszűnése",
+      "p": [
+        "9.1. A Szolgáltató jogosult a szállásszolgáltatásra szóló Szerződést azonnali hatállyal felmondani, így a szolgáltatások nyújtását megtagadni, ha:"
+      ],
+      "ul": [
+        "a Vendég nem rendeltetésszerűen használja a rendelkezésre bocsátott szobát, illetve a létesítményt;",
+        "a Vendég a szobáját a bejelentkezéskor a távozás napjaként feltüntetett napon 9:30 óráig nem üríti ki, és a tartózkodás meghosszabbításához a Szolgáltató előzetesen nem járult hozzá;",
+        "a Vendég a szálláshely biztonságával, rendjével, annak alkalmazottaival kifogásolhatóan, durván viselkedik, alkohol vagy drogok befolyása alatt áll, fenyegető, sértő vagy más elfogadhatatlan viselkedést tanúsít;",
+        "a Vendég fertőző betegségben szenved;",
+        "a Szerződő fél nem teljesíti a Szerződésben meghatározott előlegfizetési kötelezettségét a meghatározott időpontig;",
+        "a felek közötti Szerződés „vis maior” okokból nem teljesül — a szerződés megszűnik."
+      ]
+    },
+    {
+      "h": "10. Fizetés módja",
+      "p": [
+        "10.1. A megrendelt szolgáltatások ellenértéke fizethető a helyszínen készpénzzel (forintban vagy euróban), illetve átutalással.",
+        "10.2. A szállásra érkezés előtt a foglalt szoba vagy szobák árának 50%-át kötelező átutalni, mert csak onnantól kezdve tudjuk biztosítani a foglalást. A fennmaradó összeg kiegyenlítésére készpénzes fizetési lehetőséget biztosítunk, vagy érkezés előtt átutalással lehet kiegyenlíteni a fennmaradó összeget.",
+        "10.3. Kizárólag teljes ház foglalása esetén 1000 €, azaz ezer euró letéti díj (kaució) átadása szükséges, amit az érkezésnél kell átadni készpénzben. A letéti díjat automatikusan visszaadjuk távozáskor, ha a használatba vett eszközöket rendben találtuk.",
+        "10.4. Az Általános Szerződési Feltételek elfogadásával a Vendég tudomásul veszi és elfogadja, hogy a Szolgáltató a fizetendő díjakról, illetve a vendégek által bármely jogcímen a Szolgáltató részére kifizetett összegről számlát állít ki.",
+        "10.5. A bejelentkezési űrlapon megadott adatok (név, cím) szerepelnek majd a számla „Vevő” rovatában. Az érkezés után 1 napon belül a Vendég kérheti a megadott adatok módosítását, ezt követően azonban a módosítás már nem lehetséges."
+      ]
+    },
+    {
+      "h": "11. A Vendég jogai",
+      "p": [
+        "11.1. A szállás-szolgáltatási szerződés megkötésével a Vendég jogosultságot szerez a bérelt helyiségek szokásos használatára, valamint az elszállásolási üzem szokás szerint és különösebb feltételek nélkül Vendégek használatára bocsátott létesítményeinek szokásos használatára, valamint a szokásos kiszolgálásra a kiírásnak megfelelő nyitvatartási időben.",
+        "11.2. A Vendég a Szolgáltató által nyújtott szolgáltatások teljesítésével kapcsolatban panasszal élhet a szálláshelyen való tartózkodás időtartama alatt. A Szolgáltató ezen időszakban hozzá írásban igazoltan eljuttatott (vagy általa jegyzőkönyvbe felvett) panasz kezelésére vállal kötelezettséget."
+      ]
+    },
+    {
+      "h": "12. A Vendég kötelezettségei",
+      "p": [
+        "12.1. A megállapodás szerinti díj megfizetése: a visszaigazolásban rögzített határidőig, vagy a szállás-szolgáltatási szerződés befejeződésekor esedékes.",
+        "12.2. A parkolóban elhelyezett gépjárművekben és az azokban elhelyezett tárgyakban keletkező bármiféle kárért (ideértve például, de nem kizárólag: a gépkocsi feltörését és a gépkocsiban lévő bármely tárgy eltulajdonítását; a gépjármű ellopását; természeti jelenség okozta károkat) a Szolgáltató a felelősségét kizárja. A Szolgáltató a szobákban hagyott értéktárgyakért felelősséget nem vállal.",
+        "12.3. A szállás előtt található parkolóban a KRESZ előírásai szerint kell közlekedni.",
+        "12.4. A szemetet a szállás területén, illetve a szobákban elhelyezett kukákba kérjük kidobni. A szobából, illetve az épületből bútorokat kivinni, áthelyezni nem lehet.",
+        "12.5. A szállás területén lévő eszközöket, berendezéseket a szállóvendég kizárólag saját felelősségére használhatja.",
+        "12.6. A nemdohányzók védelméről szóló 1999. évi XLII. törvény végrehajtása értelmében a szállás zárt helyiségeiben (beleértve a vendégszobákat is) és közösségi területein tilos a dohányzás. A hivatkozott jogszabály betartására vonatkozó kötelességre felhívó jelzéseket a jogszabályban előírt területeken a szállás elhelyezte. A szállás tulajdonosa jogosult a vendégeket, valamint a szállás területén tartózkodó bármely más személyt figyelmeztetni a jogszabály betartására, illetve a jogszerűtlen magatartás abbahagyására. A vendégek, illetve a szállás területén tartózkodó bármely személy köteles a jogszabály betartására, valamint az esetleges felszólítás teljesítésére. Amennyiben bármely vendég vagy a szállás területén tartózkodó egyéb személy jogsértő magatartása miatt a szállás üzemeltetőjét az illetékes hatóság a hivatkozott jogszabály alapján bírsággal sújtja, úgy az üzemeltető fenntartja magának a jogot, hogy az adott jogsértő magatartást tanúsító személyre a bírság összegét áthárítsa, illetve annak megfizetését tőle követelje.",
+        "12.7. Tűz esetén a recepciót kérjük haladéktalanul értesíteni.",
+        "12.8. A szobákat és a szállás közös használatú eszközeit, berendezési tárgyait közösen használó Vendégek a rendeltetésellenes használat során bekövetkezett károkozásért egyetemlegesen felelnek.",
+        "12.9. A szállóvendég által hozott tűzijátékhoz és egyéb engedélyköteles tevékenységhez a szállás írásos hozzájárulása, továbbá a szállóvendégek általi hatósági engedélyek beszerzése szükséges.",
+        "12.10. A vendég gondoskodik arról, hogy a felelőssége alá tartozó 14 év alatti gyermek csak felnőtt felügyelete mellett tartózkodjon a Szolgáltató szállásán; a gyermek által okozott károkért a teljes felelősség a szülőt terheli. A vendég mindazon károkért felelős, melyeket a Szolgáltató a Vendég, a Vendég kísérője vagy a Vendég felelőssége alá tartozó más személyek hibájából elszenved.",
+        "12.11. A Vendégnek az őt ért kárt azonnal jelentenie kell a szálláson, és minden szükséges adatot a szállás rendelkezésére kell bocsátania, amely a káreset körülményeinek tisztázásához, esetleg a rendőrségi jegyzőkönyv felvételéhez vagy rendőrségi eljáráshoz szükséges."
+      ]
+    },
+    {
+      "h": "13. A Szolgáltató kötelezettségei",
+      "p": [
+        "13.1. A szerződés alapján megrendelt szállás és egyéb szolgáltatások az érvényes előírások, szolgáltatási standardok szerinti teljesítése.",
+        "13.2. A Vendég írásos panaszának kivizsgálása és a probléma kezeléséhez szükséges lépések megtétele, azok írásban történő rögzítése."
+      ]
+    },
+    {
+      "h": "14. Az adatkezelés biztonsága",
+      "p": [
+        "14.1. A bejelentkezési űrlapon szereplő adatok alapján a vendég felíratásra került a hírlevelünkre. A hírlevélre történő feliratkozással a Felhasználó hozzájárul megadott adatai kezeléséhez. A Szolgáltató az adatokat mindaddig kezeli, ameddig azok törlését az érintett nem kéri.",
+        "14.2. A megadott személyes adatok valódiságáért a Felhasználó felel.",
+        "14.3. A Szolgáltató az adatokat védi különösen a jogosulatlan hozzáférés, megváltoztatás, továbbítás, nyilvánosságra hozatal, törlés vagy megsemmisítés, valamint a véletlen megsemmisülés és sérülés ellen.",
+        "14.4. A Felhasználó által megadott személyes adatokhoz kizárólag az adatkezelő munkatársai férhetnek hozzá. Személyes adatokat a megjelölteken kívül harmadik személyeknek az adatkezelő nem ad át.",
+        "14.5. A Szolgáltató harmadik fél részére személyes adatokat nem ad ki, csak az érintett előzetes és kifejezett hozzájárulása alapján.",
+        "14.6. A Felhasználó tudomásul veszi, hogy a Szolgáltató törvényi felhatalmazás alapján köteles a megkereső hatóság részére személyes adatot kiadni, amennyiben annak törvényi feltételei fennállnak. A törvényen, hatósági vagy bírósági határozaton alapuló adatszolgáltatással szemben a Felhasználó nem emelhet kifogást.",
+        "14.7. Az adatkezeléssel kapcsolatos részletesebb információkért kérjük, olvassa el az alábbi adatkezelési tájékoztatót."
+      ]
+    },
+    {
+      "h": "15. A Szolgáltató kártérítési felelőssége",
+      "p": [
+        "15.1. A Szolgáltató kijelölhet olyan helyeket a szállás területén, ahová a Vendég nem léphet be. Az ilyen helyeken történt esetleges, Vendéget ért kárért, sérülésért a Szolgáltató felelősséget nem vállal."
+      ]
+    },
+    {
+      "h": "16. Titoktartás",
+      "p": [
+        "16.1. A Szolgáltató a Szerződésben foglalt kötelezettsége teljesítése során köteles a személyes adatok védelméről és a közérdekű adatok nyilvánosságáról szóló törvény szabályainak megfelelően eljárni."
+      ]
+    },
+    {
+      "h": "17. Vis maior",
+      "p": [
+        "17.1. Azon ok vagy körülmény (például háború, tűz, árvíz, időjárásbeli viszontagság, áramhiány, sztrájk bekövetkezése), amely felett a fél nem bír ellenőrzéssel (vis maior), bármely felet felmenti a Szerződésből eredő kötelességeik teljesítése alól, amíg ezen ok vagy körülmény fennáll."
+      ]
+    },
+    {
+      "h": "18. A honlapunk látogatóinak adatai",
+      "p": [
+        "18.1. A Szolgáltató az általa üzemeltetett weboldal látogatásakor sem a felhasználó IP-címét, sem más személyes adatot nem rögzít. A weblap látogatása során szabadon és név nélkül biztosított a keresés. A Szolgáltató a név nélküli internetes látogatást kizárólag statisztikai célokra használja fel, internetes megjelenése optimalizálására, a rendszer biztonságának növelésére; a rögzített adatok nem tartalmaznak semminemű személyes adatot.",
+        "18.2. A Szolgáltató a Felhasználókra vonatkozó valamennyi adatot és tényt bizalmasan kezel, azokat kizárólag saját kutatás, statisztika készítéséhez használja fel.",
+        "18.3. A Szolgáltató nem vállalja a felelősséget a már törölt, de az internetes keresőprogramok közreműködésével mégis archiválásra került korábbi oldalaiért. Ezek eltávolításáról a keresőoldal működtetőjének kell gondoskodnia."
+      ]
+    },
+    {
+      "h": "19. Hírlevél",
+      "p": [
+        "19.1. A Szolgáltató az általa üzemeltetett honlap hírleveleire feliratkozó személyeknek havonta akár több alkalommal is híreket, információkat és ajánlatokat tartalmazó online hírleveleket és elektronikus direkt marketing üzeneteket (a továbbiakban: Hírlevél) kézbesít."
+      ]
+    },
+    {
+      "h": "20. Adatvédelem",
+      "p": [
+        "20.1. A Szolgáltató tevékenysége során kiemelten fontosnak tartja a személyes adatok védelmét. A rendelkezésére bocsátott személyes adatokat minden esetben a hatályos jogszabályoknak eleget téve kezeli, gondoskodik azok biztonságáról, megteszi azokat a technikai és szervezési intézkedéseket, valamint kialakítja azokat az eljárási szabályokat, amelyek a vonatkozó jogszabályok betartásához szükségesek.",
+        "A Szolgáltató tevékenysége során a felhasználók adatait az Adatvédelmi törvény értelmében kizárólag szerződéskötési, számlázási, valamint saját reklámcéljaira használja fel.",
+        "A szállás-szolgáltatási szerződés megkötése esetén Ön elfogadja, hogy elolvasta és megértette a fenti feltételeket és szabályokat, és egyetért az azokban foglaltakkal. Az ÁSZF a későbbiek során módosulhat."
+      ]
+    },
+    {
+      "h": "Adatkezelési tájékoztató"
+    },
     {
       "h": "1. Általános rendelkezések",
       "p": [
@@ -2440,7 +2617,8 @@ function tilt(nodes){
     greet.textContent = ''; greet.hidden = true;
     box.querySelector('#doc-intro').textContent = d.lead;
     box.querySelector('#doc-items').innerHTML = d.blocks.map(b => {
-      let h = b.h ? `<li class="doc-h"><h3>${b.h}</h3></li>` : '';
+      const major = b.h === 'Általános Szerződési Feltételek' || b.h === 'Adatkezelési tájékoztató';
+      let h = b.h ? `<li class="doc-h${major ? ' doc-h--major' : ''}"><h3>${b.h}</h3></li>` : '';
       let out = h;
       (b.p || []).forEach(t => { out += `<li class="doc-p">${t}</li>`; });
       if (b.ul) out += b.ul.map(t => `<li>${t}</li>`).join('');
@@ -4030,6 +4208,8 @@ const EN = {
   'A sípálya és a felvonó felé, 600 méterre. Innen látszik esténként a kivilágított szánkópálya is.':'Facing the slopes and the lift, 600 metres away. In the evening you can see the floodlit toboggan run from here.',
   'Szoba':'Rooms','Szobatípus':'Room types','Emelet':'Floors',
   'Adatkezelés':'Privacy','Adatkezelési tájékoztató':'Privacy notice',
+  'ÁSZF és adatkezelés':'Terms & privacy','ÁSZF és adatkezelési tájékoztató':'Terms and privacy notice',
+  'ÁSZF-et és az adatkezelési tájékoztatót':'the Terms and the Privacy Notice',
   'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
 };
 
@@ -4454,6 +4634,8 @@ const DE = {
   'A sípálya és a felvonó felé, 600 méterre. Innen látszik esténként a kivilágított szánkópálya is.':'Richtung Piste und Bergbahn, 600 Meter entfernt. Von hier seht ihr abends auch die beleuchtete Rodelbahn.',
   'Szoba':'Zimmer','Szobatípus':'Zimmertypen','Emelet':'Etagen','Terasszal':'Mit Terrasse',
   'Adatkezelés':'Datenschutz','Adatkezelési tájékoztató':'Datenschutzerklärung',
+  'ÁSZF és adatkezelés':'AGB & Datenschutz','ÁSZF és adatkezelési tájékoztató':'AGB und Datenschutzerklärung',
+  'ÁSZF-et és az adatkezelési tájékoztatót':'die AGB und die Datenschutzerklärung',
   'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
 };
 
@@ -5109,6 +5291,9 @@ if (!reduce){
 .docbox-list li.doc-h::before,
 .docbox-list li.doc-p::before{ content:none; }
 .docbox-list li.doc-h{ margin-top:1.1rem; }
+.docbox-list li.doc-h--major{ margin-top:2.2rem; padding-top:1.4rem; border-top:1px solid var(--rule); }
+.docbox-list li.doc-h--major:first-child{ margin-top:0; padding-top:0; border-top:0; }
+.docbox-list li.doc-h--major h3{ font-size:1.35rem; color:var(--fg); letter-spacing:-.02em; }
 .docbox-list li.doc-h:first-child{ margin-top:0; }
 .docbox-list h3{ font-size:1.05rem; letter-spacing:-.01em; color:var(--glacier); }
 .doc-dl{ margin:.3rem 0 0; display:grid; gap:.4rem; }
