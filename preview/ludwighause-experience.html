@@ -1084,7 +1084,6 @@ const RULES_DOC = {
   hu: {
     lang:'Magyar', title:'Házirend', greet:'Tisztelt Vendégeink!',
     intro:'Házirendünk célja, hogy a szükséges információkat biztosítsuk vendégeinknek, és ezzel hozzájáruljunk a nyugodt, kellemes pihenésükhöz, valamint elkerüljük az esetleges félreértéseket.',
-    pdf:'docs/Ludwighaus-Hazirend-Magyar.pdf', pdfLabel:'PDF letöltése',
     items:[
       'A szállás az érkezés napján délután 15:00-tól, az elutazás napján délelőtt 10:00-ig áll rendelkezésre.',
       'A szálláshely elfoglaltnak minősül, ha a frissen érkező összes 18 év fölötti vendég kitöltötte a bejelentkezési űrlapot, megtörtént a kulcsátadás, elszámolás és az idegenforgalmi adó kifizetése!',
@@ -1105,7 +1104,6 @@ const RULES_DOC = {
   en: {
     lang:'English', title:'House rules', greet:'Dear Guests!',
     intro:'The aim of our house rules is to provide our guests with the necessary information to ensure a relaxing and pleasant stay and to avoid any misunderstandings.',
-    pdf:'docs/Ludwighaus-House-Rules-English.pdf', pdfLabel:'Download PDF',
     items:[
       'Accommodation is available from 15:00 on the day of arrival until 10:00 on the day of departure.',
       'The accommodation is considered occupied when all newly arrived guests over 18 years of age have completed the check-in form, the key has been handed over, the account has been settled and the tourist tax has been paid!',
@@ -1126,7 +1124,6 @@ const RULES_DOC = {
   de: {
     lang:'Deutsch', title:'Hausordnung', greet:'Liebe Gäste!',
     intro:'Das Ziel unserer Hausordnung ist es, unsere Gäste mit den notwendigen Informationen zu versorgen, um einen entspannten und angenehmen Aufenthalt zu gewährleisten und Missverständnisse zu vermeiden.',
-    pdf:'docs/Ludwighaus-Hausordnung-Deutsch.pdf', pdfLabel:'PDF herunterladen',
     items:[
       'Die Unterkunft ist von 15:00 Uhr am Anreisetag bis 10:00 Uhr am Abreisetag verfügbar.',
       'Die Unterkunft gilt als belegt, wenn alle neu ankommenden Gäste über 18 Jahre das Check-in-Formular ausgefüllt haben, der Schlüssel übergeben wurde, die Rechnung beglichen und die Kurtaxe bezahlt wurde!',
@@ -2059,7 +2056,6 @@ function tilt(nodes){
         <p class="docbox-greet" id="doc-greet"></p>
         <p class="lede" id="doc-intro"></p>
         <ul class="docbox-list" id="doc-items"></ul>
-        <a class="docbox-pdf" id="doc-pdf" href="#" target="_blank" rel="noopener"></a>
       </div>
     </div>`;
   document.body.appendChild(box);
@@ -2074,8 +2070,6 @@ function tilt(nodes){
     box.querySelector('#doc-greet').textContent = d.greet;
     box.querySelector('#doc-intro').textContent = d.intro;
     box.querySelector('#doc-items').innerHTML = d.items.map(t => `<li>${t}</li>`).join('');
-    const pdf = box.querySelector('#doc-pdf');
-    pdf.href = d.pdf; pdf.textContent = d.pdfLabel + ' ↗';
     box.hidden = false;
     box.querySelector('.docbox-body').scrollTop = 0;
     document.body.style.overflow = 'hidden';
@@ -3540,7 +3534,7 @@ const EN = {
   'A kerékpárokat nyáron, a sífelszerelést télen a ház erre kijelölt tárolójában tartsátok.':'Keep bikes in summer and ski equipment in winter in the storage room set aside for them.',
   'Menü':'Menu','Mobil navigáció':'Mobile navigation',
   'Letölthető dokumentum':'Downloadable document','A teljes házirend,':'The full house rules,','három nyelven.':'in three languages.',
-  'A hivatalos házirend teljes szövege. Válasszátok ki a nyelvet — az oldal elhagyása nélkül elolvasható.':'The official signed version as a PDF. Pick your language — it opens in a new tab.',
+  'A hivatalos házirend teljes szövege. Válasszátok ki a nyelvet — az oldal elhagyása nélkül elolvasható.':'The full text of the official house rules. Pick your language — you can read it without leaving the page.',
   'Magyar':'Hungarian','Házirend · teljes szöveg':'House rules · full text',
   'English':'English','House rules · full text':'House rules · full text',
   'Deutsch':'German','Hausordnung · vollständig':'House rules · in full',
@@ -3943,7 +3937,7 @@ const DE = {
   'A kerékpárokat nyáron, a sífelszerelést télen a ház erre kijelölt tárolójában tartsátok.':'Bewahrt die Fahrräder im Sommer und die Skiausrüstung im Winter im dafür vorgesehenen Raum auf.',
   'Menü':'Menü','Mobil navigáció':'Mobile Navigation',
   'Letölthető dokumentum':'Dokument zum Download','A teljes házirend,':'Die vollständige Hausordnung,','három nyelven.':'in drei Sprachen.',
-  'A hivatalos házirend teljes szövege. Válasszátok ki a nyelvet — az oldal elhagyása nélkül elolvasható.':'Die offizielle, unterzeichnete Fassung als PDF. Wählt eure Sprache — sie öffnet sich in einem neuen Tab.',
+  'A hivatalos házirend teljes szövege. Válasszátok ki a nyelvet — az oldal elhagyása nélkül elolvasható.':'Der vollständige Text der offiziellen Hausordnung. Wählt eure Sprache — lesen könnt ihr sie, ohne die Seite zu verlassen.',
   'Magyar':'Ungarisch','Házirend · teljes szöveg':'Hausordnung · vollständiger Text',
   'English':'Englisch','House rules · full text':'Hausordnung · vollständiger Text',
   'Deutsch':'Deutsch','Hausordnung · vollständig':'Hausordnung · vollständiger Text',
@@ -4599,12 +4593,6 @@ if (!reduce){
   content:''; position:absolute; left:.3rem; top:.62em;
   width:6px; height:6px; border-radius:50%; background:var(--glacier);
 }
-.docbox-pdf{
-  align-self:flex-start; margin-top:.6rem; text-decoration:none; color:var(--glacier);
-  font-family:var(--mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
-  padding:.55rem .9rem; border:1px solid var(--rule); border-radius:999px; transition:border-color .2s;
-}
-.docbox-pdf:hover{ border-color:var(--glacier); }
 
 /* --- Letölthető dokumentumok ------------------------------------------- */
 .doclinks{ display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
