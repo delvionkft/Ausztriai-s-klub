@@ -3,7 +3,84 @@
      kicsinyítve mutatják. A beágyazott előnézet ezt a két sort maga is
      hozzáadja, önálló kiszolgálón viszont nem — ott ez a hiány végzetes. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ludwighaus</title>
+<title>Ludwighaus — alpesi panzió Neukirchen am Großvenedigerben, a Wildkogel-Aréna tövében</title>
+<meta name="description" content="Ludwighaus: magyar tulajdonú alpesi panzió Neukirchen am Großvenedigerben, 600 méterre a Wildkogel felvonójától. 12 szoba, 45 férőhely, self-cooking konyha, sítároló, magyar recepció. Csoportoknak a teljes ház is bérelhető.">
+<meta name="theme-color" content="#0A1614">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Ludwighaus">
+<meta name="geo.region" content="AT-5">
+<meta name="geo.placename" content="Neukirchen am Großvenediger">
+<meta name="geo.position" content="47.2521456;12.2739134">
+
+<!-- Közösségi megosztás. Az og:url és az og:image abszolút címet kíván:
+     élesítéskor a saját domainre kell cserélni. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ludwighaus">
+<meta property="og:locale" content="hu_HU">
+<meta property="og:locale:alternate" content="en_GB">
+<meta property="og:locale:alternate" content="de_AT">
+<meta property="og:title" content="Ludwighaus — alpesi panzió a Wildkogel-Aréna tövében">
+<meta property="og:description" content="12 szoba, 45 férőhely, self-cooking konyha és magyar recepció Neukirchen am Großvenedigerben, 600 méterre a sífelvonótól.">
+<meta property="og:image" content="assets/img/SDIM7338 (1).jpg">
+<meta property="og:image:alt" content="A Ludwighaus a falu főutcáján">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ludwighaus — alpesi panzió a Wildkogel-Aréna tövében">
+<meta name="twitter:description" content="12 szoba, 45 férőhely, self-cooking konyha és magyar recepció Neukirchen am Großvenedigerben.">
+
+<!-- Strukturált adat: ettől jelenhet meg a Google találatban a csillagos
+     értékelés, a cím, a telefonszám és az ársáv. Szálláshelynél ez a
+     legnagyobb egyszeri SEO-nyereség. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LodgingBusiness",
+  "name": "Ludwighaus",
+  "description": "Alpesi panzió Neukirchen am Großvenedigerben, 600 méterre a Wildkogel felvonójától. 12 szoba, 45 férőhely, self-cooking konyha, fűtött sítároló, magyar recepció.",
+  "url": "https://ludwighaus.com/",
+  "telephone": "+36205972010",
+  "email": "ludwighausaustria@gmail.com",
+  "priceRange": "€59–€190",
+  "currenciesAccepted": "EUR, HUF",
+  "paymentAccepted": "Készpénz, banki átutalás",
+  "numberOfRooms": 12,
+  "petsAllowed": "Előzetes megbeszélés és díj ellenében",
+  "smokingAllowed": false,
+  "checkinTime": "16:00",
+  "checkoutTime": "09:30",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Marktstraße 121",
+    "postalCode": "5741",
+    "addressLocality": "Neukirchen am Großvenediger",
+    "addressRegion": "Salzburg",
+    "addressCountry": "AT"
+  },
+  "geo": { "@type": "GeoCoordinates", "latitude": 47.2521456, "longitude": 12.2739134 },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.3",
+    "reviewCount": 136,
+    "bestRating": "5",
+    "worstRating": "1"
+  },
+  "amenityFeature": [
+    { "@type": "LocationFeatureSpecification", "name": "Ingyenes WiFi", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Self-cooking konyha", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Fűtött sítároló", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Ingyenes parkolás", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Síbusz a Wildkogelre", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "50 fős étkező", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Mosógép", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Bár és disco a pincében", "value": true }
+  ],
+  "sameAs": [
+    "https://www.facebook.com/ludwighausneukirchen/",
+    "https://www.instagram.com/sportclubhaus.am.wildkogel/",
+    "https://www.tiktok.com/@sportclubamwildkogel",
+    "https://www.youtube.com/@sportclubhausamwildkogel"
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
@@ -1052,6 +1129,17 @@ const SECTIONS = [
 
 let T = x => x;                      /* fordító — az i18n modul állítja be */
 window.__setT = fn => { T = fn; };
+
+/* Nézetenkénti keresőleírás. Rövid, konkrét, kulcsszóhalmozás nélkül. */
+const VIEW_META = {
+  home:'Magyar tulajdonú alpesi panzió Neukirchen am Großvenedigerben, 600 méterre a Wildkogel felvonójától. 12 szoba, 45 férőhely, self-cooking konyha, sítároló, magyar recepció.',
+  szobak:'A Ludwighaus tizenkét szobája hét típusban, Venediger vagy Wildkogel panorámával. Árak fő- és holtszezonra, fotókkal, csoportos összesítővel.',
+  sipalyak:'Három síterep egy szállásból: a Wildkogel-Aréna 600 méterre gyalog, Kitzbühel–Mittersill 11 km, Zillertal Aréna 15 km. Pályabontás nehézség szerint.',
+  kikapcsolodas:'Krimml vízesés, Hohe Tauern Nemzeti Park, hegyi gokart, 77 kerékpáros útvonal nyáron; szánkópálya, sífutás és funslope télen.',
+  galeria:'Fotók a Ludwighausról és Neukirchen am Großvenedigerről: a ház télen és nyáron, az étkező, a falu és a környék.',
+  hazirend:'A Ludwighaus házirendje magyarul, angolul és németül — érkezés, kulcsok, dohányzás, háziállat, közös terek.',
+  kapcsolat:'Foglalás és kapcsolat: Marktstraße 121, 5741 Neukirchen am Großvenediger. Magyar recepció, rugalmas érkezés, teljes ház foglalása csoportoknak.',
+};
 
 const VIEW_LABELS = { home:'Ludwighaus', szobak:'Szobák', sipalyak:'Sípályák', galeria:'Galéria', kikapcsolodas:'Kikapcsolódás', hazirend:'Házirend', kapcsolat:'Foglalás és kapcsolat' };
 
@@ -3287,6 +3375,7 @@ let renderScapes;
    Emergentben ez 1:1 egy route-átmenet — a nézetek külön oldalak lesznek.
    -------------------------------------------------------------------------- */
 (function Router(){
+  let lastView = 'home';
   const views = [...document.querySelectorAll('.view')];
   const cv = document.getElementById('storm');
   if (!views.length || !cv) return;
@@ -3358,8 +3447,21 @@ let renderScapes;
     if (renderScapes) renderScapes(v);          /* a rejtett canvasnak nem volt mérete */
     window.scrollTo(0, 0);
     if (window.__remeasure) requestAnimationFrame(window.__remeasure);
-    document.title = name === 'home' ? 'Ludwighaus' : `${T(VIEW_LABELS[name])} — Ludwighaus`;
+    lastView = name;
+    head();
   }
+
+  /* Cím és leírás nézetenként: hash-útvonalon a kereső és a megosztott
+     link ezekkel a szövegekkel jelenik meg. Nyelvváltáskor is lefut. */
+  function head(){
+    const name = lastView;
+    document.title = name === 'home'
+      ? T('Ludwighaus — alpesi panzió Neukirchen am Großvenedigerben, a Wildkogel-Aréna tövében')
+      : `${T(VIEW_LABELS[name])} — Ludwighaus, Neukirchen am Großvenediger`;
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta && VIEW_META[name]) meta.setAttribute('content', T(VIEW_META[name]));
+  }
+  window.__refreshMeta = head;
 
   function go(name, anchorId){
     if (busy) return;
@@ -4405,6 +4507,14 @@ const EN = {
   'ÁSZF-et és az adatkezelési tájékoztatót':'the Terms and the Privacy Notice',
   'A szezon közepén':'Mid-season','A falu a völgyben':'The village in the valley',
   'Előző vélemény':'Previous review','Következő vélemény':'Next review','Vélemények':'Reviews',
+  'Ludwighaus — alpesi panzió Neukirchen am Großvenedigerben, a Wildkogel-Aréna tövében':'Ludwighaus — alpine guesthouse in Neukirchen am Großvenediger, at the foot of the Wildkogel Arena',
+  'Magyar tulajdonú alpesi panzió Neukirchen am Großvenedigerben, 600 méterre a Wildkogel felvonójától. 12 szoba, 45 férőhely, self-cooking konyha, sítároló, magyar recepció.':'Alpine guesthouse in Neukirchen am Großvenediger, 600 metres from the Wildkogel lift. 12 rooms, 45 beds, self-catering kitchen, ski storage, Hungarian-speaking reception.',
+  'A Ludwighaus tizenkét szobája hét típusban, Venediger vagy Wildkogel panorámával. Árak fő- és holtszezonra, fotókkal, csoportos összesítővel.':'The twelve rooms of Ludwighaus in seven types, facing the Venediger or the Wildkogel. High and low season rates, photos and a group calculator.',
+  'Három síterep egy szállásból: a Wildkogel-Aréna 600 méterre gyalog, Kitzbühel–Mittersill 11 km, Zillertal Aréna 15 km. Pályabontás nehézség szerint.':'Three ski areas from one base: the Wildkogel Arena 600 m on foot, Kitzbühel–Mittersill 11 km, Zillertal Arena 15 km, with a breakdown by difficulty.',
+  'Krimml vízesés, Hohe Tauern Nemzeti Park, hegyi gokart, 77 kerékpáros útvonal nyáron; szánkópálya, sífutás és funslope télen.':'Krimml Waterfalls, Hohe Tauern National Park, mountain go-karts and 77 cycle routes in summer; toboggan run, cross-country skiing and a funslope in winter.',
+  'Fotók a Ludwighausról és Neukirchen am Großvenedigerről: a ház télen és nyáron, az étkező, a falu és a környék.':'Photos of Ludwighaus and Neukirchen am Großvenediger: the house in winter and summer, the dining room, the village and the surroundings.',
+  'A Ludwighaus házirendje magyarul, angolul és németül — érkezés, kulcsok, dohányzás, háziállat, közös terek.':'The house rules of Ludwighaus in Hungarian, English and German — arrival, keys, smoking, pets, shared spaces.',
+  'Foglalás és kapcsolat: Marktstraße 121, 5741 Neukirchen am Großvenediger. Magyar recepció, rugalmas érkezés, teljes ház foglalása csoportoknak.':'Booking and contact: Marktstraße 121, 5741 Neukirchen am Großvenediger. Hungarian-speaking reception, flexible arrival, whole-house booking for groups.',
   'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
 };
 
@@ -4833,6 +4943,14 @@ const DE = {
   'ÁSZF-et és az adatkezelési tájékoztatót':'die AGB und die Datenschutzerklärung',
   'A szezon közepén':'Mitten in der Saison','A falu a völgyben':'Das Dorf im Tal',
   'Előző vélemény':'Vorherige Bewertung','Következő vélemény':'Nächste Bewertung','Vélemények':'Bewertungen',
+  'Ludwighaus — alpesi panzió Neukirchen am Großvenedigerben, a Wildkogel-Aréna tövében':'Ludwighaus — Alpenpension in Neukirchen am Großvenediger, am Fuß der Wildkogel-Arena',
+  'Magyar tulajdonú alpesi panzió Neukirchen am Großvenedigerben, 600 méterre a Wildkogel felvonójától. 12 szoba, 45 férőhely, self-cooking konyha, sítároló, magyar recepció.':'Alpenpension in Neukirchen am Großvenediger, 600 Meter von der Wildkogelbahn entfernt. 12 Zimmer, 45 Betten, Selbstversorgerküche, Skiraum, ungarischsprachige Rezeption.',
+  'A Ludwighaus tizenkét szobája hét típusban, Venediger vagy Wildkogel panorámával. Árak fő- és holtszezonra, fotókkal, csoportos összesítővel.':'Die zwölf Zimmer des Ludwighauses in sieben Typen, mit Blick auf den Venediger oder den Wildkogel. Preise für Haupt- und Nebensaison, Fotos und Gruppenrechner.',
+  'Három síterep egy szállásból: a Wildkogel-Aréna 600 méterre gyalog, Kitzbühel–Mittersill 11 km, Zillertal Aréna 15 km. Pályabontás nehézség szerint.':'Drei Skigebiete von einem Standort: Wildkogel-Arena 600 m zu Fuß, Kitzbühel–Mittersill 11 km, Zillertal Arena 15 km, mit Aufteilung nach Schwierigkeit.',
+  'Krimml vízesés, Hohe Tauern Nemzeti Park, hegyi gokart, 77 kerékpáros útvonal nyáron; szánkópálya, sífutás és funslope télen.':'Krimmler Wasserfälle, Nationalpark Hohe Tauern, Mountain-Gokarts und 77 Radrouten im Sommer; Rodelbahn, Langlauf und Funslope im Winter.',
+  'Fotók a Ludwighausról és Neukirchen am Großvenedigerről: a ház télen és nyáron, az étkező, a falu és a környék.':'Fotos vom Ludwighaus und von Neukirchen am Großvenediger: das Haus im Winter und Sommer, der Speiseraum, das Dorf und die Umgebung.',
+  'A Ludwighaus házirendje magyarul, angolul és németül — érkezés, kulcsok, dohányzás, háziállat, közös terek.':'Die Hausordnung des Ludwighauses auf Ungarisch, Englisch und Deutsch — Anreise, Schlüssel, Rauchen, Haustiere, Gemeinschaftsräume.',
+  'Foglalás és kapcsolat: Marktstraße 121, 5741 Neukirchen am Großvenediger. Magyar recepció, rugalmas érkezés, teljes ház foglalása csoportoknak.':'Buchung und Kontakt: Marktstraße 121, 5741 Neukirchen am Großvenediger. Ungarischsprachige Rezeption, flexible Anreise, Buchung des ganzen Hauses für Gruppen.',
   'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
 };
 
@@ -4880,10 +4998,17 @@ function setLang(next){
   /* Jelzés a dinamikusan rajzolt komponenseknek (pl. Wildkogel-szekció),
      hogy a T() már az új nyelven felel — csak ezután szabad újrarajzolni. */
   document.dispatchEvent(new CustomEvent('lang:change', { detail:{ lang } }));
+
+  /* A böngészőfül címe és a keresőleírás is az új nyelven álljon. */
+  if (window.__refreshMeta) window.__refreshMeta();
 }
 
 document.querySelectorAll('.lang button').forEach(b =>
   b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+/* A dokumentum nyelvét induláskor is ki kell írni: enélkül a kereső és a
+   képernyőolvasó találgat, magyar szöveget angolként ejt vagy indexel. */
+document.documentElement.lang = LANG_TAG[lang];
 
 if (window.__setT) window.__setT(x => tr(x, lang));
 })();
