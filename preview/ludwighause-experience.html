@@ -1943,9 +1943,16 @@ const ACTIVITIES = {
 };
 
 
+/* Valódi Google-vélemények, szó szerint, az eredeti nyelvükön. A német
+   szövegeket szándékosan nem fordítjuk le: idézet más szavaival nem írható át. */
 const REVIEWS = [
-  { text:'Nagyon hangulatos hely. Elsősorban téli síeléshez, de a nyári rekkenő meleget is jobb itt átvészelni. A szállás remek. Jó, tágas szobák. Felszerelt konyha és étkező. A házigazdák nagyon szívélyesek. Gyertek!', who:'András Kálmán', src:'Google vélemény' },
-  { text:'Guter Standard und sauber.', who:'Ralph Kirchhoff', src:'Google vélemény' },
+  { text:'Nagyon hangulatos hely. Elsősorban téli síeléshez, de a nyári rekkenő meleget is jobb itt átvészelni. A szállás remek. Jó, tágas szobák. Felszerelt konyha és étkező. A házigazdák nagyon szívélyesek. Gyertek!',
+    who:'András Kálmán', src:'Google vélemény', lang:'hu' },
+  { text:'Hab hier eine Nacht verbracht vor unserer Großvenediger Tour. Nette Gastgeber, unkompliziert. Zimmer einfach aber ausreichend. Preis/Leistung passt. Leider kein Frühstück verfügbar. Ohropax mitnehmen, da Disco im Keller.',
+    who:'Michael E', src:'Google vélemény', lang:'de' },
+  { text:'Szép kilátás. Főzni nem lehet a konyhában, de egyébként evőeszközökkel felszerelt. A lenti diszkó miatt nehéz volt pihenni.',
+    who:'Nóra Szalai', src:'Google vélemény', lang:'hu' },
+  { text:'Guter Standard und sauber.', who:'Ralph Kirchhoff', src:'Google vélemény', lang:'de' },
 ];
 
 /* --------------------------------------------------------------------------
@@ -2768,8 +2775,8 @@ function tilt(nodes){
 
 
   document.querySelectorAll('[data-grid="reviews"]').forEach(rg => rg.innerHTML = REVIEWS.map(r => `
-    <article class="panel card card--tall">
-      <p class="quote">„${r.text}”</p>
+    <article class="panel card card--tall review">
+      <p class="quote" lang="${r.lang || 'hu'}">„${r.text}”</p>
       <div class="who"><b>${r.who}</b><small>${r.src}</small></div>
     </article>`).join(''));
 })();
