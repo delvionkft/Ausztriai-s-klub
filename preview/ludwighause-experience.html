@@ -664,7 +664,23 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
       <b class="mono">4,3</b> <span class="rating-max mono">/ 5</span>
       <span class="rating-src">Google értékelés</span></p>
   </div>
-  <div class="cards cards--wide rise" data-grid="reviews"></div>
+  <div class="revbox rise" id="reviews" data-parallax="0.05">
+    <figure class="revcard">
+      <span class="revmark" aria-hidden="true">”</span>
+      <blockquote class="revquote" id="rev-text"></blockquote>
+      <figcaption class="revwho">
+        <b id="rev-who"></b>
+        <small id="rev-src"></small>
+      </figcaption>
+    </figure>
+
+    <div class="revbar">
+      <button class="revnav" type="button" data-step="-1" aria-label="Előző vélemény">‹</button>
+      <div class="revdots" id="rev-dots" role="tablist" aria-label="Vélemények"></div>
+      <span class="revcount mono" id="rev-count"></span>
+      <button class="revnav" type="button" data-step="1" aria-label="Következő vélemény">›</button>
+    </div>
+  </div>
 </section>
 
 <!-- ======================== KOMPONENS: BookingCTA ======================== -->
@@ -2560,6 +2576,82 @@ function tilt(nodes){
 })();
 
 /* --------------------------------------------------------------------------
+   10b. KOMPONENS: Reviews — egy vélemény egyszerre, nyilakkal lapozva
+   Billentyűvel és ujjal is váltható; a váltás az oldal mozgásállapotát
+   követi, kikapcsolt mozgásnál nincs átúsztatás.
+   -------------------------------------------------------------------------- */
+(function Reviews(){
+  const box = document.getElementById('reviews');
+  if (!box || !Array.isArray(REVIEWS) || !REVIEWS.length) return;
+
+  const card  = box.querySelector('.revcard');
+  const text  = box.querySelector('#rev-text');
+  const who   = box.querySelector('#rev-who');
+  const src   = box.querySelector('#rev-src');
+  const dots  = box.querySelector('#rev-dots');
+  const count = box.querySelector('#rev-count');
+  const pad   = n => String(n).padStart(2,'0');
+  let i = 0, busy = false;
+
+  dots.innerHTML = REVIEWS.map((r,n) =>
+    `<button class="revdot" type="button" role="tab" data-go="${n}" aria-label="${n+1}. vélemény"></button>`).join('');
+  const dotEls = [...dots.querySelectorAll('.revdot')];
+
+  function fill(){
+    const r = REVIEWS[i];
+    text.textContent = '„' + r.text + '”';
+    text.setAttribute('lang', r.lang || 'hu');
+    who.textContent = r.who;
+    src.textContent = T(r.src);
+    count.textContent = pad(i+1) + ' / ' + pad(REVIEWS.length);
+    dotEls.forEach((d,n) => {
+      d.classList.toggle('is-on', n === i);
+      d.setAttribute('aria-selected', n === i ? 'true' : 'false');
+    });
+  }
+
+  function go(n, dir){
+    if (busy) return;
+    const next = (n + REVIEWS.length) % REVIEWS.length;
+    if (next === i) return;
+    if (!state.motion){ i = next; fill(); return; }
+    busy = true;
+    card.classList.add(dir > 0 ? 'is-out-left' : 'is-out-right');
+    setTimeout(() => {
+      i = next; fill();
+      card.classList.remove('is-out-left','is-out-right');
+      card.classList.add(dir > 0 ? 'is-in-right' : 'is-in-left');
+      setTimeout(() => { card.classList.remove('is-in-right','is-in-left'); busy = false; }, 260);
+    }, 180);
+  }
+
+  box.querySelectorAll('.revnav').forEach(b =>
+    b.addEventListener('click', () => { const d = +b.dataset.step; go(i + d, d); }));
+  dotEls.forEach(d =>
+    d.addEventListener('click', () => { const n = +d.dataset.go; go(n, n > i ? 1 : -1); }));
+
+  /* Billentyűzet: csak akkor, ha a szekció épp fókuszban van. */
+  box.tabIndex = 0;
+  box.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft'){ e.preventDefault(); go(i-1,-1); }
+    if (e.key === 'ArrowRight'){ e.preventDefault(); go(i+1, 1); }
+  });
+
+  /* Ujjal húzás mobilon. */
+  let x0 = null;
+  box.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive:true });
+  box.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 45) go(i + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+    x0 = null;
+  }, { passive:true });
+
+  fill();
+  document.addEventListener('lang:change', fill);
+})();
+
+/* --------------------------------------------------------------------------
    8a. KOMPONENS: MobileNav — 1000px alatt ez az egyetlen navigáció
    -------------------------------------------------------------------------- */
 (function MobileNav(){
@@ -2774,11 +2866,6 @@ function tilt(nodes){
       `<li><span>${a.name}</span></li>`).join(''));
 
 
-  document.querySelectorAll('[data-grid="reviews"]').forEach(rg => rg.innerHTML = REVIEWS.map(r => `
-    <article class="panel card card--tall review">
-      <p class="quote" lang="${r.lang || 'hu'}">„${r.text}”</p>
-      <div class="who"><b>${r.who}</b><small>${r.src}</small></div>
-    </article>`).join(''));
 })();
 
 /* --------------------------------------------------------------------------
@@ -3564,6 +3651,66 @@ section.band + section.band{ border-top:0; }
 
 /* Vélemények */
 .stars{ color:var(--lamp); letter-spacing:.12em; font-size:.9rem; }
+/* --- Vélemények: egy kártya, lapozható ---------------------------------- */
+.revbox{
+  position:relative; border:1px solid var(--panel-edge); border-radius:20px;
+  background:var(--panel); overflow:hidden; outline:none;
+}
+.revbox:focus-visible{ border-color:var(--glacier); box-shadow:0 0 0 3px color-mix(in srgb, var(--glacier) 22%, transparent); }
+.revcard{
+  margin:0; padding:clamp(1.8rem,5vw,3.4rem) clamp(1.4rem,5vw,3.4rem) clamp(1.4rem,3vw,2.2rem);
+  display:flex; flex-direction:column; gap:1.4rem; min-height:clamp(260px,32vw,320px);
+  transition:opacity .18s var(--ease), translate .18s var(--ease);
+}
+.revcard.is-out-left{ opacity:0; translate:-26px 0; }
+.revcard.is-out-right{ opacity:0; translate:26px 0; }
+.revcard.is-in-right{ opacity:0; translate:26px 0; transition:none; }
+.revcard.is-in-left{ opacity:0; translate:-26px 0; transition:none; }
+.revmark{
+  font-family:var(--display); font-size:clamp(4rem,9vw,6.5rem); line-height:.6;
+  color:var(--glacier); opacity:.35; height:.42em; user-select:none;
+}
+.revquote{
+  margin:0; font-family:var(--display); font-weight:400;
+  font-size:clamp(1.15rem,2.3vw,1.7rem); line-height:1.45; letter-spacing:-.01em;
+  color:var(--fg); max-width:56ch; text-wrap:pretty;
+}
+.revwho{ margin-top:auto; display:flex; flex-direction:column; gap:.15rem; }
+.revwho b{ font-size:1rem; letter-spacing:-.01em; }
+.revwho small{ font-family:var(--mono); font-size:.64rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-soft); }
+
+.revbar{
+  display:flex; align-items:center; gap:.9rem;
+  padding:.9rem clamp(1.4rem,5vw,3.4rem); border-top:1px solid var(--rule);
+}
+.revnav{
+  flex:none; width:42px; height:42px; border-radius:50%; cursor:pointer;
+  background:transparent; border:1px solid var(--panel-edge); color:var(--fg);
+  font-size:1.25rem; line-height:1; display:grid; place-items:center;
+  transition:border-color .2s, background .2s, translate .2s var(--ease);
+}
+.revnav:hover{ border-color:var(--glacier); background:color-mix(in srgb, var(--glacier) 12%, transparent); }
+.revnav[data-step="-1"]:hover{ translate:-2px 0; }
+.revnav[data-step="1"]:hover{ translate:2px 0; }
+.revnav:focus-visible{ outline:2px solid var(--glacier); outline-offset:3px; }
+.revdots{ display:flex; gap:.45rem; margin-inline-end:auto; }
+.revdot{
+  width:8px; height:8px; padding:0; border:0; border-radius:50%; cursor:pointer;
+  background:var(--rule); transition:background .2s, width .25s var(--ease);
+}
+.revdot.is-on{ background:var(--glacier); width:22px; border-radius:99px; }
+.revdot:focus-visible{ outline:2px solid var(--glacier); outline-offset:3px; }
+.revcount{ font-size:.7rem; letter-spacing:.16em; color:var(--fg-faint); }
+@media (max-width:560px){
+  /* Szűk kijelzőn minden vezérlő balra kerül: a jobb alsó sarokban a
+     pingvin lebeg, és eltakarná a "következő" gombot. */
+  .revbar{ gap:.6rem; justify-content:flex-start; }
+  .revnav{ width:38px; height:38px; }
+  .revnav[data-step="1"]{ order:1; }
+  .revdots{ order:2; margin-inline:0; }
+  .revcount{ display:none; }
+}
+
 .quote{ font-size:.95rem; line-height:1.6; color:var(--fg-soft); }
 .who{ margin-top:auto; padding-top:.9rem; border-top:1px solid var(--rule); display:flex; flex-direction:column; }
 .who b{ font-size:.9rem; }
@@ -4224,6 +4371,7 @@ const EN = {
   'ÁSZF és adatkezelés':'Terms & privacy','ÁSZF és adatkezelési tájékoztató':'Terms and privacy notice',
   'ÁSZF-et és az adatkezelési tájékoztatót':'the Terms and the Privacy Notice',
   'A szezon közepén':'Mid-season','A falu a völgyben':'The village in the valley',
+  'Előző vélemény':'Previous review','Következő vélemény':'Next review','Vélemények':'Reviews',
   'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
 };
 
@@ -4651,6 +4799,7 @@ const DE = {
   'ÁSZF és adatkezelés':'AGB & Datenschutz','ÁSZF és adatkezelési tájékoztató':'AGB und Datenschutzerklärung',
   'ÁSZF-et és az adatkezelési tájékoztatót':'die AGB und die Datenschutzerklärung',
   'A szezon közepén':'Mitten in der Saison','A falu a völgyben':'Das Dorf im Tal',
+  'Előző vélemény':'Vorherige Bewertung','Következő vélemény':'Nächste Bewertung','Vélemények':'Bewertungen',
   'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
 };
 
