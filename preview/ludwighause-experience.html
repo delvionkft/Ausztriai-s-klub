@@ -167,6 +167,11 @@ section.band + section.band{ border-top:1px solid var(--rule); }
 .brand{ display:flex; align-items:center; gap:.65rem; text-decoration:none; font-family:var(--display); font-weight:800; letter-spacing:-.03em; font-size:1.05rem; }
 .brand svg{ flex:none; }
 .brand span small{ display:block; font-family:var(--mono); font-weight:400; font-size:.56rem; letter-spacing:.2em; color:var(--fg-soft); text-transform:uppercase; }
+/* A logó 300x100 px-es raszter: a megjelenített szélesség fele akkora,
+   hogy a retina kijelzőkön is éles maradjon. */
+.brand-logo{ display:block; height:auto; width:clamp(148px,16vw,186px); }
+.nav[data-stuck="true"] .brand-logo{ width:clamp(132px,14vw,162px); transition:width .4s var(--ease); }
+.brand--foot .brand-logo{ width:clamp(160px,18vw,200px); }
 .nav-links{ display:flex; gap:.25rem; list-style:none; margin:0; padding:0; }
 .nav-links a{
   text-decoration:none; font-size:.86rem; font-weight:500; padding:.45rem .7rem; border-radius:8px;
@@ -423,12 +428,8 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 
 <!-- ============================ KOMPONENS: Nav ============================ -->
 <header class="nav" id="nav" data-stuck="false">
-  <a class="brand" href="#/" data-route="home">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M2 20h20L14.5 5.5 11 12l-2.2-3.4L2 20Z" fill="#43B4BB"/>
-      <path d="M14.5 5.5 11 12l1.8 2.8L16.2 9l-1.7-3.5Z" fill="#E9F1F7"/>
-    </svg>
-    <span>Ludwighaus<small>Neukirchen am Grossvenediger</small></span>
+  <a class="brand" href="#/" data-route="home" aria-label="Ludwighaus — Neukirchen am Großvenediger">
+    <img class="brand-logo" alt="Ludwighaus — Neukirchen am Großvenediger, Wildkogel-Aréna">
   </a>
   <nav aria-label="Fő navigáció">
     <ul class="nav-links">
@@ -982,12 +983,8 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 <footer class="foot wrap">
   <div class="foot-grid">
     <div>
-      <a class="brand" href="#/" data-route="home">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M2 20h20L14.5 5.5 11 12l-2.2-3.4L2 20Z" fill="#43B4BB"/>
-          <path d="M14.5 5.5 11 12l1.8 2.8L16.2 9l-1.7-3.5Z" fill="#E9F1F7"/>
-        </svg>
-        <span>Ludwighaus<small>Alpesi panzió</small></span>
+      <a class="brand brand--foot" href="#/" data-route="home" aria-label="Ludwighaus">
+        <img class="brand-logo" alt="Ludwighaus — Neukirchen am Großvenediger, Wildkogel-Aréna">
       </a>
     </div>
     <div><h4>Az oldal</h4><ul><li><a href="#/" data-anchor="szallasunk">Szállásunk</a></li><li><a href="#/szobak" data-route="szobak">Szobák</a></li><li><a href="#/sipalyak" data-route="sipalyak">Sípályák</a></li><li><a href="#/kikapcsolodas" data-route="kikapcsolodas">Kikapcsolódás</a></li></ul></div>
@@ -1019,6 +1016,10 @@ html{ scroll-behavior:smooth; scroll-padding-top:5rem; }
 /* --------------------------------------------------------------------------
    1. ADAT — a ludwighaus.com tartalma. Emergentben ez lesz a props / API.
    -------------------------------------------------------------------------- */
+/* A ház hivatalos logója. Fehér rajzolat átlátszó háttéren — a sötét
+   felületekhez készült, ezért nem kell külön változat. */
+const LOGO = "data:image/png;base64,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";
+
 const SECTIONS = [
   ['hero','Ludwighaus'], ['szamok','Számokban'], ['szallasunk','Szállásunk'],
   ['szobak','Szobák'], ['sipalyak','Sípályák'], ['kikapcsolodas','Kikapcsolódás'],
@@ -2542,6 +2543,13 @@ function tilt(nodes){
   set('rt-rooms',   sum(() => true));
   set('rt-types',   ROOMS.length);
   set('rt-terrace', sum(r => r.terrace));
+})();
+
+/* --------------------------------------------------------------------------
+   0b. KOMPONENS: Brand — a logó behelyezése a fejlécbe és a láblécbe
+   -------------------------------------------------------------------------- */
+(function Brand(){
+  document.querySelectorAll('.brand-logo').forEach(img => { img.src = LOGO; });
 })();
 
 /* --------------------------------------------------------------------------
