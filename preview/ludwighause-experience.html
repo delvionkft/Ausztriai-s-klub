@@ -346,7 +346,9 @@ html.mobnav-open .peng-bubble{ display:none !important; }
 /* --- Gallery ------------------------------------------------------------- */
 .strips{ display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
 @media (max-width:760px){ .strips{ grid-template-columns:1fr; } }
-.strip{ position:relative; border-radius:14px; overflow:hidden; aspect-ratio:3/4; max-width:100%; border:1px solid var(--panel-edge); }
+/* A figure alapértelmezett 40 px-es oldalmargója minden galériacsempét
+   összébb húzott — a rácsot a keret, ne a böngésző alapstílusa ossza be. */
+.strip{ position:relative; margin:0; border-radius:14px; overflow:hidden; aspect-ratio:3/4; width:100%; max-width:100%; border:1px solid var(--panel-edge); }
 .strip canvas,
 .strip img{ position:absolute; inset:0; width:100%; height:100%; display:block; object-fit:cover; }
 .strip figcaption{ position:absolute; inset-inline:0; bottom:0; padding:1.1rem 1rem .95rem; display:flex; flex-direction:column; gap:.2rem;
@@ -3935,8 +3937,21 @@ body.has-pickbar{ padding-bottom:88px; }
 .lb-close{ position:absolute; top:clamp(1rem,3vw,2rem); right:clamp(1rem,3vw,2rem); font-size:1rem; }
 .strip{ cursor:zoom-in; }
 @media (max-width:640px){
-  .lb-nav{ position:absolute; bottom:clamp(1rem,4vw,2rem); }
-  .lb-prev{ left:clamp(1rem,4vw,2rem); } .lb-next{ right:clamp(1rem,4vw,2rem); }
+  /* Korábban a két nyíl a képernyő aljára, a képtől távol került, és
+     középen nagy üres sáv maradt. Rácsban a kép alatt, kéznél vannak. */
+  .lightbox{
+    display:grid; align-content:center; justify-items:stretch;
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:"stage stage" "prev next";
+    gap:1.1rem .8rem;
+  }
+  .lb-stage{ grid-area:stage; max-width:100%; }
+  .lb-nav{
+    position:static; grid-area:prev; width:100%; height:50px;
+    border-radius:999px; font-size:1.2rem;
+  }
+  .lb-next{ grid-area:next; }
+  #lb-photo{ max-height:60vh; }
   .lb-stage{ max-width:100%; }
 }
 </style>
@@ -5029,6 +5044,8 @@ html[data-motion="on"] .peng-btn.jump{ animation:pengJump .62s cubic-bezier(.3,1
 /* Félreállított állapot: a gomb nem tűnik el, csak kicsi és halvány lesz,
    hogy a segítség elérhető maradjon, de ne takarjon. */
 #peng.is-aside .peng-btn{ scale:.55; opacity:.45; transform-origin:100% 100%; }
+#peng{ transition:translate .28s var(--ease), opacity .28s var(--ease); }
+#peng.is-tucked{ translate:0 160%; opacity:0; pointer-events:none; }
 #peng.is-aside .peng-bubble{ display:none !important; }
 
 .peng-panel{
@@ -5275,6 +5292,22 @@ if (!reduce){
   }, { threshold: 0.12 });
   io.observe(form);
 })();
+
+/* Telefonon a gomb lebújik, amíg lefelé görgetünk, és visszajön, ha
+   megállunk vagy felfelé indulunk. Így olvasás közben soha nem takar
+   szöveget, kártyát vagy képaláírást, de egy mozdulattal elérhető. */
+(function dock(){
+  let lastY = window.scrollY, idle;
+  addEventListener('scroll', () => {
+    if (open || !narrow()){ wrap.classList.remove('is-tucked'); return; }
+    const y = window.scrollY;
+    if (y > lastY + 8 && y > 120) wrap.classList.add('is-tucked');
+    else if (y < lastY - 8) wrap.classList.remove('is-tucked');
+    lastY = y;
+    clearTimeout(idle);
+    idle = setTimeout(() => wrap.classList.remove('is-tucked'), 700);
+  }, { passive:true });
+})();
 })();
 </script>
 <style>
@@ -5282,7 +5315,11 @@ if (!reduce){
 .card.has-photo{ padding:0; overflow:hidden; }
 .card.has-photo > :not(.card-photo){ padding-inline:1.5rem; }
 .card.has-photo > :last-child{ padding-bottom:1.5rem; }
-.card-photo{ position:relative; margin:0; aspect-ratio:3/2; max-width:100%; overflow:hidden; }
+/* A fotó a kártya tetején ül: a felső sarkai kövessék a kártya ívét,
+   különben a kép éles sarka kilóg a lekerekített keretből. */
+.card-photo{ position:relative; margin:0; aspect-ratio:3/2; max-width:100%; overflow:hidden;
+  border-radius:17px 17px 0 0; }
+.room-card{ overflow:hidden; }
 .card-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
 .card-photo::after{
   content:''; position:absolute; inset:auto 0 0 0; height:45%;
@@ -5404,8 +5441,13 @@ if (!reduce){
 [data-pickable="true"] .room-card{ column-gap:clamp(.4rem, 1vw, 1rem); }
 
 @media (max-width:760px){
-  /* Egy hasábban a kép fölül van, ott az oldalsó térköz egyenletes legyen. */
-  [data-pickable="true"] .card-body{ padding:1.4rem 1.4rem 1.5rem; }
+  /* Egy hasábban a kép fölül van, ott az oldalsó térköz egyenletes legyen.
+     A !important azért kell, mert a fekvő elrendezéshez tartozó
+     "padding-inline:0 !important" szabály egyébként lenullázná — emiatt
+     telefonon a szöveg a kártya keretéhez tapadt. */
+  [data-pickable="true"] .card-body{ padding:1.4rem 1.35rem 1.5rem !important; }
+  [data-pickable="true"] .price-row{ margin-inline:1.35rem !important; }
+  [data-pickable="true"] .room-pick{ margin-inline:1.35rem !important; }
   [data-pickable="true"] .room-card{ column-gap:0; }
 }
 </style>
@@ -5655,9 +5697,14 @@ a, button, [role="button"], input, select, textarea, label, summary{
   .photo-btn{ font-size:.8rem; }
   .mono{ letter-spacing:.06em; }
 
-  /* Az árcímkék 9 px-en álltak — épp az, ami mellett dönteni kell. */
-  .price-row span{ font-size:.74rem; }
+  /* Az árcímkék 9 px-en álltak — épp az, ami mellett dönteni kell.
+     Emellett a címke külön sorba tört, így két ár négy sort foglalt.
+     Telefonon soronként egy ár: bal oldalt a szezon, jobb oldalt az összeg. */
+  .price-row{ display:grid; gap:.55rem; }
+  .price-row > div{ display:flex; justify-content:space-between; align-items:baseline; gap:.7rem; flex-wrap:nowrap; }
+  .price-row span{ width:auto; font-size:.74rem; flex:none; }
   .price-row small{ font-size:.76rem; }
+  .price-row b{ margin-left:auto; }
   .pick-max, .pick-max em{ font-size:.76rem; }
   .rating-src{ font-size:.72rem; }
   .mix-legend span, .mix-legend em{ font-size:.76rem; }
@@ -5706,10 +5753,30 @@ a, button, [role="button"], input, select, textarea, label, summary{
      Kis kijelzőn a jobb alsó sarokba került, pontosan a pingvin alá. */
   .rail{ display:none; }
 
+  /* --- 6b. A fejléc legyen átlátszatlan --------------------------------
+     A 86%-os áttetszőség asztali méretben elegáns, telefonon viszont a
+     szekciócímek átderengtek a logó mögött, mintha egymásba lógnának. */
+  .nav[data-stuck="true"]{
+    background:var(--sky-top);
+    border-bottom-color:var(--rule);
+    backdrop-filter:none; -webkit-backdrop-filter:none;
+  }
+
+  /* --- 6c. A pingvin kisebb és visszafogottabb ---------------------------
+     Teljes méretben ráült a szekciócímekre és a kártyák sarkára. */
+  .peng-btn{ width:52px; height:52px; opacity:.92; }
+  #peng{ right:.8rem; }
+
   /* --- 7. Biztonságos zónák (kivágott kijelzők) ------------------------- */
   .nav{ padding-top:calc(.85rem + env(safe-area-inset-top, 0px)); }
   .peng-btn{ bottom:calc(1rem + env(safe-area-inset-bottom, 0px)); }
   .foot{ padding-bottom:calc(2rem + env(safe-area-inset-bottom, 0px)); }
+  /* Telefonon a logó saját sort kap, a linkoszlopok alatta kettesével:
+     kétoszlopos rácsban a logó melletti fél sor üresen maradt. */
+  .foot-grid{ grid-template-columns:1fr 1fr; gap:1.6rem 1.4rem; }
+  .foot-grid > div:first-child{ grid-column:1 / -1; }
+  /* A nyelvváltó balra kerül: jobb alsó sarokban a pingvin takarta. */
+  .foot-bottom{ margin-top:2rem; gap:.75rem; flex-direction:column; align-items:flex-start; }
 }
 
 @media (max-width:560px){
