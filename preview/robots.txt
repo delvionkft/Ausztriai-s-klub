@@ -1,0 +1,20 @@
+# Ludwighaus — robots.txt
+# A lap teljes egészében indexelhető: nincs olyan része, amit el kellene rejteni.
+
+User-agent: *
+Allow: /
+
+# A Sitemap sora abszolút címet kíván, ezért csak a végleges domain ismeretében
+# tölthető ki. Éles indulás előtt vedd ki a # jelet és írd át a domaint:
+# Sitemap: https://PELDA-DOMAIN.at/sitemap.xml
+#
+# Egyszerűbb: futtasd a
+#   node tools/generate-seo-files.mjs https://a-te-domained.at
+# parancsot — ez a robots.txt-t és a sitemap.xml-t is kitölti.
+
+# MEGJEGYZÉS a jövőbeli szerkesztőnek:
+# Ha egyszer valamelyik oldalt ki kell venni a találatokból, azt NE itt tiltsd le.
+# A robots.txt-ben letiltott lapot a Google le sem tölti, így a rajta lévő
+# <meta name="robots" content="noindex"> utasítást sem látja meg — a lap
+# bennragad az indexben. Helyes sorrend: előbb noindex, és csak jóval később
+# (ha egyáltalán) robots.txt-tiltás.
