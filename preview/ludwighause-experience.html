@@ -1496,6 +1496,11 @@ html[data-motion="on"] .peng-btn.jump{ animation:pengJump .62s cubic-bezier(.3,1
 </style>
 <style>
 /* ---- Ár a szobatípus-kártyán -------------------------------------------- */
+/* Ágykiosztás szobatípusonként. A meglévő mono felirat-stílust követi,
+   új dizájnelem nélkül. */
+.card-beds{ display:flex; align-items:baseline; gap:.5rem; margin:.55rem 0 0;
+  font-size:.72rem; letter-spacing:.02em; color:var(--fg-soft); }
+.card-beds i{ font-style:normal; opacity:.75; }
 .price-row{
   display:flex; flex-wrap:wrap; gap:.4rem 1.6rem; margin-top:.9rem;
   padding-top:.9rem; border-top:1px solid var(--rule);
@@ -2010,9 +2015,10 @@ a, button, [role="button"], input, select, textarea, label, summary{
 
   <div data-parallax="-0.14">
     <h1 id="hero-title">
-      <span class="l"><i>Egy ház, ahol</i></span>
-      <span class="l"><i>nem csak <em>aludni</em></i></span>
-      <span class="l"><i>fogtok.</i></span>
+      <span class="l"><i>Pályaszállás</i></span>
+      <span class="l"><i><em>az Alpok szívében.</em></i></span>
+      <span class="l"><i>Ahol a síút</i></span>
+      <span class="l"><i>az ajtótokig vezet.</i></span>
     </h1>
   </div>
 
@@ -2217,8 +2223,8 @@ a, button, [role="button"], input, select, textarea, label, summary{
     <h1 class="rise">Tizenkét szoba,<br>két emeleten.</h1>
     <p class="lede rise">Az összkomfortos, többnyire erkélyes szobákból pazar kilátás nyílik a hegyekre. Minden szoba egyedi panorámával — Venediger vagy Wildkogel kilátással.</p>
     <ul class="room-types rise">
-      <li>Családi szoba</li><li>Kétágyas szoba</li><li>Franciaágyas szoba</li>
-      <li>Ikerágyas szoba</li><li>Fürdőszoba</li>
+      <li>Franciaágyas szoba</li><li>Családi szoba</li><li>Apartman</li>
+      <li>Összenyíló dupla szoba</li><li>Saját fürdőszoba</li><li>Terasz</li>
     </ul>
   </section>
   <section class="band band--tight wrap">
@@ -2587,25 +2593,25 @@ const PHOTOS_FRANCIA = [{"src": "assets/img/0fee32c866.webp", "cap": "Franciaág
 const PHOTOS_DUPLA2 = [{"src": "assets/img/d1b1fe34d1.jpg", "cap": "Franciaágy és teraszajtó az első hálórészben"}, {"src": "assets/img/f374597981.webp", "cap": "Franciaágy és pótágy egy térben"}, {"src": "assets/img/fa9fc70283.webp", "cap": "Polcos gardrób és íróasztal az ágyak mellett"}, {"src": "assets/img/3a915c5ef1.webp", "cap": "A második hálórész franciaágya"}, {"src": "assets/img/6abfd564b5.webp", "cap": "A második hálórész a teraszajtóval"}, {"src": "assets/img/8e3c1f6a95.webp", "cap": "Pótágy, gardrób és a szoba ajtaja"}, {"src": "assets/img/fed962ce96.webp", "cap": "Saját fürdőszoba mosdóval és WC-vel"}, {"src": "assets/img/6cd06bf221.webp", "cap": "Zuhanyzó a fürdőszobában"}, {"src": "assets/img/37574271a5.jpg", "cap": "A terasz és a kilátás a hegyekre"}];
 
 const ROOMS = [
-  { nos:'No.11. / No.21.', price:{ high:100, low:90 }, name:'Venediger panorámás szoba, terasszal', cap:'2+1 fő', rooms:2,
+  { nos:'No.11. / No.21.', price:{ high:100, low:90 }, name:'Venediger panorámás szoba, terasszal', cap:'2+1 fő', beds:'1 franciaágy + 1 pótágy', rooms:2,
     floor:'1. és 2. emelet', f:['f1','f2'], terrace:true,
     desc:'Panorámás szoba terasszal, pótággyal és saját fürdőszobával', photos:PHOTOS_VENEDIGER },
-  { nos:'No.12.', price:{ high:160, low:144 }, name:'Venediger panorámás apartman, terasszal', cap:'4+1 fő', rooms:1,
+  { nos:'No.12.', price:{ high:160, low:144 }, name:'Venediger panorámás apartman, terasszal', cap:'4+1 fő', beds:'Hálószoba 4 főre + kanapéágy a nappaliban', rooms:1,
     floor:'1. emelet', f:['f1'], terrace:true,
     desc:'Külön hálószoba, saját konyha, nappali kanapéággyal és fürdőszoba káddal', photos:PHOTOS_APARTMAN },
-  { nos:'No.14. / No.24.', price:{ high:160, low:144 }, name:'Wildkogel panorámás, családi szoba', cap:'3+2 fő', rooms:2,
+  { nos:'No.14. / No.24.', price:{ high:160, low:144 }, name:'Wildkogel panorámás, családi szoba', cap:'3+2 fő', beds:'1 franciaágy + 1 pótágy + 1 emeletes ágy', rooms:2,
     floor:'1. és 2. emelet', f:['f1','f2'], terrace:false,
     desc:'Kétterű szoba: franciaágy és pótágy, átjáróval az emeletes ágyas részbe', photos:PHOTOS_CSALADI },
-  { nos:'No.15. / No.25.', price:{ high:130, low:117 }, name:'Wildkogel panorámás dupla szoba, terasszal', cap:'2+2 fő', rooms:2,
+  { nos:'No.15. / No.25.', price:{ high:130, low:117 }, name:'Wildkogel panorámás dupla szoba, terasszal', cap:'2+2 fő', beds:'2 + 2 egyágyas, két összenyíló szobában', rooms:2,
     floor:'1. és 2. emelet', f:['f1','f2'], terrace:true,
     desc:'Két összenyíló szoba két-két ággyal, saját fürdőszoba zuhanyzóval', photos:PHOTOS_DUPLA },
-  { nos:'No.16. / No.26.', price:{ high:100, low:90 }, name:'Wildkogel panorámás, családi szoba', cap:'2+2 fő', rooms:2,
+  { nos:'No.16. / No.26.', price:{ high:100, low:90 }, name:'Wildkogel panorámás, családi szoba', cap:'2+2 fő', beds:'1 franciaágy + 1 emeletes ágy', rooms:2,
     floor:'1. és 2. emelet', f:['f1','f2'], terrace:false,
     desc:'Fenyőburkolatos szoba: franciaágy és emeletes ágy, saját fürdőszoba zuhanyzóval', photos:PHOTOS_CSALADI2 },
-  { nos:'No.17. / No.27.', price:{ high:65, low:59 }, name:'Wildkogel panorámás, franciaágyas szoba', cap:'2 fő', rooms:2,
+  { nos:'No.17. / No.27.', price:{ high:65, low:59 }, name:'Wildkogel panorámás, franciaágyas szoba', cap:'2 fő', beds:'1 franciaágy', rooms:2,
     floor:'1. és 2. emelet', f:['f1','f2'], terrace:false,
     desc:'Franciaágyas szoba fagerendás mennyezettel, saját fürdőszoba zuhanyzóval', photos:PHOTOS_FRANCIA },
-  { nos:'No.22.', price:{ high:190, low:171 }, name:'Venediger panorámás dupla szoba, terasszal', cap:'3+3 fő', rooms:1,
+  { nos:'No.22.', price:{ high:190, low:171 }, name:'Venediger panorámás dupla szoba, terasszal', cap:'3+3 fő', beds:'2 franciaágy + 2 pótágy, két hálórészben', rooms:1,
     floor:'2. emelet', f:['f2'], terrace:true,
     desc:'Két hálórész, mindkettőben franciaágy és pótágy, saját fürdőszoba zuhanyzóval', photos:PHOTOS_DUPLA2 },
 ];
@@ -4027,6 +4033,7 @@ window.addEventListener('pointermove', e => {
         <h3>${r.name}</h3>
         <p class="room-nos mono">${r.nos}</p>
         <p class="card-desc">${r.desc}</p>
+        ${r.beds ? `<p class="card-beds mono"><i aria-hidden="true">🛏</i>${r.beds}</p>` : ''}
         <div class="card-foot">
           ${r.price ? `<div class="price-row">
             <div><span>Főszezon</span><b class="mono">€${r.price.high}</b><small>/ éj</small></div>
@@ -5069,6 +5076,17 @@ reduced.addEventListener('change', e => {
 'use strict';
 
 const EN = {
+  'Apartman':'Apartment',
+  'Összenyíló dupla szoba':'Connecting double room',
+  'Saját fürdőszoba':'Private bathroom',
+  'Terasz':'Terrace',
+  '1 franciaágy + 1 pótágy':'1 double bed + 1 extra bed',
+  'Hálószoba 4 főre + kanapéágy a nappaliban':'Bedroom for 4 + sofa bed in the living room',
+  '1 franciaágy + 1 pótágy + 1 emeletes ágy':'1 double bed + 1 extra bed + 1 bunk bed',
+  '2 + 2 egyágyas, két összenyíló szobában':'2 + 2 single beds in two connecting rooms',
+  '1 franciaágy + 1 emeletes ágy':'1 double bed + 1 bunk bed',
+  '1 franciaágy':'1 double bed',
+  '2 franciaágy + 2 pótágy, két hálórészben':'2 double beds + 2 extra beds in two sleeping areas',
   // Navigáció, fejléc
   'Szállásunk':'Our house','Szobák':'Rooms','Sípályák':'Ski areas','Galéria':'Gallery',
   'Árak':'Prices','Foglalás':'Booking','Időpontot foglalok':'Book your stay',
@@ -5076,7 +5094,7 @@ const EN = {
   'Számokban':'In numbers','Szolgáltatások':'Services','Vélemények':'Reviews',
   // Hero
   'Ausztria. Barátok. Síelés.':'Austria. Friends. Skiing.',
-  'Egy ház, ahol':'A house where you','nem csak':"won't just",'aludni':'sleep','fogtok.':'at night.',
+  'Pályaszállás':'Ski lodging','az Alpok szívében.':'in the heart of the Alps.','Ahol a síút':'Where the piste runs','az ajtótokig vezet.':'right up to your door.',
   'férőhely':'beds','Közösségi terek':'Common areas','Self-cooking konyha':'Self-catering kitchen',
   'Sífelszerelés-tároló':'Ski storage','Parkolás':'Parking',
   'Kérjetek csoportos ajánlatot':'Get a group quote','Szabad időpontok':'Availability','Görgetés':'Scroll',
@@ -5518,12 +5536,23 @@ const EN = {
 };
 
 const DE = {
+  'Apartman':'Apartment',
+  'Összenyíló dupla szoba':'Verbundenes Doppelzimmer',
+  'Saját fürdőszoba':'Eigenes Bad',
+  'Terasz':'Terrasse',
+  '1 franciaágy + 1 pótágy':'1 Doppelbett + 1 Zustellbett',
+  'Hálószoba 4 főre + kanapéágy a nappaliban':'Schlafzimmer für 4 + Schlafsofa im Wohnraum',
+  '1 franciaágy + 1 pótágy + 1 emeletes ágy':'1 Doppelbett + 1 Zustellbett + 1 Etagenbett',
+  '2 + 2 egyágyas, két összenyíló szobában':'2 + 2 Einzelbetten in zwei verbundenen Zimmern',
+  '1 franciaágy + 1 emeletes ágy':'1 Doppelbett + 1 Etagenbett',
+  '1 franciaágy':'1 Doppelbett',
+  '2 franciaágy + 2 pótágy, két hálórészben':'2 Doppelbetten + 2 Zustellbetten in zwei Schlafbereichen',
   'Szállásunk':'Unser Haus','Szobák':'Zimmer','Sípályák':'Skigebiete','Galéria':'Galerie',
   'Árak':'Preise','Foglalás':'Buchung','Időpontot foglalok':'Termin buchen',
   'Mozgás: be':'Bewegung: an','Mozgás: ki':'Bewegung: aus','Alpesi panzió':'Alpenpension',
   'Számokban':'In Zahlen','Szolgáltatások':'Leistungen','Vélemények':'Bewertungen',
   'Ausztria. Barátok. Síelés.':'Österreich. Freunde. Skifahren.',
-  'Egy ház, ahol':'Ein Haus, in dem ihr','nem csak':'nicht nur','aludni':'schlafen','fogtok.':'werdet.',
+  'Pályaszállás':'Pistenunterkunft','az Alpok szívében.':'im Herzen der Alpen.','Ahol a síút':'Wo die Piste','az ajtótokig vezet.':'bis vor eure Tür führt.',
   'férőhely':'Betten','Közösségi terek':'Gemeinschaftsräume','Self-cooking konyha':'Selbstversorgerküche',
   'Sífelszerelés-tároló':'Skiraum','Parkolás':'Parkplatz',
   'Kérjetek csoportos ajánlatot':'Gruppenangebot anfordern','Szabad időpontok':'Freie Termine','Görgetés':'Scrollen',
