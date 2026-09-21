@@ -1262,6 +1262,10 @@ body.has-pickbar{ padding-bottom:88px; }
    fehér csíknak látszik. A kép a rendelkezésre álló helyet tölti ki. */
 #lb-photo{ max-width:100%; max-height:82vh; width:auto; height:auto; display:block;
   margin-inline:auto; border:0; border-radius:12px; }
+/* Amíg a következő fotó töltődik, a korábbi marad a helyén, halkan
+   elhalványítva — így nem villan üresre a doboz, de látszik, hogy dolgozik. */
+.lightbox.is-loading .lb-stage img{ opacity:.45; transition:opacity .2s; }
+.lightbox .lb-stage img{ transition:opacity .2s; }
 #lb-canvas{ width:100%; aspect-ratio:4/3; max-width:100%; border-radius:14px; border:1px solid var(--panel-edge); display:block; }
 .lb-stage figcaption{ display:flex; flex-direction:column; gap:.2rem; }
 .lb-stage figcaption b{ font-family:var(--display); font-size:1.15rem; letter-spacing:-.02em; }
@@ -1595,7 +1599,7 @@ html[data-motion="on"] .peng-btn.jump{ animation:pengJump .62s cubic-bezier(.3,1
 /* A négy sor (emelet-címke, cím, szobaszámok, leírás) 10-12 px-re volt
    egymástól, ami a 20 px-es címhez képest összetapadt látvány. A címke és a
    szobaszámok külön levegőt kapnak, így a cím kiemelkedik közülük. */
-[data-pickable="true"] .card-top{ margin-bottom:.55rem; }
+[data-pickable="true"] .card-top{ margin-bottom:1rem; }
 [data-pickable="true"] .room-card h3{ margin-bottom:.1rem; }
 [data-pickable="true"] .room-nos{ margin-bottom:.45rem; }
 [data-pickable="true"] .room-card h3{ font-size:clamp(1.25rem,1.6vw,1.55rem); letter-spacing:-.025em; }
@@ -1882,10 +1886,12 @@ a, button, [role="button"], input, select, textarea, label, summary{
   .eyebrow{ font-size:.75rem; letter-spacing:.18em; }
   .foot .foot-h{ font-size:.75rem; letter-spacing:.16em; }
   .hero-kicker{ font-size:.74rem; letter-spacing:.22em; }
-  /* A fejléc logója 63 px-ig ér; 56 px felső térköz mellett a kisfelirat
-     pontosan alácsúszott. A "section.band" nagyobb fajsúlyú, ezért ez a
-     szabály is szekcióra hivatkozik, különben nem érvényesül. */
-  section.band.hero{ padding-top:7rem; }
+  /* A fejléc logója 63 px-ig ér; 56 px felső térköz mellett a felső
+     kisfelirat alácsúszott — a kezdőlapon és MIND A HAT aloldalon is.
+     A "section.band" nagyobb fajsúlyú, ezért ezek a szabályok is
+     szekcióra hivatkoznak, különben nem érvényesülnének. */
+  section.band.hero,
+  section.band.subhero{ padding-top:7rem; }
   .spec-row{ font-size:.76rem; }
   .hint{ font-size:.88rem; }
   .card-desc, .body-text{ font-size:.96rem; line-height:1.62; }
@@ -1972,11 +1978,10 @@ a, button, [role="button"], input, select, textarea, label, summary{
   /* Telefonon a logó saját sort kap, a linkoszlopok alatta kettesével:
      kétoszlopos rácsban a logó melletti fél sor üresen maradt. */
   .foot-grid{ grid-template-columns:1fr 1fr; gap:1.6rem 1.4rem; }
-  /* A logó eddig teljes szélességű saját sorban, balra lógva állt, nagy
-     üres felülettel mellette — ott lebegett a hasábok fölött. Középre
-     igazítva, vékony elválasztóval lezárva fejlécként viselkedik. */
+  /* A logó teljes szélességű saját sorban, balra igazítva; az alatta futó
+     vékony vonal zárja le, így nem lebeg a hasábok fölött. */
   .foot-grid > div:first-child{
-    grid-column:1 / -1; display:flex; justify-content:center;
+    grid-column:1 / -1; display:flex; justify-content:flex-start;
     padding-bottom:1.6rem; margin-bottom:.4rem; border-bottom:1px solid var(--rule);
   }
   .foot-grid > div:first-child .brand--foot{ display:block; }
@@ -4649,6 +4654,73 @@ let renderScapes;
 })();
 
 /* --------------------------------------------------------------------------
+   12b1. SEGÉD: swapPhoto — késleltetés nélküli lapozás a nagyítókban
+
+   A lapozás azért volt lassú (2 mp körül mobilneten), mert a nagyított kép a
+   csempe URL-jét kapta meg, a csempék viszont loading="lazy"-vel töltődnek:
+   a következő fotó gyakran MÉG NEM volt letöltve, így a koppintás után
+   indult el a letöltése. Két dolgot teszünk:
+
+   1. A szomszédos képeket (előző/következő) előre betöltjük a háttérben,
+      így a következő koppintás már gyorsítótárból dolgozik.
+   2. A cserét csak akkor hajtjuk végre, ha az új kép dekódolva van — addig a
+      korábbi kép marad a helyén, nem villan üresre a doboz. Ha mégis tart egy
+      ideig, a keretre kerülő "is-loading" osztály jelzi a várakozást.
+
+   A `seq` számláló azért kell, mert gyors lapozásnál több betöltés fut
+   egyszerre: csak a legutolsó kérés eredményét engedjük a képernyőre.
+   -------------------------------------------------------------------------- */
+function makePhotoSwapper(boxEl, imgEl){
+  let seq = 0;
+  const cache = new Map();          /* url -> Image, hogy ne szemetelje ki a GC */
+
+  const prefetch = url => {
+    if (!url || cache.has(url)) return;
+    const p = new Image();
+    p.decoding = 'async';
+    cache.set(url, p);
+    p.src = url;
+  };
+
+  return {
+    prefetch,
+
+    /**
+     * A NYITÁSKOR a teljes sorozatot előtöltjük, a jelenlegi képtől kifelé
+     * haladva (következő, előző, következő+1, …). Aki megnyitja a nagyítót,
+     * jellemzően végiglapozza; egy galéria 9-12 fotója a háttérben pár
+     * másodperc alatt megérkezik, utána minden lapozás azonnali.
+     * Csak a szomszédokat előtölteni kevés volt: gyors lapozásnál a
+     * felhasználó lehagyta a letöltést.
+     */
+    prefetchAll(urls, from){
+      const n = urls.length;
+      const at = k => urls[((k % n) + n) % n];
+      for (let d = 1; d <= n; d++){
+        prefetch(at(from + d));
+        prefetch(at(from - d));
+      }
+    },
+
+    show(url, alt){
+      const me = ++seq;
+      const done = () => {
+        if (me !== seq) return;                 /* közben tovább lapoztak */
+        imgEl.src = url; imgEl.alt = alt;
+        boxEl.classList.remove('is-loading');
+      };
+      const pre = cache.get(url) || new Image();
+      if (!cache.has(url)){ pre.decoding = 'async'; cache.set(url, pre); pre.src = url; }
+      if (pre.complete && pre.naturalWidth){ done(); return; }
+      boxEl.classList.add('is-loading');
+      (pre.decode ? pre.decode() : Promise.reject())
+        .then(done)
+        .catch(() => { pre.onload = pre.onerror = done; });
+    }
+  };
+}
+
+/* --------------------------------------------------------------------------
    12b2. KOMPONENS: RoomPhotos — szobafotók teljes képernyőn
    -------------------------------------------------------------------------- */
 (function RoomPhotos(){
@@ -4669,12 +4741,12 @@ let renderScapes;
   document.body.appendChild(box);
 
   const img = box.querySelector('#pb-img');
+  const swapper = makePhotoSwapper(box, img);
   let set = [], i = 0, label = '';
 
   function show(){
     const ph = set[i];
-    img.src = ph.src;
-    img.alt = `${label} — ${T(ph.cap)}`;
+    swapper.show(ph.src, `${label} — ${T(ph.cap)}`);
     box.querySelector('#pb-title').textContent = T(ph.cap);
     box.querySelector('#pb-sub').textContent = `${label} · ${i+1} / ${set.length}`;
   }
@@ -4683,6 +4755,7 @@ let renderScapes;
     box.hidden = false;
     document.body.style.overflow = 'hidden';
     show();
+    swapper.prefetchAll(set.map(p => p.src), i);
   }
   function close(){ box.hidden = true; document.body.style.overflow = ''; }
   function step(d){ i = (i + d + set.length) % set.length; show(); }
@@ -4823,6 +4896,7 @@ let renderScapes;
   let i = 0;
 
   const photo = document.getElementById('lb-photo');
+  const swapper = makePhotoSwapper(box, photo);
 
   function paint(){
     const src = figs[i].querySelector('img, canvas');
@@ -4833,8 +4907,8 @@ let renderScapes;
     /* Fényképnél magát a képet mutatjuk, teljes egészében — a canvasra
        rajzolás szétnyújtaná, mert a képarányok csempénként eltérnek. */
     if (src.tagName === 'IMG'){
-      photo.src = src.src; photo.alt = src.alt;
       photo.hidden = false; cv.hidden = true;
+      swapper.show(src.src, src.alt);
       return;
     }
     photo.hidden = true; cv.hidden = false;
@@ -4844,7 +4918,12 @@ let renderScapes;
     c.imageSmoothingEnabled = true;
     c.drawImage(src, 0, 0, cv.width, cv.height);
   }
-  function open(n){ i = n; box.hidden = false; document.body.style.overflow = 'hidden'; requestAnimationFrame(paint); }
+  function open(n){
+    i = n; box.hidden = false; document.body.style.overflow = 'hidden';
+    requestAnimationFrame(paint);
+    const urls = figs.map(f => { const im = f.querySelector('img'); return im && im.src; }).filter(Boolean);
+    if (urls.length) swapper.prefetchAll(urls, i);
+  }
   function close(){ box.hidden = true; document.body.style.overflow = ''; }
   function step(d){ i = (i + d + figs.length) % figs.length; paint(); }
 
