@@ -559,21 +559,32 @@ section.band + section.band{ border-top:1px solid var(--rule); }
 
 .mobnav{
   position:fixed; inset:0; z-index:45; display:flex; flex-direction:column;
-  justify-content:center; gap:1.6rem; padding:5rem clamp(1.2rem,6vw,3rem) 2.4rem;
-  padding-top:calc(5rem + env(safe-area-inset-top, 0px));
+  /* A sima "center" görgethető dobozban felfelé tolja a tartalmat, ha az
+     magasabb a helynél: alacsony kijelzőn (pl. beágyazott előnézet) az első
+     menüpont a logó alá, sőt a képernyő fölé csúszott. A "safe" változat
+     ilyenkor a tetejére igazít, így a felső térköz megmarad. */
+  justify-content:center; justify-content:safe center;
+  gap:1.6rem; padding:6.4rem clamp(1.2rem,6vw,3rem) 2.4rem;
+  padding-top:calc(6.4rem + env(safe-area-inset-top, 0px));
   padding-bottom:calc(2.4rem + env(safe-area-inset-bottom, 0px));
   background:color-mix(in srgb, var(--sky-top) 96%, transparent);
   backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
   overflow-y:auto;
 }
 .mobnav ul{ list-style:none; margin:0; padding:0; display:grid; gap:.15rem; }
-.mobnav a{
+/* FONTOS: csak a menülistára. Korábban ".mobnav a" volt, ami ráült a lenti
+   "Időpontot foglalok" gombra is: elvette a vízszintes belső térközét
+   (padding:.42rem 0) és 27 px-es betűt adott neki, ezért a felirat kilógott
+   a pirulából. A telefonszám is ekkora lett. */
+.mobnav nav a{
   display:block; text-decoration:none; color:var(--fg);
   font-family:var(--display); font-weight:700; letter-spacing:-.02em;
   font-size:clamp(1.5rem,7vw,2.1rem); padding:.42rem 0;
   border-bottom:1px solid transparent;
 }
-.mobnav a:active,.mobnav a:hover{ color:var(--glacier); }
+.mobnav nav a:active,.mobnav nav a:hover{ color:var(--glacier); }
+/* A menü alsó sávjában a gomb a saját mérete szerint viselkedik. */
+.mobnav-foot .btn{ font-size:1rem; padding:.85rem 1.5rem; flex:none; }
 .mobnav-foot{ display:flex; flex-wrap:wrap; align-items:center; gap:.9rem 1.4rem; padding-top:1rem; border-top:1px solid var(--rule); }
 .mobnav-foot .lang{ flex-basis:100%; gap:.4rem; }
 .mobnav-foot .lang button{ font-size:.78rem; padding:.55rem .9rem; border-color:var(--rule); }
@@ -1506,8 +1517,11 @@ html[data-motion="on"] .peng-btn.jump{ animation:pengJump .62s cubic-bezier(.3,1
 .photo-btn:hover{ background:var(--glacier); color:#04191B; border-color:var(--glacier); }
 .card.has-photo::after{ inset:auto 1.1rem 1.1rem auto; }
 
+/* A világos keret a sötét háttér előtt fehér csíknak látszott a kép körül —
+   ugyanaz a hiba, mint amit a galériában már javítottunk. Keret nélkül a
+   fénykép széle maga zárja le a képet. */
 #photobox .lb-stage img{
-  width:100%; max-width:100%; border-radius:14px; border:1px solid var(--panel-edge);
+  width:100%; max-width:100%; border-radius:14px; border:0;
   display:block; aspect-ratio:3/2; object-fit:cover; background:rgba(9,20,33,.6);
 }
 </style>
@@ -1578,7 +1592,12 @@ html[data-motion="on"] .peng-btn.jump{ animation:pengJump .62s cubic-bezier(.3,1
 [data-pickable="true"] .card-body{
   padding:1.5rem 1.7rem; display:flex; flex-direction:column; gap:.55rem; min-width:0;
 }
-[data-pickable="true"] .card-top{ margin-bottom:.2rem; }
+/* A négy sor (emelet-címke, cím, szobaszámok, leírás) 10-12 px-re volt
+   egymástól, ami a 20 px-es címhez képest összetapadt látvány. A címke és a
+   szobaszámok külön levegőt kapnak, így a cím kiemelkedik közülük. */
+[data-pickable="true"] .card-top{ margin-bottom:.55rem; }
+[data-pickable="true"] .room-card h3{ margin-bottom:.1rem; }
+[data-pickable="true"] .room-nos{ margin-bottom:.45rem; }
 [data-pickable="true"] .room-card h3{ font-size:clamp(1.25rem,1.6vw,1.55rem); letter-spacing:-.025em; }
 .room-nos{
   font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--glacier);
@@ -1863,6 +1882,10 @@ a, button, [role="button"], input, select, textarea, label, summary{
   .eyebrow{ font-size:.75rem; letter-spacing:.18em; }
   .foot .foot-h{ font-size:.75rem; letter-spacing:.16em; }
   .hero-kicker{ font-size:.74rem; letter-spacing:.22em; }
+  /* A fejléc logója 63 px-ig ér; 56 px felső térköz mellett a kisfelirat
+     pontosan alácsúszott. A "section.band" nagyobb fajsúlyú, ezért ez a
+     szabály is szekcióra hivatkozik, különben nem érvényesül. */
+  section.band.hero{ padding-top:7rem; }
   .spec-row{ font-size:.76rem; }
   .hint{ font-size:.88rem; }
   .card-desc, .body-text{ font-size:.96rem; line-height:1.62; }
@@ -1949,7 +1972,15 @@ a, button, [role="button"], input, select, textarea, label, summary{
   /* Telefonon a logó saját sort kap, a linkoszlopok alatta kettesével:
      kétoszlopos rácsban a logó melletti fél sor üresen maradt. */
   .foot-grid{ grid-template-columns:1fr 1fr; gap:1.6rem 1.4rem; }
-  .foot-grid > div:first-child{ grid-column:1 / -1; }
+  /* A logó eddig teljes szélességű saját sorban, balra lógva állt, nagy
+     üres felülettel mellette — ott lebegett a hasábok fölött. Középre
+     igazítva, vékony elválasztóval lezárva fejlécként viselkedik. */
+  .foot-grid > div:first-child{
+    grid-column:1 / -1; display:flex; justify-content:center;
+    padding-bottom:1.6rem; margin-bottom:.4rem; border-bottom:1px solid var(--rule);
+  }
+  .foot-grid > div:first-child .brand--foot{ display:block; }
+  .brand--foot .brand-logo{ width:clamp(150px,44vw,190px); }
   /* A nyelvváltó balra kerül: jobb alsó sarokban a pingvin takarta. */
   .foot-bottom{ margin-top:2rem; gap:.75rem; flex-direction:column; align-items:flex-start; }
 }
