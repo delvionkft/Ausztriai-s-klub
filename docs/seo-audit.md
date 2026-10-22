@@ -1,6 +1,6 @@
 # Ludwighaus — SEO-audit és elvégzett munka
 
-**Dátum:** 2026-09-18
+**Dátum:** 2026-09-18 · **Frissítve:** 2026-10-22
 **Vizsgált felület:** `preview/ludwighause-experience.html` (a Ludwighaus élményoldal)
 **Ág:** `claude/eager-keller-ktk0ut`
 **Kiindulási állapot:** `f4362c8` commit
@@ -361,6 +361,30 @@ Kérendő a tárhelytől: `gzip` vagy `brotli` a HTML/CSS/JS/XML fájlokra, és
 `Cache-Control: public, max-age=31536000, immutable` a képekre és
 betűtípusokra.
 
+### 6.2b Indítási munka csökkentése (2026-10-22)
+
+A CPU-profil három valódi hibát mutatott ki, mindhárom javítva:
+
+1. **Képkockánkénti kényszerített újratördelés.** A `measure()` minden
+   képkockában olvasta a `document.body.scrollHeight` értéket, ami arra
+   kényszeríti a böngészőt, hogy azonnal újraszámolja az elrendezést —
+   másodpercenként hatvanszor. Ez adta a Lighthouse „Forced reflow"
+   figyelmeztetését is. Az érték most gyorsítótárazott, és átméretezéskor,
+   nézetváltáskor, illetve a tartalom magasságának változásakor frissül.
+2. **`window.innerWidth` olvasása a rajzoló ciklusból.** Szintén eltárolva.
+3. **A hóvihar-vászon méretezése indításkor.** A rajzpuffer lefoglalása
+   100 ms-ot vitt el, holott a vihar csak az első oldalváltáskor látszik —
+   most az első használatig halasztva.
+
+Eredmény görgetés közben, 4x lassított CPU mellett: **51–54 fps**, a képkockák
+**4–12%-a** lassabb 32 ms-nál (a mobiloptimalizálás előtt 28 fps és 79% volt).
+
+A TBT 276 ms körül marad 4x lassított CPU-n. Ez az egyfájlos felépítés
+velejárója: egy ~440 KB-os dokumentum beágyazott szkriptjének elemzése és
+első futása elkerülhetetlen. A Lighthouse saját mobil profilja ugyanerre a
+lapra 0 ms TBT-t mér. Az érdemi megoldás a szkript szétbontása, ami az
+Emergentre portolással együtt jön.
+
 ### 6.3 CSS/JS minifikálás
 
 Szándékosan **nem** minifikáltam. A fájl kommentezett forráskód, és a
@@ -464,12 +488,42 @@ szerepel, és a strukturált adatban egy konkrét értéket kellett választani.
 > kiemelése és `node --check`-elése, i18n-szótáraudit (duplikált kulcs,
 > ütköző érték, lefedettség), és futásidejű ellenőrzés valódi böngészőben.
 
+### 8.1b Minőségellenőrző vizsgálatok a repóban (2026-10-22)
+
+A korábbi vizsgálatok eldobható szkriptek voltak, és a munkamenettel együtt
+elvesztek — ezért a lap hibáinak jelentős részét a megrendelő találta meg, nem
+az ellenőrzés. Ez a `tools/qa/` mappával megszűnt:
+
+```bash
+npm run qa                      # mind az öt
+node tools/qa/run.mjs layout    # csak egy
+```
+
+| Vizsgálat | Mit fog meg |
+|---|---|
+| `layout` | kilógó és levágott elem, vízszintes görgetés, apró betű és érintőfelület — 4 képernyőméret × 7 nézet |
+| `contrast` | WCAG AA szövegkontraszt, az átlátszó előtér valódi háttérre keverésével |
+| `i18n` | duplikált és ütköző kulcs, EN/DE lefedettség, lefordítatlan szöveg futásidőben |
+| `meta` | egyedi cím és leírás, strukturált adat, belső hivatkozások, nyelvváltás, JS-hibák |
+| `perf` | LCP, CLS, TBT, görgetés simasága, galérialapozás — Slow 4G + 4x lassított CPU |
+
+Nem nulla kilépési kóddal zárnak, tehát folyamatos integrációba beköthetők.
+
 ### 8.2 Saját ellenőrzések
 
 | Ellenőrzés | Eredmény |
 |---|---|
 | JS szintaxis (4 blokk, `node --check`) | hibátlan |
-| i18n szótárak | 268 EN / 273 DE bejegyzés, **0 duplikált kulcs, 0 ütköző érték** |
+| i18n szótárak | **635-635 bejegyzés**, 0 duplikált kulcs, 0 ütköző érték, azonos EN/DE lefedettség |
+
+> **Helyesbítés (2026-10-22).** A fenti sor korábban 268 EN / 273 DE bejegyzést
+> írt. Ez hibás volt: az akkori beolvasó csak az aposztrófos értékeket ismerte,
+> az idézőjeleseket (ahol a szövegben aposztróf van, pl. „Europe's") némán
+> kihagyta — a szótár felét sem olvasta. A javított beolvasó 635-635 bejegyzést
+> talál, és kimutatott 14-14 duplikált kulcsot is, amiket azóta eltávolítottunk.
+> Tanulság, amit a vizsgálóba is beépítettünk: **jelentse a saját beolvasási
+> maradékát.** Az a vizsgálat, ami a vakfoltját elhallgatja, rosszabb a
+> semminél.
 | Lefordítatlan szöveg EN/DE nézetben | 1 db (vendégidézet — szándékos, lásd 6.4) |
 | Külső hálózati kérés | **0** (korábban 3 a Google felé) |
 | Konzol- és JS-hiba | **0** |
@@ -599,9 +653,13 @@ tömeges vendégposztolás. Szálláshelynél ez gyorsan büntetést hoz.
 
 1. **Valódi útvonalak** (6.1) — messze a legfontosabb.
 2. **hreflang** a három nyelvre, amint saját URL-t kapnak.
-3. **Képméretek**: ma minden kép egy méretben van. `srcset`-tel a telefonok
-   feleakkora fájlt tölthetnének. A képkonténereken van `aspect-ratio`, így
-   ez CLS-kockázat nélkül megtehető.
+3. ~~**Képméretek**: `srcset` a telefonokra.~~ **Megmérve, elvetve
+   (2026-10-22).** A feltevés nem állta meg a helyét: telefonon (390 px, 3x
+   kijelző) **egyetlen kép sincs túlméretezve** — a ~1024 px-es fájlok ott
+   inkább alulméretezettek. A pazarlás asztali nézetben van (1024 px natív
+   egy 341 px-es helyre), ahol a sávszélesség ritkán szűk keresztmetszet.
+   A `srcset` tehát 71 kép háromszorozásával járt volna, rossz problémára.
+   Amit helyette érdemes: **nagyobb felbontású eredetik** a 3x kijelzőkhöz.
 4. **`Organization` séma** külön, ha a Ludwighaus üzemeltetője önálló cég.
 
 ---

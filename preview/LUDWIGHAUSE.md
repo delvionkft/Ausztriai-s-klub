@@ -1,58 +1,125 @@
-# Ludwighause — élményoldal (új, önálló felület)
+# Ludwighaus — élményoldal
 
-Ez a felület **nem** a repóban lévő korábbi síközpont-frontend része. Önálló,
-egyfájlos, függőség nélküli oldal, kifejezetten a Ludwighause ügyfélnek.
+Önálló, keretrendszer nélküli weboldal a Ludwighaus panziónak. **Nem** része a
+repóban lévő `src/` alatti Next.js síközpont-frontendnek — az egy másik
+projekt, ehhez semmi köze.
 
-- Forrás: `preview/ludwighause-experience.html`
-- Külső függőség: kizárólag a Google Fonts (Bricolage Grotesque, Manrope, JetBrains Mono).
-  Nincs React, nincs bundler, nincs képfájl — a látvány canvasból generálódik.
+| | |
+|---|---|
+| Forrás | `preview/ludwighause-experience.html` (~441 KB, gzip-pel ~137 KB) |
+| Kísérő fájlok | `preview/assets/img/` (75 kép), `preview/assets/fonts/` (6 betűfájl), `favicon.ico`, `site.webmanifest`, `robots.txt` |
+| Külső függőség | **nincs** — a lap nulla külső kérést indít |
+| Build | nincs: a fájl önmagában fut, bármilyen statikus kiszolgálóról |
+| Nyelvek | magyar (forrás) + angol + német, 635-635 fordítási bejegyzés |
 
 ## A koncepció
 
-**A görgetés = emelkedés.** Az oldal egyetlen folyamatos felkapaszkodás a
-völgyállomástól (940 m) a gerincig (2 340 m). Ezt három dolog viszi:
+**A görgetés = emelkedés.** A háttér a völgy fenyvesétől a gerinc kék óráján át
+a felhők fölötti világosba vált; a szövegszín, a keretek és az akcentus ehhez
+igazodva fordul át. A hátteret nem fotók adják, hanem egyetlen canvasra
+rajzolt, magból generált gerincrétegek, hóesés, felhők és egy átsuhanó síelő.
 
-1. **Magasságfüggő paletta.** A háttér nem statikus: fenyves-éjszakából kék órán
-   át felhő feletti fehérbe vált. A szövegszín, a keretek és az akcentus ehhez
-   igazodva fordul át — a lap a végén *világosabb és hidegebb*, nem sötétebb.
-2. **Magasságmérő (jobb szél).** Élő méterérték + az aktuális hegyzóna neve.
-3. **Parallaxis gerincek + hóesés.** Egyetlen canvas, négy generált gerincréteg.
-   A hóesés a csúcs közelében elfogy — a felhők fölé érsz.
+## Felépítés
 
-## Komponenshatárok (Emergent-portoláshoz)
+A fájl sorrendje: fejléc-meták és strukturált adat → betűtípus-definíciók →
+20 `<style>` blokk → a hét nézet jelölése → adatblokk → komponensek.
 
-A HTML-ben minden szekció `<!-- KOMPONENS: Név -->` jelöléssel kezdődik, a JS-ben
-ugyanezek a nevek IIFE-blokkokként szerepelnek. A leképezés mechanikus:
+### Adat — minden tartalom egy helyen
 
-| Blokk | Szerep | React megfelelő |
-|---|---|---|
-| `AlpineScene` | háttér canvas (gerinc + hó) | `<AlpineScene/>` + `useEffect` rAF |
-| `AltitudeRail` | fix magasságmérő | `<AltitudeRail progress/>` |
-| `Nav` | tapadó fejléc, mozgás-kapcsoló | `<Nav/>` |
-| `Hero` | belépő, élő státusz chipek | `<Hero data/>` |
-| `LiveConditions` | műszerfal + előrejelzés + lavinaskála | `<LiveConditions report/>` |
-| `Pistes` + `ElevationProfile` | pályakártyák (3D dőlés) + szelvény | `<Pistes items/>` |
-| `Lifts` | felvonótábla | `<Lifts items/>` |
-| `Gallery` | három generatív látkép | `<Gallery/>` — canvas fotóra cserélhető |
-| `TicketCalculator` | árlista + megtérülés-számoló | `<TicketCalculator prices/>` |
-| `GuesthouseScene` | éjszakai látkép + CTA | `<Guesthouse/>` |
-| `Footer` | lábléc | `<Footer/>` |
+A JS elején álló konstansok tartják a teljes tartalmat. Portoláskor ezek
+lesznek a props / API-válasz; a komponensek nem tartalmaznak beégetett adatot.
 
-Az összes tartalom a JS elején, az **1. ADAT** blokkban van (`RESORT`, `PISTES`,
-`LIFTS`, `TICKETS`). Portoláskor ez lesz a props / API-válasz; a komponensek nem
-tartalmaznak beégetett adatot.
+| Konstans | Mit tart |
+|---|---|
+| `ROOMS` | 7 szobatípus: szobaszám, ár, férőhely, ágykiosztás, emelet, terasz, fotók |
+| `GALLERY`, `HOUSE_SHOTS` | a galéria és a „ház kívülről" csempéi |
+| `ACTIVITIES`, `ACTIVITY_INFO` | nyári és téli programok, a részletes nézet tartalmával |
+| `SKI_AREAS`, `WILDKOGEL`, `BIKE_TOURS` | sítereppek, a Wildkogel-Aréna, e-bike útvonalak |
+| `SERVICES`, `INCLUDED`, `EXCLUDED` | szolgáltatások és ártartalom |
+| `REVIEWS` | vendégvélemények |
+| `PRIVACY`, `RULES_DOC` | ÁSZF + adatkezelés, házirend három nyelven |
+| `VIEW_META`, `VIEW_LABELS` | nézetenkénti lapcím és leírás |
+| `EN`, `DE` | fordítási szótárak |
 
-## Teljesítmény és hozzáférhetőség
+### Komponensek
+
+Mindegyik önálló IIFE, `(function Név(){ … })()` alakban — portoláskor
+mechanikusan React-komponensre képezhetők.
+
+| Blokk | Szerep |
+|---|---|
+| `AlpineScene` | háttércanvas: gerincek, hóesés, felhők, síelő |
+| `Nav`, `MobileNav`, `Brand` | fejléc, teljes képernyős mobil menü, logó |
+| `Router` | hash-útvonalak + hóviharos oldalváltás |
+| `Rooms`, `RoomTools`, `RoomsSplit` | szobakártyák, szűrés, csoportépítő |
+| `RoomPhotos`, `Lightbox` | szobafotó- és galérianagyító, előtöltéssel |
+| `Gallery`, `Content`, `SkiAreas`, `SkiMix` | galéria, szövegblokkok, sítereppek |
+| `WildkogelArena`, `EBike`, `ActivityInfo` | aréna-fülek, túrák, programrészletek |
+| `Reviews` | lapozható vendégvélemények |
+| `RulesDoc` | háromnyelvű házirend |
+| `BookingForm` | foglalási űrlap |
+| `Parallax`, `Reveal`, `SectionRail` | mozgás, megjelenés, oldalsó helyzetjelző |
+| penguin (`peng-*`) | asszisztens az oldal adataiból válaszol |
+
+### Útvonalak
+
+Hét nézet egyetlen dokumentumban, horgonnyal: `#/`, `#/szobak`, `#/sipalyak`,
+`#/kikapcsolodas`, `#/galeria`, `#/hazirend`, `#/kapcsolat`.
+
+> A Google a horgonyt eldobja, ezért **a hét nézet számára egyetlen cím**.
+> Valódi útvonalakra váltáshoz a routerben `location.hash` helyett
+> `location.pathname` kell, és a kiszolgálón SPA-fallback. Részletek:
+> `docs/seo-audit.md`, 6.1 pont.
+
+## Nyelvkezelés
+
+A szótárak a **magyar forrásszövegre** kulcsolnak. Betöltéskor egy TreeWalker
+pillanatfelvételt készít minden szövegcsomópontról, nyelvváltáskor ezeket
+cseréli. A futásidőben összeállított szövegek a `T()` függvényen mennek át.
+
+**Ha magyar szöveget módosítasz, a kulcsot is át kell írni mindkét szótárban** —
+különben a fordítás csendben elmarad. Ezt a `npm run qa` elkapja.
+
+## Élesítési beállítások
+
+A fejléc elején, egy helyen:
+
+```js
+window.LH_SEO = {
+  origin: '',   // végleges domain, záró perjel nélkül
+  gaId:   '',   // GA4 mérőazonosító (G-…)
+  gtmId:  ''    // Google Tag Manager (GTM-…)
+};
+```
+
+Amíg üresek, a lap tudatosan nem ad ki canonical címet és nem tölt be
+mérőkódot. Ezután: `node tools/generate-seo-files.mjs https://a-domained.at`.
+
+## Minőségellenőrzés
+
+```bash
+npm run qa              # mind az öt vizsgálat
+node tools/qa/run.mjs layout   # csak egy
+```
+
+| Vizsgálat | Mit fog meg |
+|---|---|
+| `layout` | kilógó és levágott elem, vízszintes görgetés, apró betű és érintőfelület — négy képernyőméreten, hét nézeten |
+| `contrast` | WCAG AA szövegkontraszt |
+| `i18n` | duplikált és ütköző szótárkulcs, EN/DE lefedettség, lefordítatlan szöveg |
+| `meta` | nézetek, egyedi cím és leírás, strukturált adat, belső hivatkozások, nyelvváltás, JS-hibák |
+| `perf` | LCP, CLS, TBT, görgetés simasága, galérialapozás — Slow 4G és 4x lassított CPU mellett |
+
+**Minden módosítás után futtasd.** Ezek pontosan azokat a hibaosztályokat
+fogják meg, amik korábban a megrendelőig jutottak el.
+
+## Teljesítményről, amit tudni kell
 
 - Egyetlen `requestAnimationFrame` ciklus hajt minden mozgást (`onTick`).
-- A canvas háttér lapfül-váltáskor megáll; a szelvényrajz `IntersectionObserver`-re vár.
-- Hópehely-szám a képernyőterülethez skálázódik (26–110), DPR 2-re vágva.
-- `prefers-reduced-motion` automatikusan kikapcsolja a mozgást, **és** a fejlécben
-  van kézi „Mozgás: be/ki" kapcsoló.
-- Billentyűzet-fókusz látható, a 3D dőlés csak egérrel aktív (érintésen nem).
-- Nincs vízszintes görgetés; a táblázat saját `overflow-x` konténerben van.
-
-## Adatok
-
-Minden szám **demó érték**, az oldalon láthatóan jelölve (`Demó` sávok).
-Éles adat az 1. ADAT blokk cseréjével kerül be, komponensmódosítás nélkül.
+- A dokumentum magassága és a kis kijelző ténye **gyorsítótárazva** van —
+  ezeket korábban minden képkockában újraolvastuk, ami kényszerített
+  újratördelést okozott.
+- A hóvihar-vászon csak az első oldalváltáskor méreteződik, nem induláskor.
+- A nagyítók nyitáskor előre betöltik a teljes fotósorozatot.
+- `prefers-reduced-motion` automatikusan kikapcsolja a mozgást, és a fejlécben
+  kézi kapcsoló is van.

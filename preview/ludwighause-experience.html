@@ -3604,13 +3604,33 @@ const RIDGE_LITE = ['#BACEDE','#93AFC7','#6C8CAA','#44627E','#2C4760'];
 const tickers = [];
 const onTick = fn => tickers.push(fn);
 
+/* A dokumentum magassága gyorsítótárazva.
+
+   Korábban a measure() MINDEN KÉPKOCKÁBAN olvasta a document.body.scrollHeight
+   értéket. Ez kényszerített újratördelést vált ki: a böngészőnek azonnal újra
+   kell számolnia az elrendezést, mielőtt a számot visszaadja — másodpercenként
+   hatvanszor. A profil szerint ez volt az egyik legköltségesebb saját
+   függvényünk, és a Lighthouse "Forced reflow" figyelmeztetését is ez adta.
+
+   A lap magassága csak nézetváltáskor, átméretezéskor és a rejtett tartalom
+   megjelenésekor változik — ezeket külön jelezzük. */
+let docHeight = 0;
+function refreshDocHeight(){ docHeight = document.body.scrollHeight; }
+window.__refreshDocHeight = refreshDocHeight;
+
 function measure(){
   state.h = window.innerHeight;
   state.w = window.innerWidth;
-  const max = Math.max(1, document.body.scrollHeight - state.h);
+  if (!docHeight) refreshDocHeight();
+  const max = Math.max(1, docHeight - state.h);
   state.scrollY = window.scrollY || 0;
   state.p = clamp(state.scrollY / max, 0, 1);
 }
+
+addEventListener('resize', refreshDocHeight, { passive:true });
+addEventListener('load', refreshDocHeight);
+/* A lusta képek érkezése és a nézetváltás is megváltoztatja a magasságot. */
+if (window.ResizeObserver) new ResizeObserver(refreshDocHeight).observe(document.body);
 
 /* A fix tokenek egyszer állnak be — a lap végig sötét, nincs mit animálni. */
 (function setFixedTokens(){
@@ -3688,7 +3708,12 @@ window.addEventListener('pointermove', e => {
      Egy középkategóriás készüléken ez 28 fps-re vitte le a görgetést,
      ezért kis kijelzőn 1-es pixelaránnyal és kevesebb elemmel dolgozunk:
      a látvány ugyanaz, a kirajzolandó pixelek száma viszont a fele. */
-  const small = () => window.innerWidth <= 860;
+  /* Az innerWidth olvasása is elrendezést kényszeríthet, és ez a függvény
+     a rajzoló ciklusból is hívódik — ezért az értéket eltároljuk, és csak
+     átméretezéskor frissítjük. */
+  let isSmall = window.innerWidth <= 860;
+  const small = () => isSmall;
+  addEventListener('resize', () => { isSmall = window.innerWidth <= 860; }, { passive:true });
 
   function build(){
     dpr = small() ? 1 : Math.min(1.5, window.devicePixelRatio || 1);
@@ -4969,8 +4994,12 @@ function makePhotoSwapper(boxEl, imgEl){
     W = window.innerWidth; H = window.innerHeight;
     cv.width = W*d; cv.height = H*d; sx.setTransform(d,0,0,d,0,0);
   }
-  size();
-  window.addEventListener('resize', size);
+  /* A vászon méretezése (cv.width = …) újrafoglalja a rajzpuffert, ami a
+     profil szerint 100 ms-ot vitt el INDÍTÁSKOR — pedig a hóvihar csak az
+     első oldalváltáskor látszik. Ezért halasztjuk az első használatig. */
+  let sized = false;
+  const ensureSized = () => { if (!sized){ size(); sized = true; } };
+  window.addEventListener('resize', () => { if (sized) size(); });
 
   function seed(){
     const n = clamp(Math.round(W*H/5400), 140, 420);
@@ -5085,6 +5114,7 @@ function makePhotoSwapper(boxEl, imgEl){
     if (!state.motion){ apply(name); if (anchorId) scrollToId(anchorId); return; }
 
     busy = true;
+    ensureSized();
     seed();
     cv.classList.add('on');
     const old = viewEl(cur);
@@ -5388,7 +5418,7 @@ const EN = {
   'Smaragdvölgy, túraútvonalakkal':'The emerald valley, with hiking routes',
   'Panoráma- és csúszdaút':'Panorama and slide path','Kilátópont és csúszda a hegyen':'A viewpoint and a slide on the mountain',
   'Kalandpark a Wildkogelen':'Adventure park on the Wildkogel',
-  'Szánkózás':'Tobogganing','A világ leghosszabb kivilágított szánkópályája':"The world's longest floodlit toboggan run",
+  'Szánkózás':'Tobogganing',
   'Neukirchen és Bramberg':'Neukirchen and Bramberg',
   'Sífutás':'Cross-country skiing','Előkészített nyomok a völgyben':'Groomed tracks in the valley',
   'Kogel Mogel gyerekpálya':'Kogel Mogel kids area','Tanulóterep a legkisebbeknek':'A learning area for the youngest',
@@ -5608,8 +5638,8 @@ const EN = {
   'Nyáron a túrázók, a hegyikerékpárosok és a pihenni vágyók kapják meg az arénát — Ausztria legmagasabb hegyeinek panorámájával.':'In summer the arena belongs to hikers, mountain bikers and anyone who just wants to sit still — with the panorama of Austria’s highest mountains behind it.',
   'A Hohe Tauern Nemzeti Park üdülőrégiójában a kijelölt túraútvonalak és a 77 kerékpáros útvonal egész nyáron használható, és a felvonók is járnak.':'Across the Hohe Tauern National Park holiday region the marked hiking trails and the 77 cycle routes are open all summer, and the lifts keep running.',
   'A völgy alján és a hegyen egyaránt működnek a kunyhók és éttermek, úgyhogy egy hosszabb túra közben sem kell magatokkal cipelni az ebédet.':'Huts and restaurants are open both down in the valley and up on the mountain, so even on a long tour you do not have to carry lunch with you.',
-  '77':'77','Kerékpáros útvonal':'Cycle routes','3 662 m':'3,662 m','A háztól gyalog':'On foot from the house',
-  'Házirend':'House rules','Hogy mindenki':'So everyone','jól érezze magát.':'has a good stay.',
+'Kerékpáros útvonal':'Cycle routes','3 662 m':'3,662 m','A háztól gyalog':'On foot from the house',
+'Hogy mindenki':'So everyone','jól érezze magát.':'has a good stay.',
   'A hivatalos házirend magyarul, angolul és németül is letölthető. Érdemes az érkezés előtt átfutni — nincs benne meglepetés, de így mindenki ugyanazt tudja.':'The official house rules can be downloaded in Hungarian, English and German. Worth a read before you arrive — no surprises in there, but this way everyone knows the same thing.',
   'Kérdés maradt?':'Still have a question?',
   'Ha bármi nem világos, hívjatok vagy írjatok — a magyar recepció bármikor elérhető, és a foglalás előtt is szívesen végigvesszük veletek.':'If anything is unclear, call or write — our Hungarian-speaking reception is always reachable, and we are happy to go through it with you before you book.',
@@ -5644,15 +5674,13 @@ const EN = {
   'Magyar':'Hungarian','Házirend · teljes szöveg':'House rules · full text',
   'English':'English','House rules · full text':'House rules · full text',
   'Deutsch':'German','Hausordnung · vollständig':'House rules · in full',
-  'Házirend · teljes szöveg':'House rules · full text','Hausordnung · vollständig':'House rules · in full',
-  'Magyar':'Hungarian','Deutsch':'German',
-  'A ház télen':'The house in winter','Neukirchen am Großvenediger':'Neukirchen am Großvenediger',
+  'A ház télen':'The house in winter',
   'Étkező és közösségi tér':'Dining room and lounge','50 fő · hosszú asztal, kanapék':'Seats 50 · long table, sofas',
   'A bejárat':'The entrance','Marktstraße 121':'Marktstraße 121',
   'A ház a faluban':'The house in the village','Légifelvétel':'From the air',
   'Bár & Disco':'Bar & Disco',
   'A ház nyáron':'The house in summer','A Wildkogel lábánál':'At the foot of the Wildkogel',
-  'Funslope & Familypark':'Funslope & Familypark','Wildkogel-Aréna':'Wildkogel Arena',
+  'Funslope & Familypark':'Funslope & Familypark',
   'Hegyi kerékpár':'Mountain biking','77 útvonal a környéken':'77 routes in the area',
   'A ház és környéke':'The house and its surroundings','Ez vár rátok':'This is what','kívülről.':'it looks like outside.',
   'A Marktstraße 121. alatt, a falu főutcáján — 600 méterre a Wildkogel felvonójától.':'At Marktstraße 121, on the main street of the village — 600 metres from the Wildkogel lift.',
@@ -5662,15 +5690,15 @@ const EN = {
   'Reggeli tekerés':'A morning ride','Köd a völgy fölött':'Mist over the valley',
   'Pihenő a tónál':'A break by the lake','E-bike túra a környéken':'An e-bike tour in the area',
   'Tizenkét szoba két emeleten, hét különböző típusban. A ház egyik oldala a Großvenedigerre néz, a másik a Wildkogelre — ez dönti el, mire ébredtek.':'Twelve rooms on two floors, in seven different types. One side of the house faces the Großvenediger, the other the Wildkogel — that is what decides the view you wake up to.',
-  'Venediger oldal':'Venediger side','Wildkogel oldal':'Wildkogel side','szoba':'rooms',
+  'Venediger oldal':'Venediger side','Wildkogel oldal':'Wildkogel side',
   'A 3 662 méteres Großvenediger és a gleccservilág felé. Ezen az oldalon vannak a legtágasabb szobák és az apartman.':'Facing the 3,662 m Großvenediger and the glaciers beyond. This side holds the largest rooms and the apartment.',
   'A sípálya és a felvonó felé, 600 méterre. Innen látszik esténként a kivilágított szánkópálya is.':'Facing the slopes and the lift, 600 metres away. In the evening you can see the floodlit toboggan run from here.',
-  'Szoba':'Rooms','Szobatípus':'Room types','Emelet':'Floors',
+'Szobatípus':'Room types','Emelet':'Floors',
   'Adatkezelés':'Privacy','Adatkezelési tájékoztató':'Privacy notice',
   'ÁSZF és adatkezelés':'Terms & privacy','ÁSZF és adatkezelési tájékoztató':'Terms and privacy notice',
   'ÁSZF-et és az adatkezelési tájékoztatót':'the Terms and the Privacy Notice',
-  'A szezon közepén':'Mid-season','A falu a völgyben':'The village in the valley',
-  'Előző vélemény':'Previous review','Következő vélemény':'Next review','Vélemények':'Reviews',
+  'A szezon közepén':'Mid-season',
+  'Előző vélemény':'Previous review','Következő vélemény':'Next review',
   'Ludwighaus — magyar panzió a Wildkogel-Arénánál, Neukirchen':'Ludwighaus — Hungarian guesthouse at the Wildkogel Arena',
   'Magyar tulajdonú alpesi panzió Neukirchenben, 600 méterre a Wildkogel felvonójától. 12 szoba, 45 férőhely, self-cooking konyha és sítároló.':'Hungarian-run alpine guesthouse in Neukirchen, 600 metres from the Wildkogel lift. 12 rooms, 45 beds, self-cooking kitchen and ski storage.',
   'A Ludwighaus tizenkét szobája hét típusban, Venediger vagy Wildkogel panorámával. Árak fő- és holtszezonra, fotókkal, csoportos összesítővel.':'The twelve rooms of Ludwighaus in seven types, facing the Venediger or the Wildkogel. High and low season rates, photos and a group calculator.',
@@ -5679,7 +5707,7 @@ const EN = {
   'Fotók a Ludwighausról és Neukirchen am Großvenedigerről: a ház télen és nyáron, az étkező, a falu és a környék.':'Photos of Ludwighaus and Neukirchen am Großvenediger: the house in winter and summer, the dining room, the village and the surroundings.',
   'A Ludwighaus házirendje magyarul, angolul és németül — érkezés, kulcsok, dohányzás, háziállat, közös terek.':'The house rules of Ludwighaus in Hungarian, English and German — arrival, keys, smoking, pets, shared spaces.',
   'Foglalás és kapcsolat: Marktstraße 121, 5741 Neukirchen am Großvenediger. Magyar recepció, rugalmas érkezés, teljes ház foglalása csoportoknak.':'Booking and contact: Marktstraße 121, 5741 Neukirchen am Großvenediger. Hungarian-speaking reception, flexible arrival, whole-house booking for groups.',
-  'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Adatkezelés':'Privacy','Kapcsolat':'Contact',
+  'Az oldal':'The site','Dokumentumok':'Documents','ÁSZF':'Terms','Kapcsolat':'Contact',
 };
 
 const DE = {
@@ -6055,8 +6083,8 @@ const DE = {
   'Nyáron a túrázók, a hegyikerékpárosok és a pihenni vágyók kapják meg az arénát — Ausztria legmagasabb hegyeinek panorámájával.':'Im Sommer gehört die Arena den Wanderern, den Mountainbikern und allen, die einfach nur sitzen bleiben wollen — mit dem Panorama der höchsten Berge Österreichs im Rücken.',
   'A Hohe Tauern Nemzeti Park üdülőrégiójában a kijelölt túraútvonalak és a 77 kerékpáros útvonal egész nyáron használható, és a felvonók is járnak.':'In der Urlaubsregion Nationalpark Hohe Tauern sind die markierten Wanderwege und die 77 Radrouten den ganzen Sommer über offen, und die Bergbahnen fahren.',
   'A völgy alján és a hegyen egyaránt működnek a kunyhók és éttermek, úgyhogy egy hosszabb túra közben sem kell magatokkal cipelni az ebédet.':'Sowohl unten im Tal als auch oben am Berg haben Hütten und Restaurants geöffnet, sodass ihr auch auf einer längeren Tour das Mittagessen nicht mitschleppen müsst.',
-  '77':'77','Kerékpáros útvonal':'Radrouten','3 662 m':'3.662 m','A háztól gyalog':'Zu Fuß vom Haus',
-  'Házirend':'Hausordnung','Hogy mindenki':'Damit sich alle','jól érezze magát.':'wohlfühlen.',
+'Kerékpáros útvonal':'Radrouten','3 662 m':'3.662 m','A háztól gyalog':'Zu Fuß vom Haus',
+'Hogy mindenki':'Damit sich alle','jól érezze magát.':'wohlfühlen.',
   'A hivatalos házirend magyarul, angolul és németül is letölthető. Érdemes az érkezés előtt átfutni — nincs benne meglepetés, de így mindenki ugyanazt tudja.':'Die offizielle Hausordnung steht auf Ungarisch, Englisch und Deutsch zum Download bereit. Lest sie vor der Anreise kurz durch — Überraschungen gibt es keine, aber so wissen alle dasselbe.',
   'Kérdés maradt?':'Noch eine Frage offen?',
   'Ha bármi nem világos, hívjatok vagy írjatok — a magyar recepció bármikor elérhető, és a foglalás előtt is szívesen végigvesszük veletek.':'Wenn etwas unklar ist, ruft an oder schreibt — unsere ungarischsprachige Rezeption ist jederzeit erreichbar und geht das auch vor der Buchung gern mit euch durch.',
@@ -6091,15 +6119,13 @@ const DE = {
   'Magyar':'Ungarisch','Házirend · teljes szöveg':'Hausordnung · vollständiger Text',
   'English':'Englisch','House rules · full text':'Hausordnung · vollständiger Text',
   'Deutsch':'Deutsch','Hausordnung · vollständig':'Hausordnung · vollständiger Text',
-  'Házirend · teljes szöveg':'Hausordnung · vollständiger Text','House rules · full text':'Hausordnung · vollständiger Text',
-  'Magyar':'Ungarisch','English':'Englisch',
-  'A ház télen':'Das Haus im Winter','Neukirchen am Großvenediger':'Neukirchen am Großvenediger',
+  'A ház télen':'Das Haus im Winter',
   'Étkező és közösségi tér':'Speiseraum und Aufenthaltsraum','50 fő · hosszú asztal, kanapék':'Für 50 Personen · lange Tafel, Sofas',
   'A bejárat':'Der Eingang','Marktstraße 121':'Marktstraße 121',
   'A ház a faluban':'Das Haus im Dorf','Légifelvétel':'Aus der Luft',
   'Bár & Disco':'Bar & Disco',
   'A ház nyáron':'Das Haus im Sommer','A Wildkogel lábánál':'Am Fuß des Wildkogels',
-  'Funslope & Familypark':'Funslope & Familypark','Wildkogel-Aréna':'Wildkogel-Arena',
+  'Funslope & Familypark':'Funslope & Familypark',
   'Hegyi kerékpár':'Mountainbiken','77 útvonal a környéken':'77 Routen in der Umgebung',
   'A ház és környéke':'Das Haus und seine Umgebung','Ez vár rátok':'So sieht es','kívülről.':'von außen aus.',
   'A Marktstraße 121. alatt, a falu főutcáján — 600 méterre a Wildkogel felvonójától.':'In der Marktstraße 121, an der Hauptstraße des Dorfes — 600 Meter von der Wildkogelbahn entfernt.',
@@ -6109,15 +6135,15 @@ const DE = {
   'Reggeli tekerés':'Eine Morgenrunde','Köd a völgy fölött':'Nebel über dem Tal',
   'Pihenő a tónál':'Pause am See','E-bike túra a környéken':'E-Bike-Tour in der Umgebung',
   'Tizenkét szoba két emeleten, hét különböző típusban. A ház egyik oldala a Großvenedigerre néz, a másik a Wildkogelre — ez dönti el, mire ébredtek.':'Zwölf Zimmer auf zwei Etagen, in sieben verschiedenen Typen. Die eine Seite des Hauses blickt auf den Großvenediger, die andere auf den Wildkogel — das entscheidet, worauf ihr morgens schaut.',
-  'Venediger oldal':'Venediger-Seite','Wildkogel oldal':'Wildkogel-Seite','szoba':'Zimmer',
+  'Venediger oldal':'Venediger-Seite','Wildkogel oldal':'Wildkogel-Seite',
   'A 3 662 méteres Großvenediger és a gleccservilág felé. Ezen az oldalon vannak a legtágasabb szobák és az apartman.':'Mit Blick auf den 3.662 m hohen Großvenediger und die Gletscherwelt. Auf dieser Seite liegen die größten Zimmer und das Apartment.',
   'A sípálya és a felvonó felé, 600 méterre. Innen látszik esténként a kivilágított szánkópálya is.':'Richtung Piste und Bergbahn, 600 Meter entfernt. Von hier seht ihr abends auch die beleuchtete Rodelbahn.',
-  'Szoba':'Zimmer','Szobatípus':'Zimmertypen','Emelet':'Etagen','Terasszal':'Mit Terrasse',
+'Szobatípus':'Zimmertypen','Emelet':'Etagen',
   'Adatkezelés':'Datenschutz','Adatkezelési tájékoztató':'Datenschutzerklärung',
   'ÁSZF és adatkezelés':'AGB & Datenschutz','ÁSZF és adatkezelési tájékoztató':'AGB und Datenschutzerklärung',
   'ÁSZF-et és az adatkezelési tájékoztatót':'die AGB und die Datenschutzerklärung',
-  'A szezon közepén':'Mitten in der Saison','A falu a völgyben':'Das Dorf im Tal',
-  'Előző vélemény':'Vorherige Bewertung','Következő vélemény':'Nächste Bewertung','Vélemények':'Bewertungen',
+  'A szezon közepén':'Mitten in der Saison',
+  'Előző vélemény':'Vorherige Bewertung','Következő vélemény':'Nächste Bewertung',
   'Ludwighaus — magyar panzió a Wildkogel-Arénánál, Neukirchen':'Ludwighaus — Pension an der Wildkogel-Arena, Neukirchen',
   'Magyar tulajdonú alpesi panzió Neukirchenben, 600 méterre a Wildkogel felvonójától. 12 szoba, 45 férőhely, self-cooking konyha és sítároló.':'Ungarisch geführte Alpenpension in Neukirchen, 600 Meter vom Wildkogel-Lift. 12 Zimmer, 45 Betten, Selbstkocher-Küche und Skiraum.',
   'A Ludwighaus tizenkét szobája hét típusban, Venediger vagy Wildkogel panorámával. Árak fő- és holtszezonra, fotókkal, csoportos összesítővel.':'Die zwölf Zimmer des Ludwighauses in sieben Typen, mit Blick auf den Venediger oder den Wildkogel. Preise für Haupt- und Nebensaison, Fotos und Gruppenrechner.',
@@ -6126,7 +6152,7 @@ const DE = {
   'Fotók a Ludwighausról és Neukirchen am Großvenedigerről: a ház télen és nyáron, az étkező, a falu és a környék.':'Fotos vom Ludwighaus und von Neukirchen am Großvenediger: das Haus im Winter und Sommer, der Speiseraum, das Dorf und die Umgebung.',
   'A Ludwighaus házirendje magyarul, angolul és németül — érkezés, kulcsok, dohányzás, háziállat, közös terek.':'Die Hausordnung des Ludwighauses auf Ungarisch, Englisch und Deutsch — Anreise, Schlüssel, Rauchen, Haustiere, Gemeinschaftsräume.',
   'Foglalás és kapcsolat: Marktstraße 121, 5741 Neukirchen am Großvenediger. Magyar recepció, rugalmas érkezés, teljes ház foglalása csoportoknak.':'Buchung und Kontakt: Marktstraße 121, 5741 Neukirchen am Großvenediger. Ungarischsprachige Rezeption, flexible Anreise, Buchung des ganzen Hauses für Gruppen.',
-  'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Adatkezelés':'Datenschutz','Kapcsolat':'Kontakt',
+  'Az oldal':'Die Seite','Dokumentumok':'Dokumente','ÁSZF':'AGB','Kapcsolat':'Kontakt',
 };
 
 const DICT = { hu:{}, en:EN, de:DE };
